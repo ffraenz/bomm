@@ -15,8 +15,9 @@
 #define bomm_rev_position_ring(x, p, r) (x - p + r + BOMM_ALPHABET_SIZE) % BOMM_ALPHABET_SIZE
 
 /**
- * Simulate the Enigma for the given message.
+ * Simulate the Enigma on the given original message and key.
+ * Original and result message structs are assumed to be of same length.
  */
-bomm_message_t* bomm_model_encrypt(bomm_message_t* message, bomm_key_t* key);
+void bomm_model_encrypt(bomm_message_t* original, bomm_key_t* key, bomm_message_t* result);
 
 #endif /* enigma_h */

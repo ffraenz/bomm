@@ -11,6 +11,9 @@
 #include <string.h>
 #include <stdlib.h>
 
+#define BOMM_ALPHABET "abcdefghijklmnopqrstuvwxyz"
+#define BOMM_ALPHABET_SIZE 26
+
 /**
  * A single letter index between 0 (for 'A') and 25 (for 'Z')
  */
@@ -21,7 +24,19 @@ typedef unsigned char bomm_letter_t;
  * letter indices.
  */
 typedef struct _bomm_message {
+    /**
+     * Total number of letters in message
+     */
     unsigned int length;
+    
+    /**
+     * Letter frequency
+     */
+    unsigned int frequency[BOMM_ALPHABET_SIZE];
+    
+    /**
+     * Letters
+     */
     bomm_letter_t letters[];
 } bomm_message_t;
 

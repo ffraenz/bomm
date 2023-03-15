@@ -10,7 +10,7 @@
 
 #include <stdio.h>
 #include "wiring.h"
-#include "turnovers.h"
+#include "lettermask.h"
 
 #define BOMM_ROTOR_NAME_MAX_LENGTH 16
 #define BOMM_MODEL_MAX_SLOT_COUNT 6
@@ -33,7 +33,7 @@ typedef struct _bomm_rotor_spec {
     /**
      * Rotor turnovers
      */
-    bomm_turnovers_t turnovers;
+    bomm_lettermask_t turnovers;
     
     /**
      * Whether the rotor is rotating
@@ -61,6 +61,11 @@ typedef struct _bomm_model {
     
     /**
      * Number of slots
+     *
+     * Slots include:
+     * - Reflector (Umkehrwalze)
+     * - Regular rotors from left to right
+     * - Entry rotor (Eintrittswalze)
      */
     unsigned char slot_count;
     
@@ -70,16 +75,22 @@ typedef struct _bomm_model {
     bomm_slot_index_t fast_rotating_slot;
     
     /**
-     * Available rotor indices per slot. Indices reference entries in `rotors`.
-     *
-     * Slots include:
-     * - Reflector (Umkehrwalze)
-     * - Regular rotors from left to right
-     * - Entry rotor (Eintrittswalze)
+     * Possible rotor indices per slot.
+     * Indices reference entries in `rotors`.
      */
     bomm_rotor_index_t slot_rotor_indices
         [BOMM_MODEL_MAX_SLOT_COUNT]
         [BOMM_MODEL_MAX_ROTOR_COUNT_PER_SLOT];
+    
+    /**
+     * Possible ring settings for each slot
+     */
+    bomm_lettermask_t slot_ring_mask[BOMM_MODEL_MAX_SLOT_COUNT];
+    
+    /**
+     * Possible start positions for each slot
+     */
+    bomm_lettermask_t slot_position_mask[BOMM_MODEL_MAX_SLOT_COUNT];
     
     /**
      * Number of available rotors

@@ -15,6 +15,8 @@ bomm_message_t* bomm_alloc_message_with_length(unsigned int length) {
         return NULL;
     }
     message->length = length;
+    // Zero frequency array
+    memset(&message->frequency, 0, sizeof(unsigned int) * BOMM_ALPHABET_SIZE);
     return message;
 }
 

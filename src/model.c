@@ -21,7 +21,7 @@ void bomm_load_rotor_spec_args(
             : BOMM_ROTOR_NAME_MAX_LENGTH;
     memcpy(ptr->name, name, name_length);
     bomm_load_wiring(&ptr->wiring, wiring_string);
-    bomm_load_turnovers(&ptr->turnovers, turnovers_string);
+    bomm_load_lettermask(&ptr->turnovers, turnovers_string);
     ptr->rotating = rotating;
 }
 

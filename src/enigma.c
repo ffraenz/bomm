@@ -7,7 +7,7 @@
 
 #include "enigma.h"
 
-bomm_message_t* bomm_model_encrypt(bomm_message_t* original, bomm_key_t* key) {
+void bomm_model_encrypt(bomm_message_t* original, bomm_key_t* key, bomm_message_t* result) {
     int slot_count = key->model->slot_count;
     bomm_model_t* model = key->model;
     
@@ -25,28 +25,20 @@ bomm_message_t* bomm_model_encrypt(bomm_message_t* original, bomm_key_t* key) {
         memcpy(&plugboard_wiring, &key->plugboard_wiring, sizeof(bomm_wiring_t));
     }
     
-    // Prepare result message
-    int length = original->length;
-    bomm_message_t* result = bomm_alloc_message_with_length(length);
-    if (!result) {
-        return NULL;
-    }
-    
-    // Prepare letter frequency
-    unsigned int letter_counts[BOMM_ALPHABET_SIZE];
-    memset(&letter_counts, BOMM_ALPHABET_SIZE, sizeof(unsigned int));
+    // Zero result letter frequency array
+    memset(&result->frequency, 0, sizeof(unsigned int) * BOMM_ALPHABET_SIZE);
     
     // Simulate the Enigma for each letter
-    int fast_rotating_slot = model->fast_rotating_slot;
     int slot;
     bool step_next_slot;
     bomm_letter_t x;
-    for (int index = 0; index < length; index++) {
+    for (int index = 0; index < original->length; index++) {
+        // Apply the following position
         if (model->rotation_mechanism == BOMM_ENIGMA_STEPPING) {
             // The Enigma stepping rotation mechanism assumes 3 rotating rotors
             // with the right-most slot being defined by `fast_rotating_slot`
-            slot = fast_rotating_slot;
-            if (bomm_is_turnover(
+            slot = model->fast_rotating_slot;
+            if (bomm_lettermask_has(
                 model->rotors[rotor_indices[slot - 1]].turnovers,
                 positions[slot - 1]
             )) {
@@ -54,7 +46,7 @@ bomm_message_t* bomm_model_encrypt(bomm_message_t* original, bomm_key_t* key) {
                 // (double stepping anomaly)
                 positions[slot - 1] = (positions[slot - 1] + 1) % BOMM_ALPHABET_SIZE;
                 positions[slot - 2] = (positions[slot - 2] + 1) % BOMM_ALPHABET_SIZE;
-            } else if (bomm_is_turnover(
+            } else if (bomm_lettermask_has(
                 model->rotors[rotor_indices[slot]].turnovers,
                 positions[slot]
             )) {
@@ -68,13 +60,13 @@ bomm_message_t* bomm_model_encrypt(bomm_message_t* original, bomm_key_t* key) {
             // The gear rotation mechanism behaves exactly like an odometer
             // of a car
             step_next_slot = true;
-            slot = fast_rotating_slot;
+            slot = model->fast_rotating_slot;
             while (step_next_slot && slot >= 0) {
                 // Decide whether to step the next rotor on the left
                 step_next_slot =
                     slot > 0 &&
                     model->rotors[rotor_indices[slot - 1]].rotating &&
-                    bomm_is_turnover(
+                    bomm_lettermask_has(
                         model->rotors[rotor_indices[slot]].turnovers,
                         positions[slot]);
             
@@ -109,10 +101,6 @@ bomm_message_t* bomm_model_encrypt(bomm_message_t* original, bomm_key_t* key) {
         
         // Store letter in result message
         result->letters[index] = x;
-        
-        // Count letter
-        letter_counts[x]++;
+        result->frequency[x]++;
     }
-    
-    return result;
 }

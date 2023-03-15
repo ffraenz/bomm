@@ -13,9 +13,6 @@
 #include <stdlib.h>
 #include "message.h"
 
-#define BOMM_ALPHABET "abcdefghijklmnopqrstuvwxyz"
-#define BOMM_ALPHABET_SIZE 26
-
 typedef struct _bomm_wiring {
     unsigned char forward_map[BOMM_ALPHABET_SIZE];
     unsigned char backward_map[BOMM_ALPHABET_SIZE];

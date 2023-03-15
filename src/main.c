@@ -7,7 +7,7 @@
 
 #include <stdio.h>
 #include "wiring.h"
-#include "turnovers.h"
+#include "lettermask.h"
 #include "enigma.h"
 
 int main(int argc, char *argv[]) {
@@ -25,9 +25,9 @@ int main(int argc, char *argv[]) {
     
     // Test turnovers
     char* original_turnovers_string = "swzfhmq";
-    bomm_turnovers_t turnovers;
-    bomm_load_turnovers(&turnovers, original_turnovers_string);
-    char* turnover_string = bomm_describe_turnovers(&turnovers);
+    bomm_lettermask_t turnovers;
+    bomm_load_lettermask(&turnovers, original_turnovers_string);
+    char* turnover_string = bomm_describe_lettermask(&turnovers);
     printf("Original turnovers: %s\n", original_turnovers_string);
     printf("Actual turnovers:   %s\n", turnover_string);
     free(turnover_string);
@@ -58,7 +58,8 @@ int main(int argc, char *argv[]) {
     key->slot_rings[4] = 0;
     
     bomm_message_t* ciphertext_message = bomm_alloc_message(ciphertext);
-    bomm_message_t* plaintext_message = bomm_model_encrypt(ciphertext_message, key);
+    bomm_message_t* plaintext_message = bomm_alloc_message_with_length(ciphertext_message->length);
+    bomm_model_encrypt(ciphertext_message, key, plaintext_message);
     
     char* actual_plaintext = bomm_describe_message(plaintext_message);
     printf("Expected plaintext: %s\n", expected_plaintext);
@@ -68,7 +69,6 @@ int main(int argc, char *argv[]) {
     free(ciphertext_message);
     free(key);
     free(model);
-    
     
     return 0;
 }
