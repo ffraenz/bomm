@@ -33,7 +33,7 @@ bomm_message_t* bomm_alloc_message(char* string) {
     message->length = 0;
 
     char letter = 0;
-    for (int i = 0; i < length; i++) {
+    for (unsigned int i = 0; i < length; i++) {
         letter = string[i];
         if (letter >= 97 && letter <= 122) {
             // Read ASCII a-z
@@ -56,7 +56,7 @@ bomm_message_t* bomm_alloc_message(char* string) {
 
 char* bomm_describe_message(bomm_message_t* message) {
     char* string = malloc(sizeof(char) * message->length);
-    for (int i = 0; i < message->length; i++) {
+    for (unsigned int i = 0; i < message->length; i++) {
         string[i] = message->letters[i] + 97;
     }
     return string;

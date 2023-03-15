@@ -17,7 +17,7 @@ bool bomm_load_wiring(bomm_wiring_t* ptr, char* string) {
 
     unsigned char char_index;
     bool error = message->length != BOMM_ALPHABET_SIZE;
-    int position = 0;
+    unsigned int position = 0;
     while (!error && position < message->length) {
         char_index = message->letters[position];
         if (ptr->backward_map[char_index] == BOMM_ALPHABET_SIZE) {

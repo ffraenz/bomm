@@ -32,7 +32,7 @@ void bomm_model_encrypt(bomm_message_t* original, bomm_key_t* key, bomm_message_
     int slot;
     bool step_next_slot;
     bomm_letter_t x;
-    for (int index = 0; index < original->length; index++) {
+    for (unsigned int index = 0; index < original->length; index++) {
         // Apply the following position
         if (model->rotation_mechanism == BOMM_ENIGMA_STEPPING) {
             // The Enigma stepping rotation mechanism assumes 3 rotating rotors
