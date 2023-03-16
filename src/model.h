@@ -14,7 +14,7 @@
 
 #define BOMM_ROTOR_NAME_MAX_LENGTH 16
 #define BOMM_MODEL_MAX_SLOT_COUNT 6
-#define BOMM_MODEL_MAX_ROTOR_COUNT_PER_SLOT 16
+#define BOMM_MODEL_MAX_ROTOR_COUNT_PER_SLOT 15
 
 /**
  * Struct representing a static rotor specification
@@ -62,7 +62,7 @@ typedef struct _bomm_model {
     /**
      * Number of slots
      *
-     * Slots include:
+     * Slots include (from left to right):
      * - Reflector (Umkehrwalze)
      * - Regular rotors from left to right
      * - Entry rotor (Eintrittswalze)
@@ -77,10 +77,11 @@ typedef struct _bomm_model {
     /**
      * Possible rotor indices per slot.
      * Indices reference entries in `rotors`.
+     * Index `255` signifies the end of the rotors for this slot is reached.
      */
     bomm_rotor_index_t slot_rotor_indices
         [BOMM_MODEL_MAX_SLOT_COUNT]
-        [BOMM_MODEL_MAX_ROTOR_COUNT_PER_SLOT];
+        [BOMM_MODEL_MAX_ROTOR_COUNT_PER_SLOT + 1];
     
     /**
      * Possible ring settings for each slot

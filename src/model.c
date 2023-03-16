@@ -76,6 +76,20 @@ bomm_model_t* bomm_alloc_model_enigma_i(void) {
     
     // Available entry rotors: ETW-ABC
     model->slot_rotor_indices[4][0] = 5;
+    
+    // Test ring settings of the right rotor, only
+    model->slot_ring_mask[0] = BOMM_LETTERMASK_FIRST;
+    model->slot_ring_mask[1] = BOMM_LETTERMASK_FIRST;
+    model->slot_ring_mask[2] = BOMM_LETTERMASK_FIRST;
+    model->slot_ring_mask[3] = BOMM_LETTERMASK_ALL;
+    model->slot_ring_mask[4] = BOMM_LETTERMASK_FIRST;
+    
+    // Test all wheel positions
+    model->slot_position_mask[0] = BOMM_LETTERMASK_FIRST;
+    model->slot_position_mask[1] = BOMM_LETTERMASK_ALL;
+    model->slot_position_mask[2] = BOMM_LETTERMASK_ALL;
+    model->slot_position_mask[3] = BOMM_LETTERMASK_ALL;
+    model->slot_position_mask[4] = BOMM_LETTERMASK_FIRST;
 
     return model;
 }

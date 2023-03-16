@@ -14,6 +14,26 @@
 #include "wiring.h"
 
 /**
+ * Mask with all letters selected
+ */
+#define BOMM_LETTERMASK_ALL ((1 << BOMM_ALPHABET_SIZE) - 1)
+
+/**
+ * Mask with no letters selected
+ */
+#define BOMM_LETTERMASK_NONE 0
+
+/**
+ * Mask with only the first letter selected
+ */
+#define BOMM_LETTERMASK_FIRST 1
+
+/**
+ * Mask with only the last letter selected
+ */
+#define BOMM_LETTERMASK_LAST (1 << (BOMM_ALPHABET_SIZE - 1))
+
+/**
  * Return true, if the given letter is set to 1 in a lettermask.
  */
 #define bomm_lettermask_has(mask, letter) ((mask >> letter) & 0x1)

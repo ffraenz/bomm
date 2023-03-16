@@ -15,6 +15,11 @@
 #define bomm_rev_position_ring(x, p, r) (x - p + r + BOMM_ALPHABET_SIZE) % BOMM_ALPHABET_SIZE
 
 /**
+ * Exhaust the relevant key space of the given model excl. the plugboard.
+ */
+void bomm_model_attack_phase_1(bomm_model_t* model, bomm_message_t* message);
+
+/**
  * Simulate the Enigma on the given original message and key.
  * Original and result message structs are assumed to be of same length.
  */

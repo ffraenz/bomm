@@ -7,6 +7,56 @@
 
 #include "enigma.h"
 
+void bomm_model_attack_phase_1(bomm_model_t* model, bomm_message_t* message) {
+    bomm_key_t key;
+    memset(&key, 0, sizeof(bomm_key_t));
+    key.model = model;
+    bomm_load_wiring(&key.plugboard_wiring, BOMM_WIRING_IDENTITY);
+    
+    int i, j;
+    bool carry, relevant;
+    char key_string[128];
+    
+    // 1. Iterate through relevant wheel orders
+    do {
+        // Validate if the current wheel order is relevant by checking if no
+        // wheel appears twice
+        i = -1;
+        relevant = true;
+        while (relevant && ++i < model->slot_count - 1) {
+            j = i;
+            while (relevant && ++j < model->slot_count) {
+                relevant = (
+                    model->slot_rotor_indices[i][key.slot_rotor[i]] !=
+                    model->slot_rotor_indices[j][key.slot_rotor[j]]
+                );
+            }
+        }
+        
+        if (relevant) {
+            // TODO: 2. Iterate through relevant ring settings
+            // TODO: 3. Iterate through relevant start positions
+            
+            // TODO: Do stuff with the key
+            bomm_serialize_key(key_string, 128, &key);
+            printf("Key %s\n", key_string);
+        }
+        
+        // Iterate to next wheel order
+        carry = true;
+        i = model->slot_count;
+        while (carry && --i >= 0) {
+            key.slot_rotor[i]++;
+            if ((carry = model->slot_rotor_indices[i][key.slot_rotor[i]] == 255)) {
+                key.slot_rotor[i] = 0;
+            }
+        }
+    } while (!carry);
+    
+    // TODO: Remove this when message arg is being used
+    printf("Message length: %d\n", message->length);
+}
+
 void bomm_model_encrypt(bomm_message_t* original, bomm_key_t* key, bomm_message_t* result) {
     int slot_count = key->model->slot_count;
     bomm_model_t* model = key->model;

@@ -13,6 +13,8 @@
 #include <stdlib.h>
 #include "message.h"
 
+#define BOMM_WIRING_IDENTITY "abcdefghijklmnopqrstuvwxyz"
+
 typedef struct _bomm_wiring {
     unsigned char forward_map[BOMM_ALPHABET_SIZE];
     unsigned char backward_map[BOMM_ALPHABET_SIZE];

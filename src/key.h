@@ -38,4 +38,9 @@ typedef struct _bomm_key {
     bomm_wiring_t plugboard_wiring;
 } bomm_key_t;
 
+/**
+ * Serialize the given key to a string.
+ */
+void bomm_serialize_key(char* str, size_t size, bomm_key_t* key);
+
 #endif /* key_h */
