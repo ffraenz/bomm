@@ -84,12 +84,14 @@ typedef struct _bomm_model {
         [BOMM_MODEL_MAX_ROTOR_COUNT_PER_SLOT + 1];
     
     /**
-     * Possible ring settings for each slot
+     * Possible ring settings for each slot.
+     * Must not be empty (equal to 0).
      */
     bomm_lettermask_t slot_ring_mask[BOMM_MODEL_MAX_SLOT_COUNT];
     
     /**
-     * Possible start positions for each slot
+     * Possible start positions for each slot.
+     * Must not be empty (equal to 0).
      */
     bomm_lettermask_t slot_position_mask[BOMM_MODEL_MAX_SLOT_COUNT];
     

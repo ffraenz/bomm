@@ -48,11 +48,11 @@ typedef unsigned long bomm_lettermask_t;
 /**
  * Load the given lettermask string into memory at the specified pointer.
  */
-void bomm_load_lettermask(bomm_lettermask_t* ptr, char* string);
+void bomm_lettermask_extract(bomm_lettermask_t* ptr, char* string);
 
 /**
  * Export the given lettermask to a string.
  */
-char* bomm_describe_lettermask(bomm_lettermask_t* lettermask);
+char* bomm_lettermask_serialize(bomm_lettermask_t* lettermask);
 
 #endif /* lettermask_h */

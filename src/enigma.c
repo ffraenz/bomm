@@ -7,25 +7,80 @@
 
 #include "enigma.h"
 
-void bomm_model_attack_phase_1(bomm_model_t* model, bomm_message_t* message) {
-    bomm_key_t key;
-    memset(&key, 0, sizeof(bomm_key_t));
-    key.model = model;
-    bomm_load_wiring(&key.plugboard_wiring, BOMM_WIRING_IDENTITY);
-    
+static inline void _enum_lettermask_init(unsigned char slot_count, bomm_letter_t* positions, bomm_lettermask_t* shifting_masks) {
+    memset(positions, 0, BOMM_MODEL_MAX_SLOT_COUNT * sizeof(bomm_letter_t));
+    for (int i = 0; i < slot_count; i++) {
+        while ((shifting_masks[i] & 0x1) == 0) {
+            shifting_masks[i] = shifting_masks[i] >> 1;
+            positions[i]++;
+        }
+    }
+}
+
+static inline bool _enum_lettermask(unsigned char slot_count, bomm_letter_t* positions, bomm_lettermask_t* shifting_masks) {
+    bool carry = true;
+    int i = slot_count;
+    while (carry && --i >= 0) {
+        // Optimization: If there's only one bit set on the mask we can skip the
+        // loops and literally carry on to the next slot
+        if (shifting_masks[i] != BOMM_LETTERMASK_FIRST) {
+            // Increment position as well as shift and wrap shifting mask
+            positions[i]++;
+            shifting_masks[i] = BOMM_LETTERMASK_LAST | (shifting_masks[i] >> 1);
+            
+            // Increment position and shift mask until the next valid position
+            // is found
+            while ((shifting_masks[i] & 0x1) == 0) {
+                positions[i]++;
+                shifting_masks[i] = shifting_masks[i] >> 1;
+            }
+            
+            // If position exceeded the alphabet size, we have a carry
+            if ((carry = positions[i] >= BOMM_ALPHABET_SIZE)) {
+                positions[i] -= BOMM_ALPHABET_SIZE;
+            }
+        }
+    }
+    return carry;
+}
+
+void bomm_model_attack_phase_1(bomm_model_t* model, bomm_message_t* ciphertext) {
+    int slot_count = model->slot_count;
     int i, j;
     bool carry, relevant;
     char key_string[128];
+    float score;
     
-    // 1. Iterate through relevant wheel orders
+    // Prepare working key instance
+    bomm_key_t key;
+    memset(&key, 0, sizeof(bomm_key_t));
+    key.model = model;
+    bomm_wiring_extract(&key.plugboard_wiring, BOMM_WIRING_IDENTITY);
+    
+    // Prepare result message (on the stack)
+    char plaintext_store[bomm_message_size_for_length(ciphertext->length)];
+    bomm_message_t *plaintext = (bomm_message_t*) &plaintext_store;
+    plaintext->length = ciphertext->length;
+    
+    // Prepare initial ring settings and shifting ring masks
+    bomm_lettermask_t slot_shifting_ring_masks[slot_count];
+    memcpy(&slot_shifting_ring_masks, model->slot_ring_mask, sizeof(bomm_lettermask_t) * slot_count);
+    _enum_lettermask_init(slot_count, key.slot_rings, slot_shifting_ring_masks);
+    
+    // Prepare initial start positions and shifting position masks
+    bomm_lettermask_t slot_shifting_position_masks[slot_count];
+    memcpy(&slot_shifting_position_masks, model->slot_position_mask, sizeof(bomm_lettermask_t) * slot_count);
+    _enum_lettermask_init(slot_count, key.slot_positions, slot_shifting_position_masks);
+    
+    // 1. Enumerate relevant wheel orders
     do {
         // Validate if the current wheel order is relevant by checking if no
         // wheel appears twice
         i = -1;
         relevant = true;
-        while (relevant && ++i < model->slot_count - 1) {
+        while (relevant && ++i < slot_count - 1) {
             j = i;
-            while (relevant && ++j < model->slot_count) {
+            while (relevant && ++j < slot_count) {
                 relevant = (
                     model->slot_rotor_indices[i][key.slot_rotor[i]] !=
                     model->slot_rotor_indices[j][key.slot_rotor[j]]
@@ -34,17 +89,32 @@ void bomm_model_attack_phase_1(bomm_model_t* model, bomm_message_t* message) {
         }
         
         if (relevant) {
-            // TODO: 2. Iterate through relevant ring settings
-            // TODO: 3. Iterate through relevant start positions
-            
-            // TODO: Do stuff with the key
-            bomm_serialize_key(key_string, 128, &key);
-            printf("Key %s\n", key_string);
+            // 2. Enumerate relevant ring settings
+            do {
+                // 3. Enumerate relevant start positions
+                do {
+                    // TODO: When the stepping mechanism is used, middle rotor
+                    // positions that are equal to one of the middle rotor
+                    // turnovers can be neglected as the following middle rotor
+                    // position is identical
+                    relevant = true;
+                    
+                    if (relevant) {
+                        bomm_model_encrypt(ciphertext, &key, plaintext);
+                        score = bomm_message_calc_ic(plaintext);
+                        
+                        // TODO: Do stuff with the key
+                        bomm_serialize_key(key_string, 128, &key);
+                        printf("Key %s %2.20f\n", key_string, score);
+                    }
+                    
+                } while (!_enum_lettermask(slot_count, key.slot_positions, slot_shifting_position_masks));
+            } while (!_enum_lettermask(slot_count, key.slot_rings, slot_shifting_ring_masks));
         }
         
         // Iterate to next wheel order
         carry = true;
-        i = model->slot_count;
+        i = slot_count;
         while (carry && --i >= 0) {
             key.slot_rotor[i]++;
             if ((carry = model->slot_rotor_indices[i][key.slot_rotor[i]] == 255)) {
@@ -52,12 +122,9 @@ void bomm_model_attack_phase_1(bomm_model_t* model, bomm_message_t* message) {
             }
         }
     } while (!carry);
-    
-    // TODO: Remove this when message arg is being used
-    printf("Message length: %d\n", message->length);
 }
 
-void bomm_model_encrypt(bomm_message_t* original, bomm_key_t* key, bomm_message_t* result) {
+void bomm_model_encrypt(bomm_message_t* message, bomm_key_t* key, bomm_message_t* result) {
     int slot_count = key->model->slot_count;
     bomm_model_t* model = key->model;
     
@@ -82,7 +149,7 @@ void bomm_model_encrypt(bomm_message_t* original, bomm_key_t* key, bomm_message_
     int slot;
     bool step_next_slot;
     bomm_letter_t x;
-    for (unsigned int index = 0; index < original->length; index++) {
+    for (unsigned int index = 0; index < message->length; index++) {
         // Apply the following position
         if (model->rotation_mechanism == BOMM_ENIGMA_STEPPING) {
             // The Enigma stepping rotation mechanism assumes 3 rotating rotors
@@ -127,7 +194,7 @@ void bomm_model_encrypt(bomm_message_t* original, bomm_key_t* key, bomm_message_
         }
         
         // Source letter from original message
-        x = original->letters[index];
+        x = message->letters[index];
         
         // Plugboard
         x = plugboard_wiring.forward_map[x];

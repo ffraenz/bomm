@@ -8,8 +8,7 @@
 #include "message.h"
 
 bomm_message_t* bomm_alloc_message_with_length(unsigned int length) {
-    size_t message_size =
-        sizeof(bomm_message_t) + length * sizeof(bomm_letter_t);
+    size_t message_size = bomm_message_size_for_length(length);
     bomm_message_t* message = (bomm_message_t*) malloc(message_size);
     if (!message) {
         return NULL;
@@ -22,32 +21,26 @@ bomm_message_t* bomm_alloc_message_with_length(unsigned int length) {
 
 bomm_message_t* bomm_alloc_message(char* string) {
     size_t length = strlen(string);
-    size_t letter_size = sizeof(bomm_letter_t);
-    size_t message_size = sizeof(bomm_message_t) + length * letter_size;
+    size_t message_size = bomm_message_size_for_length((unsigned int) length);
     bomm_message_t* message = (bomm_message_t*) malloc(message_size);
 
     if (!message) {
         return NULL;
     }
 
+    // Reset message length and frequency
     message->length = 0;
+    memset(&message->frequency, 0, sizeof(unsigned int) * BOMM_ALPHABET_SIZE);
 
-    char letter = 0;
+    unsigned char letter;
     for (unsigned int i = 0; i < length; i++) {
-        letter = string[i];
-        if (letter >= 97 && letter <= 122) {
-            // Read ASCII a-z
-            message->letters[message->length++] = letter - 97;
-        } else if (letter >= 65 && letter <= 90) {
-            // Read ASCII A-Z
-            message->letters[message->length++] = letter - 65;
-        } else {
-            // Ignore other letters
+        if ((letter = bomm_message_letter_from_ascii(string[i])) != 255) {
+            message->letters[message->length++] = letter;
+            message->frequency[letter]++;
         }
     }
 
-    size_t actual_message_size =
-        sizeof(bomm_message_t) + message->length * letter_size;
+    size_t actual_message_size = bomm_message_size_for_length(message->length);
     if (actual_message_size < message_size) {
         message = realloc(message, actual_message_size);
     }
@@ -57,7 +50,7 @@ bomm_message_t* bomm_alloc_message(char* string) {
 char* bomm_describe_message(bomm_message_t* message) {
     char* string = malloc(sizeof(char) * message->length);
     for (unsigned int i = 0; i < message->length; i++) {
-        string[i] = message->letters[i] + 97;
+        string[i] = bomm_message_letter_to_ascii(message->letters[i]);
     }
     return string;
 }

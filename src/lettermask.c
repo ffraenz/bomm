@@ -7,7 +7,7 @@
 
 #include "lettermask.h"
 
-void bomm_load_lettermask(bomm_lettermask_t* ptr, char* string) {
+void bomm_lettermask_extract(bomm_lettermask_t* ptr, char* string) {
     // TODO: Implement parser for lettermask notation
     bomm_message_t *message = bomm_alloc_message(string);
     if (!message) {
@@ -24,7 +24,7 @@ void bomm_load_lettermask(bomm_lettermask_t* ptr, char* string) {
     free(message);
 }
 
-char* bomm_describe_lettermask(bomm_lettermask_t* lettermask) {
+char* bomm_lettermask_serialize(bomm_lettermask_t* lettermask) {
     char* string = (char*) malloc(sizeof(char) * (BOMM_ALPHABET_SIZE + 1));
     if (!string) {
         fprintf(stderr, "Out of memory while describing lettermask\n");

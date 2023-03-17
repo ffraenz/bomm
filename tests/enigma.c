@@ -15,7 +15,7 @@ Test(enigma, bomm_model_encrypt) {
     bomm_model_t* model = bomm_alloc_model_enigma_i();
     bomm_key_t* key = malloc(sizeof(bomm_key_t));
     key->model = model;
-    bomm_load_wiring(&key->plugboard_wiring, "abcdefghijklmnopqrstuvwxyz");
+    bomm_wiring_extract(&key->plugboard_wiring, "abcdefghijklmnopqrstuvwxyz");
     key->slot_rotor[0] = 7; // UKW-B
     key->slot_rotor[1] = 0; // I
     key->slot_rotor[2] = 1; // II

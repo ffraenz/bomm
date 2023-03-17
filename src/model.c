@@ -20,8 +20,8 @@ void bomm_load_rotor_spec_args(
             ? actual_name_length
             : BOMM_ROTOR_NAME_MAX_LENGTH;
     memcpy(ptr->name, name, name_length);
-    bomm_load_wiring(&ptr->wiring, wiring_string);
-    bomm_load_lettermask(&ptr->turnovers, turnovers_string);
+    bomm_wiring_extract(&ptr->wiring, wiring_string);
+    bomm_lettermask_extract(&ptr->turnovers, turnovers_string);
     ptr->rotating = rotating;
 }
 
@@ -80,7 +80,7 @@ bomm_model_t* bomm_alloc_model_enigma_i(void) {
     // Test ring settings of the right rotor, only
     model->slot_ring_mask[0] = BOMM_LETTERMASK_FIRST;
     model->slot_ring_mask[1] = BOMM_LETTERMASK_FIRST;
-    model->slot_ring_mask[2] = BOMM_LETTERMASK_FIRST;
+    model->slot_ring_mask[2] = 0x00080020;
     model->slot_ring_mask[3] = BOMM_LETTERMASK_ALL;
     model->slot_ring_mask[4] = BOMM_LETTERMASK_FIRST;
     

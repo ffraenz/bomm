@@ -11,8 +11,8 @@
 Test(wiring, bomm_load_wiring) {
     char* expected_wiring_string = "ekmflgdqvzntowyhxuspaibrcj";
     bomm_wiring_t* wiring = malloc(sizeof(bomm_wiring_t));
-    bomm_load_wiring(wiring, expected_wiring_string);
-    char* actual_wiring_string = bomm_describe_wiring(wiring);
+    bomm_wiring_extract(wiring, expected_wiring_string);
+    char* actual_wiring_string = bomm_wiring_serialize(wiring);
     cr_assert_str_eq(actual_wiring_string, expected_wiring_string);
     free(actual_wiring_string);
     free(wiring);

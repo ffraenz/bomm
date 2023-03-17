@@ -13,21 +13,21 @@
 #include <stdlib.h>
 #include "message.h"
 
-#define BOMM_WIRING_IDENTITY "abcdefghijklmnopqrstuvwxyz"
+#define BOMM_WIRING_IDENTITY BOMM_ALPHABET
 
 typedef struct _bomm_wiring {
-    unsigned char forward_map[BOMM_ALPHABET_SIZE];
-    unsigned char backward_map[BOMM_ALPHABET_SIZE];
+    bomm_letter_t forward_map[BOMM_ALPHABET_SIZE];
+    bomm_letter_t backward_map[BOMM_ALPHABET_SIZE];
 } bomm_wiring_t;
 
 /**
- * Load a wiring from the given string.
+ * Extract a wiring from the given string.
  */
-bool bomm_load_wiring(bomm_wiring_t* ptr, char* string);
+bool bomm_wiring_extract(bomm_wiring_t* ptr, char* string);
 
 /**
  * Export the given enigma wiring to a string.
  */
-char* bomm_describe_wiring(bomm_wiring_t* wiring);
+char* bomm_wiring_serialize(bomm_wiring_t* wiring);
 
 #endif /* wiring_h */
