@@ -15,15 +15,14 @@ Test(message, bomm_letter_t) {
 
 Test(message, bomm_message_alloc) {
     bomm_message_t* message;
-    char* string;
     char* expected_string;
     
     expected_string = "abcdefghijklmnopqrstuvwxyz";
     message = bomm_alloc_message(expected_string);
-    string = bomm_describe_message(message);
+    char string[bomm_message_serialize_size(message)];
+    bomm_message_serialize(string, -1, message);
     cr_assert_str_eq(string, expected_string);
     cr_assert_eq(message->length, strlen(expected_string));
-    free(string);
     free(message);
 }
 
@@ -32,9 +31,9 @@ Test(message, bomm_message_the_quick_brown_fox) {
     char* expected_string = "thequickbrownfoxjumpsoverthelazydog";
     bomm_message_t* message = bomm_alloc_message(input_string);
     cr_assert_eq(message->length, strlen(expected_string));
-    char* string = bomm_describe_message(message);
+    char string[bomm_message_serialize_size(message)];
+    bomm_message_serialize(string, -1, message);
     cr_assert_str_eq(string, expected_string);
-    free(string);
     unsigned int expected_frequency[BOMM_ALPHABET_SIZE] = {
         1, 1, 1, 1, 3, 1, 1, 2, 1, 1,
         1, 1, 1, 1, 4, 1, 1, 2, 1, 2,

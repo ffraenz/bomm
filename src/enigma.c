@@ -49,7 +49,12 @@ void bomm_model_attack_phase_1(bomm_model_t* model, bomm_message_t* ciphertext) 
     int i, j;
     bool carry, relevant;
     char key_string[128];
+    char message_string[bomm_message_serialize_size(ciphertext)];
     float score;
+    float min_score = -INFINITY;
+    
+    // Prepare leaderboard
+    bomm_key_leaderboard_t* leaderboard = bomm_key_leaderboard_alloc(20);
     
     // Prepare working key instance
     bomm_key_t key;
@@ -103,13 +108,20 @@ void bomm_model_attack_phase_1(bomm_model_t* model, bomm_message_t* ciphertext) 
                         bomm_model_encrypt(ciphertext, &key, plaintext);
                         score = bomm_message_calc_ic(plaintext);
                         
-                        // TODO: Do stuff with the key
-                        bomm_serialize_key(key_string, 128, &key);
-                        printf("Key %s %2.20f\n", key_string, score);
+                        if (score > min_score) {
+                            min_score = bomm_key_leaderboard_add(leaderboard, &key, score);
+                        }
                     }
                     
                 } while (!_enum_lettermask(slot_count, key.slot_positions, slot_shifting_position_masks));
             } while (!_enum_lettermask(slot_count, key.slot_rings, slot_shifting_ring_masks));
+            
+            // Print progress update
+            printf("Working on wheel order:\n");
+            bomm_key_serialize(key_string, 128, &key);
+            bomm_message_serialize(message_string, -1, plaintext);
+            printf("Key: %s\n", key_string);
+            printf("Plaintext: %s\n", message_string);
         }
         
         // Iterate to next wheel order
@@ -122,6 +134,12 @@ void bomm_model_attack_phase_1(bomm_model_t* model, bomm_message_t* ciphertext) 
             }
         }
     } while (!carry);
+    
+    // Print final leaderboard
+    bomm_key_leaderboard_print(leaderboard);
+    
+    // Clean up
+    free(leaderboard);
 }
 
 void bomm_model_encrypt(bomm_message_t* message, bomm_key_t* key, bomm_message_t* result) {
@@ -156,7 +174,7 @@ void bomm_model_encrypt(bomm_message_t* message, bomm_key_t* key, bomm_message_t
             // with the right-most slot being defined by `fast_rotating_slot`
             slot = model->fast_rotating_slot;
             if (bomm_lettermask_has(
-                model->rotors[rotor_indices[slot - 1]].turnovers,
+                model->rotors[model->slot_rotor_indices[slot - 1][rotor_indices[slot - 1]]].turnovers,
                 positions[slot - 1]
             )) {
                 // If at middle rotor turnover: Step middle and left rotors
@@ -164,7 +182,7 @@ void bomm_model_encrypt(bomm_message_t* message, bomm_key_t* key, bomm_message_t
                 positions[slot - 1] = (positions[slot - 1] + 1) % BOMM_ALPHABET_SIZE;
                 positions[slot - 2] = (positions[slot - 2] + 1) % BOMM_ALPHABET_SIZE;
             } else if (bomm_lettermask_has(
-                model->rotors[rotor_indices[slot]].turnovers,
+                model->rotors[model->slot_rotor_indices[slot][rotor_indices[slot]]].turnovers,
                 positions[slot]
             )) {
                 // If at right rotor turnover: Step middle rotor
@@ -182,9 +200,9 @@ void bomm_model_encrypt(bomm_message_t* message, bomm_key_t* key, bomm_message_t
                 // Decide whether to step the next rotor on the left
                 step_next_slot =
                     slot > 0 &&
-                    model->rotors[rotor_indices[slot - 1]].rotating &&
+                    model->rotors[model->slot_rotor_indices[slot - 1][rotor_indices[slot - 1]]].rotating &&
                     bomm_lettermask_has(
-                        model->rotors[rotor_indices[slot]].turnovers,
+                        model->rotors[model->slot_rotor_indices[slot][rotor_indices[slot]]].turnovers,
                         positions[slot]);
             
                 // Step rotor this rotor
@@ -202,14 +220,14 @@ void bomm_model_encrypt(bomm_message_t* message, bomm_key_t* key, bomm_message_t
         // Rotors (entry rotor, then rotors right to left, reflector rotor)
         for (slot = slot_count - 1; slot >= 0; slot--) {
             x = bomm_map_position_ring(x, positions[slot], rings[slot]);
-            x = model->rotors[rotor_indices[slot]].wiring.forward_map[x];
+            x = model->rotors[model->slot_rotor_indices[slot][rotor_indices[slot]]].wiring.forward_map[x];
             x = bomm_rev_position_ring(x, positions[slot], rings[slot]);
         }
         
         // Rotors (rotors left to right, then entry rotor)
         for (slot = 1; slot < slot_count; slot++) {
             x = bomm_map_position_ring(x, positions[slot], rings[slot]);
-            x = model->rotors[rotor_indices[slot]].wiring.backward_map[x];
+            x = model->rotors[model->slot_rotor_indices[slot][rotor_indices[slot]]].wiring.backward_map[x];
             x = bomm_rev_position_ring(x, positions[slot], rings[slot]);
         }
         

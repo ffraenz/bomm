@@ -47,10 +47,10 @@ bomm_message_t* bomm_alloc_message(char* string) {
     return message;
 }
 
-char* bomm_describe_message(bomm_message_t* message) {
-    char* string = malloc(sizeof(char) * message->length);
-    for (unsigned int i = 0; i < message->length; i++) {
-        string[i] = bomm_message_letter_to_ascii(message->letters[i]);
+void bomm_message_serialize(char* str, size_t size, bomm_message_t* message) {
+    size_t actual_size = message->length < size ? message->length : size - 1;
+    for (unsigned int i = 0; i < actual_size; i++) {
+        str[i] = bomm_message_letter_to_ascii(message->letters[i]);
     }
-    return string;
+    str[actual_size] = '\0';
 }

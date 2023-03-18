@@ -8,6 +8,7 @@
 #ifndef enigma_h
 #define enigma_h
 
+#include <math.h>
 #include <stdio.h>
 #include "key.h"
 

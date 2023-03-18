@@ -80,7 +80,7 @@ bomm_model_t* bomm_alloc_model_enigma_i(void) {
     // Test ring settings of the right rotor, only
     model->slot_ring_mask[0] = BOMM_LETTERMASK_FIRST;
     model->slot_ring_mask[1] = BOMM_LETTERMASK_FIRST;
-    model->slot_ring_mask[2] = 0x00080020;
+    model->slot_ring_mask[2] = BOMM_LETTERMASK_FIRST;
     model->slot_ring_mask[3] = BOMM_LETTERMASK_ALL;
     model->slot_ring_mask[4] = BOMM_LETTERMASK_FIRST;
     

@@ -52,7 +52,17 @@ bomm_message_t* bomm_alloc_message_with_length(unsigned int length);
  */
 bomm_message_t* bomm_alloc_message(char* string);
 
-char* bomm_describe_message(bomm_message_t* message);
+/**
+ * Calculate the serialize string size for the given message.
+ */
+static inline size_t bomm_message_serialize_size(bomm_message_t* message) {
+    return message->length + 1;
+}
+
+/**
+ * Serialize the given message to a string.
+ */
+void bomm_message_serialize(char* str, size_t size, bomm_message_t* message);
 
 /**
  * Calculate the number of bytes required to store a message struct of the

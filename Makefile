@@ -1,6 +1,6 @@
 
 CC := cc
-RELEASE_CFLAGS := -pedantic -Wall -Werror -Wextra
+RELEASE_CFLAGS := -O3 -pedantic -Wall -Werror -Wextra
 TEST_CFLAGS := -pedantic -Wall -Werror -Wextra
 TEST_LDFLAGS := -lcriterion
 
