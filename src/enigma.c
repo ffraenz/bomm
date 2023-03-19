@@ -49,9 +49,11 @@ void bomm_model_attack_phase_1(bomm_model_t* model, bomm_message_t* ciphertext) 
     int i, j;
     bool carry, relevant;
     char key_string[128];
-    char message_string[bomm_message_serialize_size(ciphertext)];
+    // char message_string[bomm_message_serialize_size(ciphertext)];
     float score;
     float min_score = -INFINITY;
+    time_t start_time;
+    float duration;
     
     // Prepare leaderboard
     bomm_key_leaderboard_t* leaderboard = bomm_key_leaderboard_alloc(20);
@@ -94,6 +96,8 @@ void bomm_model_attack_phase_1(bomm_model_t* model, bomm_message_t* ciphertext) 
         }
         
         if (relevant) {
+            start_time = clock();
+            
             // 2. Enumerate relevant ring settings
             do {
                 // 3. Enumerate relevant start positions
@@ -119,9 +123,12 @@ void bomm_model_attack_phase_1(bomm_model_t* model, bomm_message_t* ciphertext) 
             // Print progress update
             printf("Working on wheel order:\n");
             bomm_key_serialize(key_string, 128, &key);
-            bomm_message_serialize(message_string, -1, plaintext);
+            // bomm_message_serialize(message_string, -1, plaintext);
             printf("Key: %s\n", key_string);
-            printf("Plaintext: %s\n", message_string);
+            // printf("Plaintext: %s\n", message_string);
+            
+            duration = (float) (clock() - start_time) / CLOCKS_PER_SEC;
+            printf("Duration: %f seconds\n", duration);
         }
         
         // Iterate to next wheel order
@@ -145,26 +152,26 @@ void bomm_model_attack_phase_1(bomm_model_t* model, bomm_message_t* ciphertext) 
 void bomm_model_encrypt(bomm_message_t* message, bomm_key_t* key, bomm_message_t* result) {
     int slot_count = key->model->slot_count;
     bomm_model_t* model = key->model;
+    int slot;
     
-    // Enigma state
-    bomm_rotor_index_t rotor_indices[slot_count];
-    bomm_letter_t positions[slot_count];
-    bomm_letter_t rings[slot_count];
-    bomm_wiring_t plugboard_wiring;
+    // Initiate state from key
+    bomm_key_t state;
+    memcpy(&state, key, sizeof(bomm_key_t));
     
-    // Apply key
-    for (int i = 0; i < slot_count; i++) {
-        rotor_indices[i] = key->slot_rotor[i];
-        positions[i] = key->slot_positions[i];
-        rings[i] = key->slot_rings[i];
-        memcpy(&plugboard_wiring, &key->plugboard_wiring, sizeof(bomm_wiring_t));
+    // Copy rotor meta data
+    bomm_rotor_spec_t slot_rotors[slot_count];
+    for (slot = 0; slot < slot_count; slot++) {
+        memcpy(
+            &slot_rotors[slot],
+            &model->rotors[model->slot_rotor_indices[slot][state.slot_rotor[slot]]],
+            sizeof(bomm_rotor_spec_t)
+        );
     }
     
-    // Zero result letter frequency array
+    // Prepare result message
     memset(&result->frequency, 0, sizeof(unsigned int) * BOMM_ALPHABET_SIZE);
     
     // Simulate the Enigma for each letter
-    int slot;
     bool step_next_slot;
     bomm_letter_t x;
     for (unsigned int index = 0; index < message->length; index++) {
@@ -174,23 +181,27 @@ void bomm_model_encrypt(bomm_message_t* message, bomm_key_t* key, bomm_message_t
             // with the right-most slot being defined by `fast_rotating_slot`
             slot = model->fast_rotating_slot;
             if (bomm_lettermask_has(
-                model->rotors[model->slot_rotor_indices[slot - 1][rotor_indices[slot - 1]]].turnovers,
-                positions[slot - 1]
+                slot_rotors[slot - 1].turnovers,
+                state.slot_positions[slot - 1]
             )) {
                 // If at middle rotor turnover: Step middle and left rotors
                 // (double stepping anomaly)
-                positions[slot - 1] = (positions[slot - 1] + 1) % BOMM_ALPHABET_SIZE;
-                positions[slot - 2] = (positions[slot - 2] + 1) % BOMM_ALPHABET_SIZE;
+                state.slot_positions[slot - 1] =
+                    (state.slot_positions[slot - 1] + 1) % BOMM_ALPHABET_SIZE;
+                state.slot_positions[slot - 2] =
+                    (state.slot_positions[slot - 2] + 1) % BOMM_ALPHABET_SIZE;
             } else if (bomm_lettermask_has(
-                model->rotors[model->slot_rotor_indices[slot][rotor_indices[slot]]].turnovers,
-                positions[slot]
+                slot_rotors[slot].turnovers,
+                state.slot_positions[slot]
             )) {
                 // If at right rotor turnover: Step middle rotor
-                positions[slot - 1] = (positions[slot - 1] + 1) % BOMM_ALPHABET_SIZE;
+                state.slot_positions[slot - 1] =
+                    (state.slot_positions[slot - 1] + 1) % BOMM_ALPHABET_SIZE;
             }
             
             // Always step right (fast) rotor
-            positions[slot] = (positions[slot] + 1) % BOMM_ALPHABET_SIZE;
+            state.slot_positions[slot] =
+                (state.slot_positions[slot] + 1) % BOMM_ALPHABET_SIZE;
         } else {
             // The gear rotation mechanism behaves exactly like an odometer
             // of a car
@@ -198,15 +209,15 @@ void bomm_model_encrypt(bomm_message_t* message, bomm_key_t* key, bomm_message_t
             slot = model->fast_rotating_slot;
             while (step_next_slot && slot >= 0) {
                 // Decide whether to step the next rotor on the left
-                step_next_slot =
-                    slot > 0 &&
-                    model->rotors[model->slot_rotor_indices[slot - 1][rotor_indices[slot - 1]]].rotating &&
+                step_next_slot = slot > 0 &&
+                    slot_rotors[slot - 1].rotating &&
                     bomm_lettermask_has(
-                        model->rotors[model->slot_rotor_indices[slot][rotor_indices[slot]]].turnovers,
-                        positions[slot]);
+                        slot_rotors[slot].turnovers,
+                        state.slot_positions[slot]);
             
                 // Step rotor this rotor
-                positions[slot] = (positions[slot] + 1) % BOMM_ALPHABET_SIZE;
+                state.slot_positions[slot] =
+                    (state.slot_positions[slot] + 1) % BOMM_ALPHABET_SIZE;
                 slot--;
             }
         }
@@ -215,24 +226,24 @@ void bomm_model_encrypt(bomm_message_t* message, bomm_key_t* key, bomm_message_t
         x = message->letters[index];
         
         // Plugboard
-        x = plugboard_wiring.forward_map[x];
+        x = state.plugboard_wiring.forward_map[x];
         
         // Rotors (entry rotor, then rotors right to left, reflector rotor)
         for (slot = slot_count - 1; slot >= 0; slot--) {
-            x = bomm_map_position_ring(x, positions[slot], rings[slot]);
-            x = model->rotors[model->slot_rotor_indices[slot][rotor_indices[slot]]].wiring.forward_map[x];
-            x = bomm_rev_position_ring(x, positions[slot], rings[slot]);
+            x = bomm_map_position_ring(x, state.slot_positions[slot], state.slot_rings[slot]);
+            x = slot_rotors[slot].wiring.forward_map[x];
+            x = bomm_rev_position_ring(x, state.slot_positions[slot], state.slot_rings[slot]);
         }
         
         // Rotors (rotors left to right, then entry rotor)
         for (slot = 1; slot < slot_count; slot++) {
-            x = bomm_map_position_ring(x, positions[slot], rings[slot]);
-            x = model->rotors[model->slot_rotor_indices[slot][rotor_indices[slot]]].wiring.backward_map[x];
-            x = bomm_rev_position_ring(x, positions[slot], rings[slot]);
+            x = bomm_map_position_ring(x, state.slot_positions[slot], state.slot_rings[slot]);
+            x = slot_rotors[slot].wiring.backward_map[x];
+            x = bomm_rev_position_ring(x, state.slot_positions[slot], state.slot_rings[slot]);
         }
         
         // Plugboard
-        x = plugboard_wiring.backward_map[x];
+        x = state.plugboard_wiring.backward_map[x];
         
         // Store letter in result message
         result->letters[index] = x;
