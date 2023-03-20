@@ -17,8 +17,8 @@ Test(message, bomm_message_alloc) {
     bomm_message_t* message;
     char* expected_string;
     
-    expected_string = "abcdefghijklmnopqrstuvwxyz";
-    message = bomm_alloc_message(expected_string);
+    expected_string = BOMM_ALPHABET;
+    message = bomm_message_alloc(expected_string);
     char string[bomm_message_serialize_size(message)];
     bomm_message_serialize(string, -1, message);
     cr_assert_str_eq(string, expected_string);
@@ -29,7 +29,7 @@ Test(message, bomm_message_alloc) {
 Test(message, bomm_message_the_quick_brown_fox) {
     char* input_string = "the quick brown fox jumps over the lazy dog";
     char* expected_string = "thequickbrownfoxjumpsoverthelazydog";
-    bomm_message_t* message = bomm_alloc_message(input_string);
+    bomm_message_t* message = bomm_message_alloc(input_string);
     cr_assert_eq(message->length, strlen(expected_string));
     char string[bomm_message_serialize_size(message)];
     bomm_message_serialize(string, -1, message);
@@ -46,15 +46,15 @@ Test(message, bomm_message_the_quick_brown_fox) {
 Test(message, bomm_message_calc_ic) {
     bomm_message_t *message;
     
-    message = bomm_alloc_message("ff");
-    cr_assert_eq(bomm_message_calc_ic(message), 1.0);
+    message = bomm_message_alloc("ff");
+    cr_assert_eq(bomm_message_calc_ic(message), 26.0);
     free(message);
     
-    message = bomm_alloc_message("fo");
+    message = bomm_message_alloc("fo");
     cr_assert_eq(bomm_message_calc_ic(message), 0.0);
     free(message);
     
-    message = bomm_alloc_message("the quick brown fox jumps over the lazy dog");
-    cr_assert_eq(bomm_message_calc_ic(message), 0.02184874005615711212);
+    message = bomm_message_alloc("the quick brown fox jumps over the lazy dog");
+    cr_assert_eq(bomm_message_calc_ic(message), 0.56806725263595581055);
     free(message);
 }

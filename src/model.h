@@ -12,119 +12,127 @@
 #include "wiring.h"
 #include "lettermask.h"
 
-#define BOMM_ROTOR_NAME_MAX_LENGTH 16
+#define BOMM_WHEEL_NAME_MAX_LENGTH 16
 #define BOMM_MODEL_MAX_SLOT_COUNT 6
-#define BOMM_MODEL_MAX_ROTOR_COUNT_PER_SLOT 15
+#define BOMM_MODEL_MAX_WHEEL_SET_SIZE 15
 
 /**
- * Struct representing a static rotor specification
+ * Struct representing a wheel without its state (e.g. ring setting, position)
  */
-typedef struct _bomm_rotor_spec {
+typedef struct _bomm_wheel {
     /**
-     * Rotor name (NULL-terminated string of max. 15 chars)
+     * Wheel name (NULL-terminated string of max. 15 chars)
      */
-    char name[BOMM_ROTOR_NAME_MAX_LENGTH];
+    char name[BOMM_WHEEL_NAME_MAX_LENGTH];
     
     /**
-     * Rotor wiring
+     * Wheel wiring
      */
     bomm_wiring_t wiring;
     
     /**
-     * Rotor turnovers
+     * Wheel turnovers
      */
     bomm_lettermask_t turnovers;
-    
-    /**
-     * Whether the rotor is rotating
-     */
-    bool rotating;
-} bomm_rotor_spec_t;
+} bomm_wheel_t;
 
-typedef unsigned char bomm_rotor_index_t;
+typedef unsigned char bomm_wheel_index_t;
 typedef unsigned char bomm_slot_index_t;
 
+/**
+ * Enigma wheel rotation mechanism options
+ */
 typedef enum {
-    BOMM_ENIGMA_STEPPING,
-    BOMM_COG_WHEEL
-} bomm_rotation_mechanism_t;
+    BOMM_MECHANISM_STEPPING,
+    BOMM_MECHANISM_COG_WHEEL
+} bomm_mechanism_t;
 
 /**
- * Struct representing a model, from which the set of all possible keys
- * (search space) can be derived.
+ * Variable-size struct representing a model, from which the set of all possible
+ * keys (search space) can be derived.
  */
 typedef struct _bomm_model {
     /**
-     * Rotation mechanism
-     */
-    bomm_rotation_mechanism_t rotation_mechanism;
-    
-    /**
-     * Number of slots
+     * Number of wheel slots
      *
-     * Slots include (from left to right):
+     * Slot at index 0 points to the left-most wheel.
+     *
+     * Slots include:
      * - Reflector (Umkehrwalze)
-     * - Regular rotors from left to right
-     * - Entry rotor (Eintrittswalze)
+     * - Regular wheel from left to right
+     * - Entry wheel (Eintrittswalze)
      */
-    unsigned char slot_count;
+    unsigned int slot_count;
     
     /**
-     * The slot index of the fast rotating rotor
+     * Set of wheels per slot. Indices reference entries in `wheels`.
+     * Index `255` signifies the end of the wheel set.
      */
-    bomm_slot_index_t fast_rotating_slot;
+    bomm_wheel_index_t wheel_sets[BOMM_MODEL_MAX_SLOT_COUNT]
+        [BOMM_MODEL_MAX_WHEEL_SET_SIZE + 1];
     
     /**
-     * Possible rotor indices per slot.
-     * Indices reference entries in `rotors`.
-     * Index `255` signifies the end of the rotors for this slot is reached.
+     * Whether wheel is rotating for each slot.
      */
-    bomm_rotor_index_t slot_rotor_indices
-        [BOMM_MODEL_MAX_SLOT_COUNT]
-        [BOMM_MODEL_MAX_ROTOR_COUNT_PER_SLOT + 1];
+    bool rotating_slots[BOMM_MODEL_MAX_SLOT_COUNT];
     
     /**
      * Possible ring settings for each slot.
      * Must not be empty (equal to 0).
      */
-    bomm_lettermask_t slot_ring_mask[BOMM_MODEL_MAX_SLOT_COUNT];
+    bomm_lettermask_t ring_masks[BOMM_MODEL_MAX_SLOT_COUNT];
     
     /**
      * Possible start positions for each slot.
      * Must not be empty (equal to 0).
      */
-    bomm_lettermask_t slot_position_mask[BOMM_MODEL_MAX_SLOT_COUNT];
+    bomm_lettermask_t position_masks[BOMM_MODEL_MAX_SLOT_COUNT];
     
     /**
-     * Number of available rotors
+     * Rotation mechanism:
+     * - Stepping: Assumes the second last slot to be the fast rotating slot.
+     * - Cog wheel
      */
-    unsigned char rotor_count;
+    bomm_mechanism_t mechanism;
     
     /**
-     * Available rotors
+     * Number of wheels that can be referenced by other fields
      */
-    bomm_rotor_spec_t rotors[];
+    unsigned int wheel_count;
+    
+    /**
+     * Wheels that can be referenced by other fields
+     */
+    bomm_wheel_t wheels[];
 } bomm_model_t;
 
 /**
- * Load a rotor spec from the given args.
+ * Load a wheel from the given args.
  */
-void bomm_load_rotor_spec_args(
-    bomm_rotor_spec_t* ptr,
+void bomm_load_wheel_args(
+    bomm_wheel_t* ptr,
     char* name,
     char* wiring_string,
-    char* turnovers_string,
-    bool rotating
+    char* turnovers_string
 );
+
+/**
+ * Struct size for a model with the given number of wheels.
+ */
+static inline size_t bomm_model_size(unsigned char wheel_count) {
+    return
+        sizeof(bomm_model_t) +
+        sizeof(bomm_wheel_t) * wheel_count;
+}
 
 /**
  * Allocate space for a model in memory.
  */
-bomm_model_t* bomm_alloc_model(unsigned char rotor_count);
+bomm_model_t* bomm_model_alloc(unsigned char wheel_count);
 
 /**
  * Allocate and load the Enigma I model in memory.
  */
-bomm_model_t* bomm_alloc_model_enigma_i(void);
+bomm_model_t* bomm_model_alloc_enigma_i(void);
 
 #endif /* model_h */

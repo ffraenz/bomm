@@ -9,7 +9,7 @@
 
 void bomm_lettermask_extract(bomm_lettermask_t* ptr, char* string) {
     // TODO: Implement parser for lettermask notation
-    bomm_message_t *message = bomm_alloc_message(string);
+    bomm_message_t *message = bomm_message_alloc(string);
     if (!message) {
         fprintf(stderr, "Out of memory while loading lettermask\n");
         return;

@@ -46,12 +46,12 @@ typedef struct _bomm_message {
 /**
  * Allocate a message for the given length.
  */
-bomm_message_t* bomm_alloc_message_with_length(unsigned int length);
+bomm_message_t* bomm_message_alloc_length(unsigned int length);
 
 /**
  * Allocate and load a message from the given C-string.
  */
-bomm_message_t* bomm_alloc_message(char* string);
+bomm_message_t* bomm_message_alloc(char* string);
 
 /**
  * Calculate the serialize string size for the given message.
@@ -97,17 +97,18 @@ static inline char bomm_message_letter_to_ascii(unsigned char letter) {
 }
 
 /**
- * Calculate the Index of coincidence (IC) for the given message.
+ * Calculate the normalized Index of coincidence (IC) for the given message.
  *
- * Definition: \text{IC} = \frac{\sum_{i=1}^nf_i(f_i-1)}{n(n-1)}
- * with f_i appearances of letter i and n the total number of letters
+ * Definition: \text{IC} = c\frac{\sum_{i=1}^cf_i(f_i-1)}{n(n-1)}
+ * with f_i appearances of letter i, n the total number of letters, and c the
+ * number of letters in the alphabet.
  */
 static inline float bomm_message_calc_ic(bomm_message_t* message) {
     unsigned int coincidence = 0;
     for (unsigned int letter = 0; letter < BOMM_ALPHABET_SIZE; letter++) {
         coincidence += message->frequency[letter] * (message->frequency[letter] - 1);
     }
-    return (float) coincidence / (float) (message->length * (message->length - 1));
+    return (float) (BOMM_ALPHABET_SIZE * coincidence) / (message->length * (message->length - 1));
 }
 
 /**

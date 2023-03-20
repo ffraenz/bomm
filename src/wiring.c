@@ -8,7 +8,7 @@
 #include "wiring.h"
 
 bool bomm_wiring_extract(bomm_wiring_t* ptr, char* string) {
-    bomm_message_t* message = bomm_alloc_message(string);
+    bomm_message_t* message = bomm_message_alloc(string);
     if (!message) {
         return false;
     }
@@ -20,9 +20,9 @@ bool bomm_wiring_extract(bomm_wiring_t* ptr, char* string) {
     unsigned int position = 0;
     while (!error && position < message->length) {
         char_index = message->letters[position];
-        if (ptr->backward_map[char_index] == BOMM_ALPHABET_SIZE) {
-            ptr->forward_map[position] = char_index;
-            ptr->backward_map[char_index] = position;
+        if (ptr->rev[char_index] == BOMM_ALPHABET_SIZE) {
+            ptr->map[position] = char_index;
+            ptr->rev[char_index] = position;
             position++;
         } else {
             error = true;
@@ -42,7 +42,7 @@ bool bomm_wiring_extract(bomm_wiring_t* ptr, char* string) {
 char* bomm_wiring_serialize(bomm_wiring_t* wiring) {
     char* string = malloc(sizeof(char) * BOMM_ALPHABET_SIZE);
     for (int i = 0; i < BOMM_ALPHABET_SIZE; i++) {
-        string[i] = wiring->forward_map[i] + 97;
+        string[i] = wiring->map[i] + 97;
     }
     return string;
 }

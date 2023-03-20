@@ -8,26 +8,42 @@
 #include "key.h"
 
 void bomm_key_serialize(char* str, size_t size, bomm_key_t* key) {
-    // Clear string
+    size_t wheel_order_string_size = (key->model->slot_count * BOMM_WHEEL_NAME_MAX_LENGTH + 1) + 1;
+    char wheel_order_string[wheel_order_string_size];
+    bomm_key_serialize_wheel_order(wheel_order_string, wheel_order_string_size, key);
+    
+    size_t rings_string_size = key->model->slot_count + 1;
+    char rings_string[rings_string_size];
+    bomm_key_serialize_ring_settings(rings_string, rings_string_size, key);
+    
+    size_t positions_string_size = key->model->slot_count + 1;
+    char positions_string[positions_string_size];
+    bomm_key_serialize_start_positions(positions_string, positions_string_size, key);
+    
+    // TODO: Serialize plugboard
+    snprintf(str, size, "%s %s %s", wheel_order_string, rings_string, positions_string);
+}
+
+void bomm_key_serialize_wheel_order(char* str, size_t size, bomm_key_t* key) {
     str[0] = 0;
-    
-    // Compose wheel order
     for (unsigned int slot = 0; slot < key->model->slot_count; slot++) {
-        char* name = key->model->rotors[key->model->slot_rotor_indices[slot][key->slot_rotor[slot]]].name;
-        snprintf(str, size, "%s%s%7s", str, slot == 0 ? "" : ":", name);
+        char* name = key->model->wheels[key->model->wheel_sets[slot][key->wheels[slot]]].name;
+        snprintf(str, size, "%s%s%s", str, slot == 0 ? "" : ",", name);
     }
-    
-    // Compose ring settings
-    snprintf(str, size, "%s |", str);
-    for (unsigned int slot = 0; slot < key->model->slot_count; slot++) {
-        snprintf(str, size, "%s %2d", str, key->slot_rings[slot] + 1);
+}
+
+void bomm_key_serialize_ring_settings(char* str, size_t size, bomm_key_t* key) {
+    for (unsigned int slot = 0; slot < key->model->slot_count && slot < size - 1; slot++) {
+        str[slot] = bomm_message_letter_to_ascii(key->rings[slot]);
     }
-    
-    // Compose start positions
-    snprintf(str, size, "%s |", str);
-    for (unsigned int slot = 0; slot < key->model->slot_count; slot++) {
-        snprintf(str, size, "%s %2d", str, key->slot_positions[slot] + 1);
+    str[size - 1] = '\0';
+}
+
+void bomm_key_serialize_start_positions(char* str, size_t size, bomm_key_t* key) {
+    for (unsigned int slot = 0; slot < key->model->slot_count && slot < size - 1; slot++) {
+        str[slot] = bomm_message_letter_to_ascii(key->positions[slot]);
     }
+    str[size - 1] = '\0';
 }
 
 void* bomm_key_leaderboard_alloc(unsigned int size) {
@@ -62,9 +78,6 @@ float bomm_key_leaderboard_add(bomm_key_leaderboard_t* leaderboard, bomm_key_t* 
     memcpy(&leaderboard->entries[index].key, key, sizeof(bomm_key_t));
     leaderboard->entries[index].score = score;
     
-    printf("LEADERBOARD:\n");
-    bomm_key_leaderboard_print(leaderboard);
-    
     // Return new minimum score necessary to enter the leaderboard
     if (leaderboard->count == leaderboard->size) {
         return leaderboard->entries[leaderboard->count - 1].score;
@@ -74,9 +87,18 @@ float bomm_key_leaderboard_add(bomm_key_leaderboard_t* leaderboard, bomm_key_t* 
 }
 
 void bomm_key_leaderboard_print(bomm_key_leaderboard_t* leaderboard) {
+    if (leaderboard->count == 0) {
+        printf("Empty leaderboard\n");
+        return;
+    }
+    
     char key_string[128];
+    bomm_key_t* key;
+    float score;
     for (unsigned int i = 0; i < leaderboard->count; i++) {
-        bomm_key_serialize(key_string, 128, &leaderboard->entries[i].key);
-        printf("%3d. %s %f\n", i + 1, key_string, leaderboard->entries[i].score);
+        key = &leaderboard->entries[i].key;
+        bomm_key_serialize(key_string, 128, key);
+        score = leaderboard->entries[i].score;
+        printf("%2d │ %36s │ %f\n", i + 1, key_string, score);
     }
 }

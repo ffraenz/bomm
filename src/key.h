@@ -14,32 +14,33 @@
 
 /**
  * Location in the Enigma model key space.
+ * Struct is optimized to being used in-place.
  */
 typedef struct _bomm_key {
     /**
-     * Pointer to the model holding the rotor specs
+     * Pointer to the model
      */
     bomm_model_t* model;
     
     /**
-     * Wheel order (Walzenlage): Chosen rotor index for each slot
+     * Wheel order (Walzenlage): Chosen wheel index for each slot
      */
-    bomm_rotor_index_t slot_rotor[BOMM_MODEL_MAX_SLOT_COUNT];
+    unsigned int wheels[BOMM_MODEL_MAX_SLOT_COUNT];
     
     /**
-     * Ring setting (Ringstellung): Ring position of the rotor in each slot
+     * Ring setting (Ringstellung): Ring position of the wheel in each slot
      */
-    bomm_letter_t slot_rings[BOMM_MODEL_MAX_SLOT_COUNT];
+    unsigned int rings[BOMM_MODEL_MAX_SLOT_COUNT];
     
     /**
-     * Start position (Walzenstellung): Start position of the rotor in each slot
+     * Start position (Walzenstellung): Start position of the wheel in each slot
      */
-    bomm_letter_t slot_positions[BOMM_MODEL_MAX_SLOT_COUNT];
+    unsigned int positions[BOMM_MODEL_MAX_SLOT_COUNT];
     
     /**
      * Plugboard setting (Steckerverbindungen) to be used
      */
-    bomm_wiring_t plugboard_wiring;
+    bomm_wiring_t plugboard;
 } bomm_key_t;
 
 /**
@@ -82,6 +83,10 @@ typedef struct _bomm_key_leaderboard {
  * Serialize the given key to a string.
  */
 void bomm_key_serialize(char* str, size_t size, bomm_key_t* key);
+
+void bomm_key_serialize_wheel_order(char* str, size_t size, bomm_key_t* key);
+void bomm_key_serialize_ring_settings(char* str, size_t size, bomm_key_t* key);
+void bomm_key_serialize_start_positions(char* str, size_t size, bomm_key_t* key);
 
 /**
  * Allocates a key leaderboard in memory for the given size.

@@ -7,7 +7,7 @@
 
 #include "message.h"
 
-bomm_message_t* bomm_alloc_message_with_length(unsigned int length) {
+bomm_message_t* bomm_message_alloc_length(unsigned int length) {
     size_t message_size = bomm_message_size_for_length(length);
     bomm_message_t* message = (bomm_message_t*) malloc(message_size);
     if (!message) {
@@ -19,7 +19,7 @@ bomm_message_t* bomm_alloc_message_with_length(unsigned int length) {
     return message;
 }
 
-bomm_message_t* bomm_alloc_message(char* string) {
+bomm_message_t* bomm_message_alloc(char* string) {
     size_t length = strlen(string);
     size_t message_size = bomm_message_size_for_length((unsigned int) length);
     bomm_message_t* message = (bomm_message_t*) malloc(message_size);
