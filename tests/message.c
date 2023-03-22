@@ -7,6 +7,7 @@
 
 #include <criterion/criterion.h>
 #include "../src/message.h"
+#include "../src/measure.h"
 
 Test(message, bomm_letter_t) {
     cr_assert_geq((bomm_letter_t)~0, BOMM_ALPHABET_SIZE,
@@ -47,14 +48,14 @@ Test(message, bomm_message_calc_ic) {
     bomm_message_t *message;
     
     message = bomm_message_alloc("ff");
-    cr_assert_eq(bomm_message_calc_ic(message), 26.0);
+    cr_assert_eq(bomm_measure_ic(message), 26.0);
     free(message);
     
     message = bomm_message_alloc("fo");
-    cr_assert_eq(bomm_message_calc_ic(message), 0.0);
+    cr_assert_eq(bomm_measure_ic(message), 0.0);
     free(message);
     
     message = bomm_message_alloc("the quick brown fox jumps over the lazy dog");
-    cr_assert_eq(bomm_message_calc_ic(message), 0.56806725263595581055);
+    cr_assert_eq(bomm_measure_ic(message), 0.56806725263595581055);
     free(message);
 }

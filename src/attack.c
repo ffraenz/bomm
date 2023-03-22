@@ -112,7 +112,7 @@ void bomm_attack_phase_1(bomm_model_t* model, bomm_message_t* ciphertext) {
                     
                     if (relevant) {
                         bomm_encrypt(ciphertext, &key, plaintext);
-                        score = bomm_message_calc_ic(plaintext);
+                        score = bomm_measure_ic(plaintext);
                         
                         encrypt_counter++;
                         

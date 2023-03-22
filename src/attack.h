@@ -13,6 +13,7 @@
 #include <math.h>
 #include "enigma.h"
 #include "key.h"
+#include "measure.h"
 
 /**
  * Exhaust the relevant key space of the given model excl. the plugboard.

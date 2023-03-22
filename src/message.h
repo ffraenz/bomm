@@ -96,32 +96,4 @@ static inline char bomm_message_letter_to_ascii(unsigned char letter) {
     return letter + 97;
 }
 
-/**
- * Calculate the normalized Index of coincidence (IC) for the given message.
- *
- * Definition: \text{IC} = c\frac{\sum_{i=1}^cf_i(f_i-1)}{n(n-1)}
- * with f_i appearances of letter i, n the total number of letters, and c the
- * number of letters in the alphabet.
- */
-static inline float bomm_message_calc_ic(bomm_message_t* message) {
-    unsigned int coincidence = 0;
-    for (unsigned int letter = 0; letter < BOMM_ALPHABET_SIZE; letter++) {
-        coincidence += message->frequency[letter] * (message->frequency[letter] - 1);
-    }
-    return (float) (BOMM_ALPHABET_SIZE * coincidence) / (message->length * (message->length - 1));
-}
-
-/**
- * Calculate the Entropy for the given message.
- */
-static inline float bomm_message_calc_entropy(bomm_message_t* message) {
-    float entropy = 0;
-    float p;
-    for (unsigned int letter = 0; letter < BOMM_ALPHABET_SIZE; letter++) {
-        p = message->letters[letter] / (float) message->length;
-        entropy -= p * log2(p);
-    }
-    return entropy;
-}
-
 #endif /* message_h */
