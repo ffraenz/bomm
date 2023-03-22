@@ -51,8 +51,9 @@ void bomm_attack_phase_1(bomm_model_t* model, bomm_message_t* ciphertext) {
     float score;
     float min_score = -INFINITY;
     time_t start_time;
-    float duration;
+    double duration;
     int slot_count = model->slot_count;
+    int encrypt_counter;
     
     // Prepare leaderboard
     bomm_key_leaderboard_t* leaderboard = bomm_key_leaderboard_alloc(20);
@@ -78,6 +79,10 @@ void bomm_attack_phase_1(bomm_model_t* model, bomm_message_t* ciphertext) {
     memcpy(&slot_shifting_position_masks, model->position_masks, sizeof(bomm_lettermask_t) * slot_count);
     _enum_lettermask_init(slot_count, key.positions, slot_shifting_position_masks);
     
+    // Start the timer
+    start_time = clock();
+    encrypt_counter = 0;
+    
     // 1. Enumerate relevant wheel orders
     do {
         // Validate if the current wheel order is relevant by checking if no
@@ -95,8 +100,6 @@ void bomm_attack_phase_1(bomm_model_t* model, bomm_message_t* ciphertext) {
         }
         
         if (relevant) {
-            start_time = clock();
-            
             // 2. Enumerate relevant ring settings
             do {
                 // 3. Enumerate relevant start positions
@@ -111,21 +114,23 @@ void bomm_attack_phase_1(bomm_model_t* model, bomm_message_t* ciphertext) {
                         bomm_encrypt(ciphertext, &key, plaintext);
                         score = bomm_message_calc_ic(plaintext);
                         
+                        encrypt_counter++;
+                        
                         if (score > min_score) {
                             min_score = bomm_key_leaderboard_add(leaderboard, &key, score);
                         }
                     }
-                    
                 } while (!_enum_lettermask(slot_count, key.positions, slot_shifting_position_masks));
             } while (!_enum_lettermask(slot_count, key.rings, slot_shifting_ring_masks));
             
             // Print progress update
-            duration = (float) (clock() - start_time) / CLOCKS_PER_SEC;
+            duration = (((double) (clock() - start_time) / CLOCKS_PER_SEC) * 1000000000) / encrypt_counter;
             
             bomm_key_serialize_wheel_order(key_string, 128, &key);
             printf("\n");
             printf("Wheel order: %s\n", key_string);
-            printf("Duration: %f seconds\n", duration);
+            printf("Total number of decipherments: %d\n", encrypt_counter);
+            printf("Average duration per decipherment: %f ns\n", duration);
             printf("Leaderboard:\n");
             bomm_key_leaderboard_print(leaderboard);
         }
