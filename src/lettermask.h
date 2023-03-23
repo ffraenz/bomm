@@ -34,16 +34,32 @@
 #define BOMM_LETTERMASK_LAST (1 << (BOMM_ALPHABET_SIZE - 1))
 
 /**
- * Return true, if the given letter is set to 1 in a lettermask.
- */
-#define bomm_lettermask_has(mask, letter) ((mask >> letter) & 0x1)
-
-/**
  * A value encoding a bit per letter in the alphabet. Useful to encode turnovers
  * or a set of start positions. The number of bits in this value must be larger
  * or equal to the number of letters in the alphabet.
  */
 typedef unsigned long bomm_lettermask_t;
+
+/**
+ * Return true, if the given letter is set to 1 in a lettermask.
+ */
+inline static bool bomm_lettermask_has(bomm_lettermask_t* mask, bomm_letter_t letter) {
+    return (*mask >> letter) & 0x1;
+}
+
+/**
+ * Add a letter to the given mask.
+ */
+inline static void bomm_lettermask_set(bomm_lettermask_t* mask, bomm_letter_t letter) {
+    *mask |= (1 << letter);
+}
+
+/**
+ * Remove a letter from the given mask.
+ */
+inline static void bomm_lettermask_clear(bomm_lettermask_t* mask, bomm_letter_t letter) {
+    *mask &= ~(1 << letter);
+}
 
 /**
  * Load the given lettermask string into memory at the specified pointer

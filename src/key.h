@@ -40,7 +40,7 @@ typedef struct _bomm_key {
     /**
      * Plugboard setting (Steckerverbindungen) to be used
      */
-    bomm_wiring_t plugboard;
+    bomm_letter_t plugboard[BOMM_ALPHABET_SIZE];
 } bomm_key_t;
 
 /**
@@ -87,6 +87,7 @@ void bomm_key_serialize(char* str, size_t size, bomm_key_t* key);
 void bomm_key_serialize_wheel_order(char* str, size_t size, bomm_key_t* key);
 void bomm_key_serialize_ring_settings(char* str, size_t size, bomm_key_t* key);
 void bomm_key_serialize_start_positions(char* str, size_t size, bomm_key_t* key);
+void bomm_key_serialize_plugboard(char* str, size_t size, bomm_key_t* key);
 
 /**
  * Allocates a key leaderboard in memory for the given size.

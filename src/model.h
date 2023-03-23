@@ -90,7 +90,8 @@ typedef struct _bomm_model {
     
     /**
      * Rotation mechanism:
-     * - Stepping: Assumes the second last slot to be the fast rotating slot.
+     * - Stepping: Assumes exactly 5 slots with one entry wheel, 3 rotating
+     *   wheels, and one reflector.
      * - Cog wheel
      */
     bomm_mechanism_t mechanism;

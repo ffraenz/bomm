@@ -20,4 +20,6 @@
  */
 void bomm_attack_phase_1(bomm_model_t* model, bomm_message_t* ciphertext);
 
+void bomm_attack_phase_2(bomm_letter_t* plugboard, bomm_scrambler_t* scrambler, bomm_message_t* ciphertext, unsigned char* ngram_map);
+
 #endif /* attack_h */

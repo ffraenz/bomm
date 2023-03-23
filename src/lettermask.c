@@ -33,7 +33,7 @@ char* bomm_lettermask_serialize(bomm_lettermask_t* lettermask) {
     
     int j = 0;
     for (bomm_letter_t letter = 0; letter < BOMM_ALPHABET_SIZE; letter++) {
-        if (bomm_lettermask_has(*lettermask, letter)) {
+        if (bomm_lettermask_has(lettermask, letter)) {
             string[j++] = BOMM_ALPHABET[letter];
         }
     }

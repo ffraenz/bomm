@@ -20,8 +20,10 @@ void bomm_key_serialize(char* str, size_t size, bomm_key_t* key) {
     char positions_string[positions_string_size];
     bomm_key_serialize_start_positions(positions_string, positions_string_size, key);
     
-    // TODO: Serialize plugboard
-    snprintf(str, size, "%s %s %s", wheel_order_string, rings_string, positions_string);
+    char plugboard_string[39];
+    bomm_key_serialize_plugboard(plugboard_string, 39, key);
+    
+    snprintf(str, size, "%s %s %s %-39s", wheel_order_string, rings_string, positions_string, plugboard_string);
 }
 
 void bomm_key_serialize_wheel_order(char* str, size_t size, bomm_key_t* key) {
@@ -44,6 +46,25 @@ void bomm_key_serialize_start_positions(char* str, size_t size, bomm_key_t* key)
         str[slot] = bomm_message_letter_to_ascii(key->positions[slot]);
     }
     str[size - 1] = '\0';
+}
+
+void bomm_key_serialize_plugboard(char* str, size_t size, bomm_key_t* key) {
+    unsigned int i = 0;
+    unsigned int j = 0;
+    
+    bomm_lettermask_t used_letters = BOMM_LETTERMASK_NONE;
+    
+    while (i < BOMM_ALPHABET_SIZE && j + 3 < size) {
+        if (key->plugboard[i] != i && !bomm_lettermask_has(&used_letters, i)) {
+            bomm_lettermask_set(&used_letters, key->plugboard[i]);
+            str[j++] = bomm_message_letter_to_ascii(i);
+            str[j++] = bomm_message_letter_to_ascii(key->plugboard[i]);
+            str[j++] = ' ';
+        }
+        i++;
+    }
+
+    str[j > 0 ? j - 1 : 0] = '\0';
 }
 
 void* bomm_key_leaderboard_alloc(unsigned int size) {
@@ -99,6 +120,6 @@ void bomm_key_leaderboard_print(bomm_key_leaderboard_t* leaderboard) {
         key = &leaderboard->entries[i].key;
         bomm_key_serialize(key_string, 128, key);
         score = leaderboard->entries[i].score;
-        printf("%2d │ %36s │ %f\n", i + 1, key_string, score);
+        printf("%2d │ %72s │ %f\n", i + 1, key_string, score);
     }
 }

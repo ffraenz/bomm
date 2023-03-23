@@ -55,6 +55,9 @@ void bomm_attack_phase_1(bomm_model_t* model, bomm_message_t* ciphertext) {
     int slot_count = model->slot_count;
     int encrypt_counter;
     
+    // Load ngram map
+    unsigned char* ngram_map = bomm_measure_ngram_map_alloc(3, "/Users/ff/Projects/Bachelor/bomm/data/1941-trigram.txt");
+    
     // Prepare leaderboard
     bomm_key_leaderboard_t* leaderboard = bomm_key_leaderboard_alloc(20);
     
@@ -62,12 +65,16 @@ void bomm_attack_phase_1(bomm_model_t* model, bomm_message_t* ciphertext) {
     bomm_key_t key;
     memset(&key, 0, sizeof(bomm_key_t));
     key.model = model;
-    bomm_wiring_extract(&key.plugboard, BOMM_WIRING_IDENTITY);
     
     // Prepare result message (on the stack)
     char plaintext_store[bomm_message_size_for_length(ciphertext->length)];
     bomm_message_t *plaintext = (bomm_message_t*) &plaintext_store;
     plaintext->length = ciphertext->length;
+    
+    // Prepare scrambler
+    char scrambler_store[bomm_scrambler_size(ciphertext->length)];
+    bomm_scrambler_t *scrambler = (bomm_scrambler_t*) &scrambler_store;
+    scrambler->length = ciphertext->length;
     
     // Prepare initial ring settings and shifting ring masks
     bomm_lettermask_t slot_shifting_ring_masks[slot_count];
@@ -111,13 +118,26 @@ void bomm_attack_phase_1(bomm_model_t* model, bomm_message_t* ciphertext) {
                     relevant = true;
                     
                     if (relevant) {
+                        // Generate scrambler
+                        bomm_scrambler_generate(scrambler, &key);
+                        
+                        // Attack ciphertext
+                        // TODO: Use trigram score in leaderboard
+                        bomm_attack_phase_2(key.plugboard, scrambler, ciphertext, ngram_map);
+                        
                         bomm_encrypt(ciphertext, &key, plaintext);
                         score = bomm_measure_ic(plaintext);
                         
                         encrypt_counter++;
                         
                         if (score > min_score) {
+                            // TODO: Render a short preview for the leaderboard
                             min_score = bomm_key_leaderboard_add(leaderboard, &key, score);
+                            
+                            // Print updated leaderboard
+                            printf("\n");
+                            printf("Leaderboard:\n");
+                            bomm_key_leaderboard_print(leaderboard);
                         }
                     }
                 } while (!_enum_lettermask(slot_count, key.positions, slot_shifting_position_masks));
@@ -125,14 +145,10 @@ void bomm_attack_phase_1(bomm_model_t* model, bomm_message_t* ciphertext) {
             
             // Print progress update
             duration = (((double) (clock() - start_time) / CLOCKS_PER_SEC) * 1000000000) / encrypt_counter;
-            
             bomm_key_serialize_wheel_order(key_string, 128, &key);
-            printf("\n");
             printf("Wheel order: %s\n", key_string);
-            printf("Total number of decipherments: %d\n", encrypt_counter);
-            printf("Average duration per decipherment: %f ns\n", duration);
-            printf("Leaderboard:\n");
-            bomm_key_leaderboard_print(leaderboard);
+            printf("Scramblers checked: %d\n", encrypt_counter);
+            printf("Average duration per scrambler: %f ns\n", duration);
         }
         
         // Iterate to next wheel order
@@ -148,4 +164,113 @@ void bomm_attack_phase_1(bomm_model_t* model, bomm_message_t* ciphertext) {
     
     // Clean up
     free(leaderboard);
+}
+
+/**
+ * Score the given ciphertext using n-gram.
+ * @param n 1 for unigram, 2 for bigram, 3 for bigram, etc.
+ * @param scrambler Scrambler maps
+ * @param plugboard Plugboard mapping
+ * @param ciphertext Ciphertext message to map and score
+ * @param ngram_map Frequency map
+ * @return Score
+ */
+static inline float _measure_scrambler_ngram(
+    unsigned int n,
+    bomm_scrambler_t* scrambler,
+    bomm_letter_t* plugboard,
+    bomm_message_t* ciphertext,
+    unsigned char* ngram_map
+) {
+    unsigned int map_size = pow(BOMM_ALPHABET_SIZE, n);
+    unsigned int index, letter;
+    
+    float score = 0;
+    unsigned int map_index = 0;
+    
+    for (index = 0; index < ciphertext->length; index++) {
+        letter = ciphertext->letters[index];
+        letter = plugboard[letter];
+        letter = scrambler->map[index][letter];
+        letter = plugboard[letter];
+        
+        map_index = (map_index * BOMM_ALPHABET_SIZE + letter) % map_size;
+        
+        if (index >= n) {
+            score += ngram_map[map_index];
+        }
+    }
+    
+    return score;
+}
+
+void bomm_attack_phase_2(
+    bomm_letter_t* plugboard,
+    bomm_scrambler_t* scrambler,
+    bomm_message_t* ciphertext,
+    unsigned char* ngram_map
+) {
+    unsigned int i, j, a, b, best_b;
+    float score, best_score;
+    
+    // During the hillclimb we exhaust the following plugs in order
+    // The I-Stecker strategy starts with E, N, R, X, S, I
+    // TODO: Make static/global
+    bomm_letter_t plug_order[] = {
+         4, 13, 17, 23, 18,  8,  0,  1,  2,  3,
+         5,  6,  7,  9, 10, 11, 12, 14, 15, 16,
+        19, 20, 21, 22, 24, 25
+    };
+    
+    // Reset plugboard
+    // TODO: Use memcpy instead of a loop
+    for (unsigned int i = 0; i < BOMM_ALPHABET_SIZE; i++) {
+        plugboard[i] = i;
+    }
+    
+    // Score empty plugboard
+    best_score = _measure_scrambler_ngram(3, scrambler, plugboard, ciphertext, ngram_map);
+    
+    // Enumerate over the first plug
+    for (i = 0; i < BOMM_ALPHABET_SIZE; i++) {
+        a = plug_order[i];
+        
+        // Skip if plug is already in use
+        if (plugboard[a] != a) {
+            continue;
+        }
+        
+        // Start with the self-steckered right letter and the score from the
+        // initialization or previous iteration
+        best_b = a;
+        
+        // Enumerate over the second plug
+        for (j = i; j < BOMM_ALPHABET_SIZE; j++) {
+            b = plug_order[j];
+            
+            // Skip if plug is already in use
+            if (plugboard[b] != b) {
+                continue;
+            }
+            
+            // Apply plug
+            plugboard[a] = b;
+            plugboard[b] = a;
+            
+            // Measure score and compare it to the previous best score
+            score = _measure_scrambler_ngram(3, scrambler, plugboard, ciphertext, ngram_map);
+            if (score > best_score) {
+                best_score = score;
+                best_b = b;
+            }
+            
+            // Undo plug
+            plugboard[a] = a;
+            plugboard[b] = b;
+        }
+        
+        // Choose best option to go forward
+        plugboard[a] = best_b;
+        plugboard[best_b] = a;
+    }
 }

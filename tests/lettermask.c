@@ -13,7 +13,7 @@ Test(message, bomm_lettermask_t) {
         "The alphabet is expected to fit into a lettermask");
 }
 
-Test(lettermask, bomm_load_lettermask) {
+Test(lettermask, bomm_lettermask_extract) {
     bomm_lettermask_t lettermask;
     
     bomm_lettermask_extract(&lettermask, "");
@@ -26,7 +26,7 @@ Test(lettermask, bomm_load_lettermask) {
     cr_assert_eq(lettermask, BOMM_LETTERMASK_ALL);
 }
 
-Test(lettermask, bomm_describe_lettermask) {
+Test(lettermask, bomm_lettermask_serialize) {
     bomm_lettermask_t lettermask;
     char* actual_describe_string;
     
@@ -44,4 +44,30 @@ Test(lettermask, bomm_describe_lettermask) {
     actual_describe_string = bomm_lettermask_serialize(&lettermask);
     cr_assert_str_eq(actual_describe_string, "abcdefghijklmnopqrstuvwxyz");
     free(actual_describe_string);
+}
+
+Test(lettermask, bomm_lettermask_set) {
+    bomm_lettermask_t lettermask = BOMM_LETTERMASK_NONE;
+    
+    bomm_lettermask_set(&lettermask, 0);
+    cr_assert_eq(lettermask, 1);
+    
+    bomm_lettermask_set(&lettermask, 11);
+    cr_assert_eq(lettermask, 0x00000801);
+    
+    bomm_lettermask_set(&lettermask, 25);
+    cr_assert_eq(lettermask, 0x02000801);
+}
+
+Test(lettermask, bomm_lettermask_clear) {
+    bomm_lettermask_t lettermask = BOMM_LETTERMASK_ALL;
+    
+    bomm_lettermask_clear(&lettermask, 0);
+    cr_assert_eq(lettermask, 0x03fffffe);
+    
+    bomm_lettermask_clear(&lettermask, 11);
+    cr_assert_eq(lettermask, 0x03fff7fe);
+    
+    bomm_lettermask_clear(&lettermask, 25);
+    cr_assert_eq(lettermask, 0x01fff7fe);
 }

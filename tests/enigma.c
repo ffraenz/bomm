@@ -15,7 +15,11 @@ Test(enigma, bomm_model_encrypt) {
     bomm_model_t* model = bomm_model_alloc_enigma_i();
     bomm_key_t* key = malloc(sizeof(bomm_key_t));
     key->model = model;
-    bomm_wiring_extract(&key->plugboard, BOMM_WIRING_IDENTITY);
+    
+    for (int i = 0; i < BOMM_ALPHABET_SIZE; i++) {
+        key->plugboard[i] = i;
+    }
+    
     key->wheels[0] = 1; // UKW-B
     key->wheels[1] = 0; // I
     key->wheels[2] = 1; // II
@@ -38,7 +42,7 @@ Test(enigma, bomm_model_encrypt) {
     
     char key_string[128];
     bomm_key_serialize(key_string, 128, key);
-    cr_assert_str_eq(key_string, "UKW-B,I,II,III,ABC aaaaa ameua");
+    cr_assert_str_eq(key_string, "UKW-B,I,II,III,ABC aaaaa ameua                                        ");
     
     char actual_plaintext[bomm_message_serialize_size(plaintext_message)];
     bomm_message_serialize(actual_plaintext, -1, plaintext_message);
