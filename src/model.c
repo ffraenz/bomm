@@ -65,10 +65,10 @@ bomm_model_t* bomm_model_alloc_enigma_i(void) {
     model->rotating_slots[3] = true;
     model->rotating_slots[4] = false;
     
-    // Available reflectors: UKW-A, UKW-B, UKW-C
-    model->wheel_sets[0][0] = 6;
-    model->wheel_sets[0][1] = 7;
-    model->wheel_sets[0][2] = 8;
+    // Available reflectors: UKW-B, UKW-C, UKW-A
+    model->wheel_sets[0][0] = 7;
+    model->wheel_sets[0][1] = 8;
+    model->wheel_sets[0][2] = 6;
     
     // Wheel sets for slots 1, 2, and 3: I, II, III, IV, V
     for (int slot = 1; slot <= 3; slot++) {

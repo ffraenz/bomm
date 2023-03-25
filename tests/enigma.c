@@ -15,12 +15,13 @@ Test(enigma, bomm_model_encrypt) {
     bomm_model_t* model = bomm_model_alloc_enigma_i();
     bomm_key_t* key = malloc(sizeof(bomm_key_t));
     key->model = model;
+    memcpy(key->plugboard, &bomm_key_plugboard_identity, sizeof(bomm_letter_t) * BOMM_ALPHABET_SIZE);
     
     for (int i = 0; i < BOMM_ALPHABET_SIZE; i++) {
         key->plugboard[i] = i;
     }
     
-    key->wheels[0] = 1; // UKW-B
+    key->wheels[0] = 0; // UKW-B
     key->wheels[1] = 0; // I
     key->wheels[2] = 1; // II
     key->wheels[3] = 2; // III
@@ -51,4 +52,53 @@ Test(enigma, bomm_model_encrypt) {
     free(ciphertext_message);
     free(key);
     free(model);
+}
+
+Test(enigma, bomm_scrambler_generate) {
+    char* ciphertext_string = "aaaaa";
+    char expected_scrambler_ascii[5][27] = {
+        "gmixryalcwzhbvstueopqnjdfk",
+        "dsnalzyomrxeichtvjbpwqukgf",
+        "xjyeduhgvbozpwkmstqrfinacl",
+        "teqkbxolrpdhuzgjciwamysfvn",
+        "zmdcpgfntlsjbhreyokivuxwqa"
+    };
+    
+    bomm_key_t* key = malloc(sizeof(bomm_key_t));
+    key->model = bomm_model_alloc_enigma_i();
+    memcpy(key->plugboard, &bomm_key_plugboard_identity, sizeof(bomm_letter_t) * BOMM_ALPHABET_SIZE);
+    
+    key->wheels[0] = 0; // UKW-B
+    key->wheels[1] = 0; // I
+    key->wheels[2] = 1; // II
+    key->wheels[3] = 2; // III
+    key->wheels[4] = 0; // ETW-ABC
+    key->rings[0] = 0;
+    key->rings[1] = 0;
+    key->rings[2] = 0;
+    key->rings[3] = 0;
+    key->rings[4] = 0;
+    key->positions[0] = 0;
+    key->positions[1] = 12;
+    key->positions[2] = 4;
+    key->positions[3] = 20;
+    key->positions[4] = 0;
+    
+    bomm_message_t* ciphertext = bomm_message_alloc(ciphertext_string);
+    
+    bomm_scrambler_t* scrambler = malloc(bomm_scrambler_size(ciphertext->length));
+    scrambler->length = ciphertext->length;
+    bomm_scrambler_generate(scrambler, key);
+    
+    for (unsigned int i = 0; i < ciphertext->length; i++) {
+        for (unsigned int j = 0; j < BOMM_ALPHABET_SIZE; j++) {
+            char actual_ascii = bomm_message_letter_to_ascii(scrambler->map[i][j]);
+            cr_assert_eq(actual_ascii, expected_scrambler_ascii[i][j]);
+        }
+    }
+    
+    free(ciphertext);
+    free(scrambler);
+    free(key->model);
+    free(key);
 }

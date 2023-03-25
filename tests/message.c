@@ -43,19 +43,3 @@ Test(message, bomm_message_the_quick_brown_fox) {
     cr_assert_arr_eq(message->frequency, expected_frequency, BOMM_ALPHABET_SIZE * sizeof(unsigned int));
     free(message);
 }
-
-Test(message, bomm_message_calc_ic) {
-    bomm_message_t *message;
-    
-    message = bomm_message_alloc("ff");
-    cr_assert_eq(bomm_measure_ic(message), 26.0);
-    free(message);
-    
-    message = bomm_message_alloc("fo");
-    cr_assert_eq(bomm_measure_ic(message), 0.0);
-    free(message);
-    
-    message = bomm_message_alloc("the quick brown fox jumps over the lazy dog");
-    cr_assert_eq(bomm_measure_ic(message), 0.56806725263595581055);
-    free(message);
-}

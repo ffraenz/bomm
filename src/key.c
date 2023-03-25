@@ -7,6 +7,12 @@
 
 #include "key.h"
 
+const bomm_letter_t bomm_key_plugboard_identity[] = {
+    0,  1,  2,  3,  4,  5,  6,  7,  8,  9,
+   10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
+   20, 21, 22, 23, 24, 25
+};
+
 void bomm_key_serialize(char* str, size_t size, bomm_key_t* key) {
     size_t wheel_order_string_size = (key->model->slot_count * BOMM_WHEEL_NAME_MAX_LENGTH + 1) + 1;
     char wheel_order_string[wheel_order_string_size];
@@ -75,7 +81,7 @@ void* bomm_key_leaderboard_alloc(unsigned int size) {
     return leaderboard;
 }
 
-float bomm_key_leaderboard_add(bomm_key_leaderboard_t* leaderboard, bomm_key_t* key, float score) {
+float bomm_key_leaderboard_add(bomm_key_leaderboard_t* leaderboard, bomm_key_t* key, float score, char* preview) {
     // Bail out if scored key does not fit on the leaderboard
     if (leaderboard->count == leaderboard->size && leaderboard->entries[leaderboard->count - 1].score > score) {
         return leaderboard->entries[leaderboard->count - 1].score;
@@ -98,6 +104,7 @@ float bomm_key_leaderboard_add(bomm_key_leaderboard_t* leaderboard, bomm_key_t* 
     // Add key and score to the leaderboard
     memcpy(&leaderboard->entries[index].key, key, sizeof(bomm_key_t));
     leaderboard->entries[index].score = score;
+    memcpy(&leaderboard->entries[index].preview, preview, BOMM_KEY_SCORED_PREVIEW_SIZE * sizeof(char));
     
     // Return new minimum score necessary to enter the leaderboard
     if (leaderboard->count == leaderboard->size) {
@@ -114,12 +121,10 @@ void bomm_key_leaderboard_print(bomm_key_leaderboard_t* leaderboard) {
     }
     
     char key_string[128];
-    bomm_key_t* key;
-    float score;
+    bomm_key_scored_t* entry;
     for (unsigned int i = 0; i < leaderboard->count; i++) {
-        key = &leaderboard->entries[i].key;
-        bomm_key_serialize(key_string, 128, key);
-        score = leaderboard->entries[i].score;
-        printf("%2d │ %72s │ %f\n", i + 1, key_string, score);
+        entry = &leaderboard->entries[i];
+        bomm_key_serialize(key_string, 128, &entry->key);
+        printf("%2d │ %72s │ %10.1f │ %30s\n", i + 1, key_string, entry->score, entry->preview);
     }
 }

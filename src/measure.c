@@ -28,10 +28,12 @@ void* bomm_measure_ngram_map_alloc(unsigned char n, char* filename) {
     ssize_t line_size;
     char line[line_restrict];
     char* line_buffer = (char*) &line;
-    unsigned int state, map_index, frequency, line_index;
+    unsigned int state, map_index, line_index;
+    float frequency, max_frequency;
     char ascii;
     unsigned char letter;
     
+    max_frequency = 255;
     state = 0;
     while (state == 0 && (line_size = getline(&line_buffer, &line_restrict, file)) != -1) {
         // Reset state
@@ -61,7 +63,13 @@ void* bomm_measure_ngram_map_alloc(unsigned char n, char* filename) {
         
         // Store frequency
         if (state == n) {
-            ngram_map[map_index] = frequency;
+            // Here we are assuming trigram files are sorted by frequency
+            // in decending order
+            if (frequency > max_frequency) {
+                max_frequency = frequency;
+            }
+            
+            ngram_map[map_index] = (char) ((frequency / max_frequency) * 255);
             state = 0;
         }
     }

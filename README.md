@@ -13,8 +13,16 @@ brew install criterion
 
 ## Data sources
 
-- `1941-bigram.txt` - Bigram frequency of raw decrypts of authentic 1941 messages from [Frode Weierud's CryptoCellar](https://cryptocellar.org/bgac/keyofE.html).
-- `1941-trigram.txt` - Trigram frequency of raw decrypts of authentic 1941 messages from [Frode Weierud's CryptoCellar](https://cryptocellar.org/bgac/keyofE.html).
+### Frequency of English text
+
+- `en-trigram.txt` - Trigram frequency generated from around 4.5 billion characters of English text, sourced from Wortschatz, provided by [Practical Cryptography](http://practicalcryptography.com/cryptanalysis/letter-frequencies-various-languages/english-letter-frequencies/):
+
+### Frequency of raw 1941 Enigma message decrypts
+
+The following frequency tables have been published by [Frode Weierud's CryptoCellar](https://cryptocellar.org/bgac/keyofE.html).
+
+- `enigma1941-bigram.txt`
+- `enigma1941-trigram.txt`
 
 ## License
 

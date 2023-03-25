@@ -12,6 +12,8 @@
 #include <stdio.h>
 #include "model.h"
 
+#define BOMM_KEY_SCORED_PREVIEW_SIZE 32
+
 /**
  * Location in the Enigma model key space.
  * Struct is optimized to being used in-place.
@@ -44,6 +46,11 @@ typedef struct _bomm_key {
 } bomm_key_t;
 
 /**
+ * Identity or empty plugboard having all plugs self-steckered.
+ */
+extern const bomm_letter_t bomm_key_plugboard_identity[];
+
+/**
  * Location in the Enigma model key space scored by a measure.
  */
 typedef struct _bomm_key_scored {
@@ -56,6 +63,11 @@ typedef struct _bomm_key_scored {
      * Key score (e.g. Index of coincidence)
      */
     float score;
+    
+    /**
+     * Preview deciphered message
+     */
+    char preview[BOMM_KEY_SCORED_PREVIEW_SIZE];
 } bomm_key_scored_t;
 
 /**
@@ -98,7 +110,7 @@ void* bomm_key_leaderboard_alloc(unsigned int size);
  * Add the given scored key to the leaderboard.
  * @return New minimum score necessary to enter the leaderboard
  */
-float bomm_key_leaderboard_add(bomm_key_leaderboard_t* leaderboard, bomm_key_t* key, float score);
+float bomm_key_leaderboard_add(bomm_key_leaderboard_t* leaderboard, bomm_key_t* key, float score, char* preview);
 
 /**
  * Print the given leaderboard to the console.
