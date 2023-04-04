@@ -125,6 +125,6 @@ void bomm_key_leaderboard_print(bomm_key_leaderboard_t* leaderboard) {
     for (unsigned int i = 0; i < leaderboard->count; i++) {
         entry = &leaderboard->entries[i];
         bomm_key_serialize(key_string, 128, &entry->key);
-        printf("%2d │ %72s │ %10.1f │ %30s\n", i + 1, key_string, entry->score, entry->preview);
+        printf("%2d │ %72s │ %10f │ %30s\n", i + 1, key_string, entry->score, entry->preview);
     }
 }

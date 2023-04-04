@@ -55,7 +55,7 @@ void bomm_attack_phase_1(bomm_model_t* model, bomm_message_t* ciphertext) {
     int wheel_order_count;
 
     // Load ngram map
-    unsigned char* ngram_map = bomm_measure_ngram_map_alloc(3, "/Users/ff/Projects/Bachelor/bomm/data/en-trigram.txt");
+    bomm_ngram_map_t* ngram_map = bomm_measure_ngram_map_alloc(3, "/Users/ff/Projects/Bachelor/bomm/data/enigma1941-trigram.txt");
 
     // Prepare leaderboard
     bomm_key_leaderboard_t* leaderboard = bomm_key_leaderboard_alloc(40);
@@ -178,7 +178,7 @@ static inline float _measure_scrambler_ngram(
     bomm_scrambler_t* scrambler,
     bomm_letter_t* plugboard,
     bomm_message_t* ciphertext,
-    unsigned char* ngram_map
+    bomm_ngram_map_t* ngram_map
 ) {
     unsigned int map_size = pow(BOMM_ALPHABET_SIZE, n);
     unsigned int index, letter;
@@ -193,14 +193,36 @@ static inline float _measure_scrambler_ngram(
         letter = plugboard[letter];
 
         map_index = (map_index * BOMM_ALPHABET_SIZE + letter) % map_size;
-
-        if (index >= n) {
-            score += ngram_map[map_index];
+        
+        if (index >= n - 1) {
+            score += ngram_map->map[map_index];
         }
     }
 
-    return score;
+    return score / (ciphertext->length - n + 1);
 }
+
+/*
+static inline float _measure_scrambler_ic(
+    bomm_scrambler_t* scrambler,
+    bomm_letter_t* plugboard,
+    bomm_message_t* ciphertext
+) {
+    unsigned int index, letter;
+    unsigned int letter_frequencies[BOMM_ALPHABET_SIZE];
+    memset(letter_frequencies, 0, BOMM_ALPHABET_SIZE * sizeof(unsigned int));
+    
+    for (index = 0; index < ciphertext->length; index++) {
+        letter = ciphertext->letters[index];
+        letter = plugboard[letter];
+        letter = scrambler->map[index][letter];
+        letter = plugboard[letter];
+        letter_frequencies[letter]++;
+    }
+    
+    return bomm_measure_ic(letter_frequencies, ciphertext->length, BOMM_ALPHABET_SIZE);
+}
+*/
 
 // During the hillclimb we exhaust the following plugs in order
 // The I-Stecker strategy starts with E, N, R, X, S, I
@@ -214,7 +236,7 @@ float bomm_attack_phase_2(
     bomm_letter_t* plugboard,
     bomm_scrambler_t* scrambler,
     bomm_message_t* ciphertext,
-    unsigned char* ngram_map
+    bomm_ngram_map_t* ngram_map
 ) {
     unsigned int i, j, a, b, best_b;
     float score, best_score;
@@ -224,6 +246,7 @@ float bomm_attack_phase_2(
 
     // Score empty plugboard
     best_score = _measure_scrambler_ngram(3, scrambler, plugboard, ciphertext, ngram_map);
+    // best_score = _measure_scrambler_ic(scrambler, plugboard, ciphertext);
 
     // Enumerate over the first plug
     for (i = 0; i < BOMM_ALPHABET_SIZE; i++) {
@@ -253,6 +276,7 @@ float bomm_attack_phase_2(
 
             // Measure score and compare it to the previous best score
             score = _measure_scrambler_ngram(3, scrambler, plugboard, ciphertext, ngram_map);
+            // score = _measure_scrambler_ic(scrambler, plugboard, ciphertext);
             if (score > best_score) {
                 best_score = score;
                 best_b = b;

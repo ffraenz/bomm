@@ -12,37 +12,67 @@
 #include <math.h>
 #include "message.h"
 
+typedef float bomm_ngram_map_entry;
+
+typedef struct _bomm_ngram_map_t {
+    /**
+     * The n in n-gram
+     */
+    unsigned char n;
+    
+    /**
+     * Maps n-grams to their respective log probabilities
+     */
+    bomm_ngram_map_entry map[];
+} bomm_ngram_map_t;
+
 /**
  * Allocate an n-gram map and load the frequency from the given file.
  */
-void* bomm_measure_ngram_map_alloc(unsigned char n, char* path);
+bomm_ngram_map_t* bomm_measure_ngram_map_alloc(unsigned char n, char* filename);
 
 /**
  * Calculate the normalized Index of coincidence (IC) for the given message.
  *
- * Definition: \text{IC} = c\frac{\sum_{i=1}^cf_i(f_i-1)}{n(n-1)}
- * with f_i appearances of letter i, n the total number of letters, and c the
- * number of letters in the alphabet.
+ * Definition: `\text{IC} = c\frac{\sum_{i=1}^cf_i(f_i-1)}{n(n-1)}`
+ * with `f_i` appearances of letter `i`, `n` the total number of letters, and
+ * `c` the number of letters in the alphabet.
+ *
+ * @param frequencies Array of frequencies
+ * @param n Length of the message the frequencies have been collected from
+ * @param c Number of frequencies (alphabet size or power of it)
  */
-static inline float bomm_measure_ic(bomm_message_t* message) {
+static inline float bomm_measure_ic(
+    unsigned int* frequencies,
+    unsigned int n,
+    unsigned int c
+) {
     unsigned int coincidence = 0;
-    for (unsigned int letter = 0; letter < BOMM_ALPHABET_SIZE; letter++) {
-        coincidence += message->frequency[letter] * (message->frequency[letter] - 1);
+    for (unsigned int index = 0; index < c; index++) {
+        coincidence += frequencies[index] * (frequencies[index] - 1);
     }
-    return (float) (BOMM_ALPHABET_SIZE * coincidence) / (message->length * (message->length - 1));
+    return (float) (c * coincidence) / (n * (n - 1));
 }
 
 /**
  * Calculate the Entropy for the given message.
+ *
+ * @param frequencies Array of frequencies
+ * @param n Length of the message the frequencies have been collected from
+ * @param c Number of frequencies (alphabet size or power of it)
  */
-static inline float bomm_measure_entropy(bomm_message_t* message) {
-    float entropy = 0;
-    float p;
-    for (unsigned int letter = 0; letter < BOMM_ALPHABET_SIZE; letter++) {
-        p = message->letters[letter] / (float) message->length;
+static inline float bomm_measure_entropy(
+    unsigned int* frequencies,
+    unsigned int n,
+    unsigned int c
+) {
+    double entropy = 0;
+    double p;
+    for (unsigned int index = 0; index < c; index++) {
+        p = frequencies[index] / (float) n;
         entropy -= p * log2(p);
     }
-    return entropy;
+    return (float) entropy;
 }
 
 #endif /* measure_h */

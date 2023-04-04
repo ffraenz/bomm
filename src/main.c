@@ -10,7 +10,7 @@
 #include "message.h"
 #include "measure.h"
 
-int main() {
+int main(void) {
     printf("Hello, World.\n");
     
     char* original_message = "PBNXA SMDAX NOOYH RCZGV VZCBI GIBGW HMXKR RVQCF JCZPT UNSWA DDSTI GQQCS AGPKR XXLOM GFXAP HHMRF SDKYT MYPMV ROHAS QYRWF WVAVG CCUDB IBXXD YZSAC JSYOT MWUCN WOMHH JPYWD CCLUP GSWCL MBCZS SYXPG MGMQX AUFUL NOZEQ ENHEI ZZAKL C";
@@ -22,7 +22,7 @@ int main() {
     printf("Message: %s\n", message_string);
     
     printf("Length: %d\n", message->length);
-    printf("IC: %f\n", bomm_measure_ic(message));
+    printf("IC: %f\n", bomm_measure_ic(message->frequency, message->length, BOMM_ALPHABET_SIZE));
     
     bomm_model_t* model = bomm_model_alloc_enigma_i();
     bomm_attack_phase_1(model, message);
