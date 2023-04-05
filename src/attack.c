@@ -58,7 +58,7 @@ void bomm_attack_phase_1(bomm_model_t* model, bomm_message_t* ciphertext) {
     bomm_ngram_map_t* ngram_map = bomm_measure_ngram_map_alloc(3, "/Users/ff/Projects/Bachelor/bomm/data/enigma1941-trigram.txt");
 
     // Prepare leaderboard
-    bomm_key_leaderboard_t* leaderboard = bomm_key_leaderboard_alloc(40);
+    bomm_hold_t* hold = bomm_hold_init(sizeof(bomm_key_t), 40);
 
     // Prepare preview text
     char preview[32];
@@ -130,18 +130,18 @@ void bomm_attack_phase_1(bomm_model_t* model, bomm_message_t* ciphertext) {
 
                         if (score > min_score) {
                             // Generate preview
-                            for (k = 0; k < BOMM_KEY_SCORED_PREVIEW_SIZE - 1 && k < (int) ciphertext->length; k++) {
+                            for (k = 0; k < BOMM_HOLD_PREVIEW_SIZE - 1 && k < (int) ciphertext->length; k++) {
                                 preview[k] = bomm_message_letter_to_ascii(key.plugboard[scrambler->map[k][key.plugboard[ciphertext->letters[k]]]]);
                             }
                             preview[k] = '\0';
 
                             // TODO: Render a short preview for the leaderboard
-                            min_score = bomm_key_leaderboard_add(leaderboard, &key, score, preview);
+                            min_score = bomm_hold_add(hold, score, &key, preview);
 
                             // Print updated leaderboard
                             printf("\n");
                             printf("Leaderboard:\n");
-                            bomm_key_leaderboard_print(leaderboard);
+                            bomm_key_hold_print(hold);
                         }
                     }
                 } while (!_enum_lettermask(slot_count, key.positions, slot_shifting_position_masks));
@@ -161,7 +161,7 @@ void bomm_attack_phase_1(bomm_model_t* model, bomm_message_t* ciphertext) {
     } while (!carry);
 
     // Clean up
-    free(leaderboard);
+    bomm_hold_destroy(hold);
 }
 
 /**

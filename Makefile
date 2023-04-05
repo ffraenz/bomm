@@ -1,7 +1,7 @@
 
 CC := cc
-RELEASE_CFLAGS := -O3 -pedantic -Wall -Werror -Wextra
-TEST_CFLAGS := -pedantic -Wall -Werror -Wextra
+RELEASE_CFLAGS := -O3 -std=c17 -pthread -pedantic -Wall -Werror -Wextra
+TEST_CFLAGS := -std=c17 -pthread -pedantic -Wall -Werror -Wextra
 TEST_LDFLAGS := -lcriterion
 
 TARGET_EXEC := bomm

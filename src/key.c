@@ -73,58 +73,16 @@ void bomm_key_serialize_plugboard(char* str, size_t size, bomm_key_t* key) {
     str[j > 0 ? j - 1 : 0] = '\0';
 }
 
-void* bomm_key_leaderboard_alloc(unsigned int size) {
-    bomm_key_leaderboard_t* leaderboard =
-        malloc(sizeof(bomm_key_leaderboard_t) + sizeof(bomm_key_scored_t) * size);
-    leaderboard->size = size;
-    leaderboard->count = 0;
-    return leaderboard;
-}
-
-float bomm_key_leaderboard_add(bomm_key_leaderboard_t* leaderboard, bomm_key_t* key, float score, char* preview) {
-    // Bail out if scored key does not fit on the leaderboard
-    if (leaderboard->count == leaderboard->size && leaderboard->entries[leaderboard->count - 1].score > score) {
-        return leaderboard->entries[leaderboard->count - 1].score;
-    }
-    
-    // Select last position
-    int index;
-    if (leaderboard->count < leaderboard->size) {
-        index = leaderboard->count++;
-    } else {
-        index = leaderboard->size - 1;
-    }
-    
-    // Move up the leaderboard until finding the right spot
-    while (index > 0 && leaderboard->entries[index - 1].score < score) {
-        memcpy(&leaderboard->entries[index], &leaderboard->entries[index - 1], sizeof(bomm_key_scored_t));
-        index--;
-    }
-
-    // Add key and score to the leaderboard
-    memcpy(&leaderboard->entries[index].key, key, sizeof(bomm_key_t));
-    leaderboard->entries[index].score = score;
-    memcpy(&leaderboard->entries[index].preview, preview, BOMM_KEY_SCORED_PREVIEW_SIZE * sizeof(char));
-    
-    // Return new minimum score necessary to enter the leaderboard
-    if (leaderboard->count == leaderboard->size) {
-        return leaderboard->entries[leaderboard->count - 1].score;
-    } else {
-        return -INFINITY;
-    }
-}
-
-void bomm_key_leaderboard_print(bomm_key_leaderboard_t* leaderboard) {
-    if (leaderboard->count == 0) {
-        printf("Empty leaderboard\n");
+void bomm_key_hold_print(bomm_hold_t* hold) {
+    if (hold->count == 0) {
+        printf("Empty key hold\n");
         return;
     }
-    
     char key_string[128];
-    bomm_key_scored_t* entry;
-    for (unsigned int i = 0; i < leaderboard->count; i++) {
-        entry = &leaderboard->entries[i];
-        bomm_key_serialize(key_string, 128, &entry->key);
-        printf("%2d │ %72s │ %10f │ %30s\n", i + 1, key_string, entry->score, entry->preview);
+    bomm_hold_element_t* element;
+    for (unsigned int i = 0; i < hold->count; i++) {
+        element = bomm_hold_at(hold, i);
+        bomm_key_serialize(key_string, 128, (bomm_key_t*) element->data);
+        printf("%2d │ %72s │ %10f │ %30s\n", i + 1, key_string, element->score, element->preview);
     }
 }

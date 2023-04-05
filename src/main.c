@@ -11,9 +11,33 @@
 #include "measure.h"
 
 int main(void) {
+    
+    size_t element_size = sizeof(unsigned int);
+    unsigned int data;
+    float score_boundary;
+    bomm_hold_element_t* element;
+    
+    bomm_hold_t* hold = bomm_hold_init(element_size, 5);
+    
+    data = 1337;
+    score_boundary = bomm_hold_add(hold, 6, &data, "Element 1337");
+    // cr_assert_eq(score_boundary, -INFINITY);
+    // cr_assert_eq(hold->count, 1);
+    
+    element = bomm_hold_at(hold, 0);
+    printf("element->score = %f\n", element->score);
+    // cr_assert_eq(element->score, 6);
+    // cr_assert_eq(&(unsigned int*)element->data, 1337);
+    // cr_assert_str_eq(element->preview, "Element 1337");
+    
+    
+    
+    bomm_hold_destroy(hold);
+    
+    /*
     printf("Hello, World.\n");
     
-    char* original_message = "PBNXA SMDAX NOOYH RCZGV VZCBI GIBGW HMXKR RVQCF JCZPT UNSWA DDSTI GQQCS AGPKR XXLOM GFXAP HHMRF SDKYT MYPMV ROHAS QYRWF WVAVG CCUDB IBXXD YZSAC JSYOT MWUCN WOMHH JPYWD CCLUP GSWCL MBCZS SYXPG MGMQX AUFUL NOZEQ ENHEI ZZAKL C";
+    char* original_message = "ABTWU GWDMP OGKMQ KBHGK HROUP RMYQY INHSA MWFBP CDQRG LDBFK YNXPP DIQHE AOIFQ AOLRZ ZFPDJ MCGEC TAHHQ MVUYA JIAWM WSOYU UTLEP AVZKG HJWCD LOQHW IMSTC LQDNP VCFCN FRUYR GSSJH ORQMU IFFYU WYNTA XPYIX MYTEE FTDCV EHUOA DCPLM APCAU JJYUK";
     
     bomm_message_t* message = bomm_message_alloc(original_message);
     
@@ -29,6 +53,7 @@ int main(void) {
     
     free(model);
     free(message);
+     */
     
     return 0;
 }
