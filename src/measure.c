@@ -7,7 +7,7 @@
 
 #include "measure.h"
 
-bomm_ngram_map_t* bomm_measure_ngram_map_alloc(unsigned char n, char* filename) {
+bomm_ngram_map_t* bomm_measure_ngram_map_init(unsigned char n, char* filename) {
     // Open file in reading mode
     FILE* file = fopen(filename, "r");
     if (!file) {

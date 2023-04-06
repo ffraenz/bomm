@@ -24,8 +24,8 @@ Test(message, bomm_measure_ic) {
     free(message);
 }
 
-Test(measure, bomm_measure_trigram_map_alloc) {
-    bomm_ngram_map_t* trigram_map = bomm_measure_ngram_map_alloc(3, "/Users/ff/Projects/Bachelor/bomm/data/enigma1941-trigram.txt");
+Test(measure, bomm_measure_ngram_map_init) {
+    bomm_ngram_map_t* trigram_map = bomm_measure_ngram_map_init(3, "/Users/ff/Projects/Bachelor/bomm/data/enigma1941-trigram.txt");
 
     // Testing a top frequency: EIN (4 8 13)
     cr_assert_eq(trigram_map->map[4 * 26 * 26 + 8 * 26 + 13], -4.51312255859375000000);
@@ -41,7 +41,7 @@ Test(measure, bomm_measure_trigram_map_alloc) {
 
     free(trigram_map);
 
-    trigram_map = bomm_measure_ngram_map_alloc(3, "/Users/ff/Projects/Bachelor/bomm/data/en-trigram.txt");
+    trigram_map = bomm_measure_ngram_map_init(3, "/Users/ff/Projects/Bachelor/bomm/data/en-trigram.txt");
 
     // Testing a top frequency: THE (19 7 4)
     cr_assert_eq(trigram_map->map[19 * 26 * 26 + 7 * 26 + 4], -4.00961589813232421875);
