@@ -55,7 +55,6 @@ Test(key, bomm_hold_add) {
     cr_assert_eq(score_boundary, 2);
     cr_assert_eq(hold->count, 5);
     
-    
     element = bomm_hold_at(hold, 0);
     cr_assert_eq(element->score, 7);
     cr_assert_eq(*((unsigned int*) element->data), 7777);

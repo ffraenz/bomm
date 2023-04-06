@@ -32,6 +32,21 @@ typedef struct _bomm_wiring {
 } bomm_wiring_t;
 
 /**
+ * Variable-size struct representing multiple letter mappings.
+ */
+typedef struct _bomm_scrambler {
+    /**
+     * Number of letter maps contained
+     */
+    unsigned int length;
+    
+    /**
+     * Letter maps
+     */
+    bomm_letter_t map[][BOMM_ALPHABET_SIZE];
+} bomm_scrambler_t;
+
+/**
  * Extract a wiring from the given string
  */
 bool bomm_wiring_extract(bomm_wiring_t* ptr, char* string);
@@ -40,5 +55,14 @@ bool bomm_wiring_extract(bomm_wiring_t* ptr, char* string);
  * Export the given enigma wiring to a string
  */
 char* bomm_wiring_serialize(bomm_wiring_t* wiring);
+
+/**
+ * Calculate the scrambler struct size for the given message length.
+ */
+static inline size_t bomm_scrambler_size(unsigned int length) {
+    return
+        sizeof(bomm_scrambler_t) +
+        length * BOMM_ALPHABET_SIZE * sizeof(bomm_letter_t);
+}
 
 #endif /* wiring_h */

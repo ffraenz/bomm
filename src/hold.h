@@ -85,7 +85,7 @@ bomm_hold_t* bomm_hold_init(size_t element_size, unsigned int hold_size);
 void bomm_hold_destroy(bomm_hold_t* hold);
 
 /**
- * Add the given element to the hold.
+ * Atomic operation to add the given element to the hold.
  * @param hold Pointer to the hold struct
  * @param data Pointer to the element data
  * @param preview Pointer to the preview string or a NULL-pointer to omit

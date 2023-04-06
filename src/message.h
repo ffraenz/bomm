@@ -46,12 +46,12 @@ typedef struct _bomm_message {
 /**
  * Allocate a message for the given length.
  */
-bomm_message_t* bomm_message_alloc_length(unsigned int length);
+bomm_message_t* bomm_message_init_length(unsigned int length);
 
 /**
  * Allocate and load a message from the given C-string.
  */
-bomm_message_t* bomm_message_alloc(char* string);
+bomm_message_t* bomm_message_init(char* string);
 
 /**
  * Calculate the serialize string size for the given message.

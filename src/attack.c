@@ -8,7 +8,7 @@
 #include "attack.h"
 
 static inline void _enum_lettermask_init(unsigned char slot_count, unsigned int* positions, bomm_lettermask_t* shifting_masks) {
-    memset(positions, 0, BOMM_MODEL_MAX_SLOT_COUNT * sizeof(bomm_letter_t));
+    memset(positions, 0, BOMM_MAX_SLOT_COUNT * sizeof(bomm_letter_t));
     for (int i = 0; i < slot_count; i++) {
         while ((shifting_masks[i] & 0x1) == 0) {
             shifting_masks[i] = shifting_masks[i] >> 1;
@@ -44,14 +44,14 @@ static inline bool _enum_lettermask(unsigned char slot_count, unsigned int* posi
     return carry;
 }
 
-void bomm_attack_phase_1(bomm_model_t* model, bomm_message_t* ciphertext) {
+void bomm_attack_key_space(bomm_key_space_t* key_space, bomm_message_t* ciphertext) {
     int i, j, k;
     bool carry, relevant;
     char key_string[128];
     float score;
     float min_score = -INFINITY;
     time_t start_time, time;
-    int slot_count = model->slot_count;
+    int slot_count = key_space->slot_count;
     int wheel_order_count;
 
     // Load ngram map
@@ -61,12 +61,13 @@ void bomm_attack_phase_1(bomm_model_t* model, bomm_message_t* ciphertext) {
     bomm_hold_t* hold = bomm_hold_init(sizeof(bomm_key_t), 40);
 
     // Prepare preview text
-    char preview[32];
+    char preview[BOMM_HOLD_PREVIEW_SIZE];
 
     // Prepare working key instance
     bomm_key_t key;
-    memset(&key, 0, sizeof(bomm_key_t));
-    key.model = model;
+    bomm_key_init(&key, key_space);
+    unsigned int wheel_indices[slot_count];
+    memset(wheel_indices, 0, sizeof(unsigned int) * slot_count);
 
     // Prepare scrambler
     char scrambler_store[bomm_scrambler_size(ciphertext->length)];
@@ -75,12 +76,12 @@ void bomm_attack_phase_1(bomm_model_t* model, bomm_message_t* ciphertext) {
 
     // Prepare initial ring settings and shifting ring masks
     bomm_lettermask_t slot_shifting_ring_masks[slot_count];
-    memcpy(&slot_shifting_ring_masks, model->ring_masks, sizeof(bomm_lettermask_t) * slot_count);
+    memcpy(&slot_shifting_ring_masks, key_space->ring_masks, sizeof(bomm_lettermask_t) * slot_count);
     _enum_lettermask_init(slot_count, key.rings, slot_shifting_ring_masks);
 
     // Prepare initial start positions and shifting position masks
     bomm_lettermask_t slot_shifting_position_masks[slot_count];
-    memcpy(&slot_shifting_position_masks, model->position_masks, sizeof(bomm_lettermask_t) * slot_count);
+    memcpy(&slot_shifting_position_masks, key_space->position_masks, sizeof(bomm_lettermask_t) * slot_count);
     _enum_lettermask_init(slot_count, key.positions, slot_shifting_position_masks);
 
     // Start the timer
@@ -97,13 +98,19 @@ void bomm_attack_phase_1(bomm_model_t* model, bomm_message_t* ciphertext) {
             j = i;
             while (relevant && ++j < slot_count) {
                 relevant = (
-                    model->wheel_sets[i][key.wheels[i]] !=
-                    model->wheel_sets[j][key.wheels[j]]
+                    key_space->wheel_sets[i][wheel_indices[i]] !=
+                    key_space->wheel_sets[j][wheel_indices[j]]
                 );
             }
         }
 
         if (relevant) {
+            // Load wheels into the working key
+            // TODO: Optimize by only loading changing wheels
+            for (i = 0; i < slot_count; i++) {
+                memcpy(&key.wheels[i], key_space->wheel_sets[i][wheel_indices[i]], sizeof(bomm_wheel_t));
+            }
+            
             // Print progress update
             bomm_key_serialize_wheel_order(key_string, 128, &key);
             printf("Next wheel order: %s\n", key_string);
@@ -123,10 +130,10 @@ void bomm_attack_phase_1(bomm_model_t* model, bomm_message_t* ciphertext) {
 
                     if (relevant) {
                         // Generate scrambler
-                        bomm_scrambler_generate(scrambler, &key);
+                        bomm_enigma_generate_scrambler(scrambler, &key);
 
                         // Attack ciphertext
-                        score = bomm_attack_phase_2(key.plugboard, scrambler, ciphertext, ngram_map);
+                        score = bomm_attack_plugboard(key.plugboard, scrambler, ciphertext, ngram_map);
 
                         if (score > min_score) {
                             // Generate preview
@@ -153,9 +160,9 @@ void bomm_attack_phase_1(bomm_model_t* model, bomm_message_t* ciphertext) {
         carry = true;
         i = slot_count;
         while (carry && --i >= 0) {
-            key.wheels[i]++;
-            if ((carry = model->wheel_sets[i][key.wheels[i]] == 255)) {
-                key.wheels[i] = 0;
+            wheel_indices[i]++;
+            if ((carry = key_space->wheel_sets[i][wheel_indices[i]] == NULL)) {
+                wheel_indices[i] = 0;
             }
         }
     } while (!carry);
@@ -232,7 +239,7 @@ const bomm_letter_t _plug_order[] = {
     19, 20, 21, 22, 24, 25
 };
 
-float bomm_attack_phase_2(
+float bomm_attack_plugboard(
     bomm_letter_t* plugboard,
     bomm_scrambler_t* scrambler,
     bomm_message_t* ciphertext,

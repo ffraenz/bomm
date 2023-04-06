@@ -8,7 +8,7 @@
 #include "wiring.h"
 
 bool bomm_wiring_extract(bomm_wiring_t* ptr, char* string) {
-    bomm_message_t* message = bomm_message_alloc(string);
+    bomm_message_t* message = bomm_message_init(string);
     if (!message) {
         return false;
     }

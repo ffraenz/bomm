@@ -11,15 +11,15 @@
 Test(message, bomm_measure_ic) {
     bomm_message_t *message;
 
-    message = bomm_message_alloc("ff");
+    message = bomm_message_init("ff");
     cr_assert_eq(bomm_measure_ic(message->frequency, message->length, BOMM_ALPHABET_SIZE), 26.0);
     free(message);
 
-    message = bomm_message_alloc("fo");
+    message = bomm_message_init("fo");
     cr_assert_eq(bomm_measure_ic(message->frequency, message->length, BOMM_ALPHABET_SIZE), 0.0);
     free(message);
 
-    message = bomm_message_alloc("the quick brown fox jumps over the lazy dog");
+    message = bomm_message_init("the quick brown fox jumps over the lazy dog");
     cr_assert_eq(bomm_measure_ic(message->frequency, message->length, BOMM_ALPHABET_SIZE), 0.56806725263595581055);
     free(message);
 }

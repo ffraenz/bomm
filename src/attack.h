@@ -16,10 +16,21 @@
 #include "measure.h"
 
 /**
- * Exhaust the relevant key space of the given model excl. the plugboard.
+ * Exhaust the given key space.
  */
-void bomm_attack_phase_1(bomm_model_t* model, bomm_message_t* ciphertext);
+void bomm_attack_key_space(
+    bomm_key_space_t* key_space,
+    bomm_message_t* ciphertext
+);
 
-float bomm_attack_phase_2(bomm_letter_t* plugboard, bomm_scrambler_t* scrambler, bomm_message_t* ciphertext, bomm_ngram_map_t* ngram_map);
+/**
+ * Attack the plugboard using the given scrambler and ciphertext.
+ */
+float bomm_attack_plugboard(
+    bomm_letter_t* plugboard,
+    bomm_scrambler_t* scrambler,
+    bomm_message_t* ciphertext,
+    bomm_ngram_map_t* ngram_map
+);
 
 #endif /* attack_h */

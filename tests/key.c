@@ -12,13 +12,10 @@ Test(key, bomm_key_serialize_plugboard) {
     char actual_plugboard_string[39];
     char* expected_plugboard_string;
     bomm_key_t key;
-    key.model = bomm_model_alloc_enigma_i();
     
     // Identity plugboard
     expected_plugboard_string = "";
-    for (int i = 0; i < BOMM_ALPHABET_SIZE; i++) {
-        key.plugboard[i] = i;
-    }
+    memcpy(&key.plugboard, &bomm_key_plugboard_identity, sizeof(bomm_key_plugboard_identity));
     bomm_key_serialize_plugboard(actual_plugboard_string, 39, &key);
     cr_assert_str_eq(actual_plugboard_string, expected_plugboard_string);
     
@@ -32,6 +29,4 @@ Test(key, bomm_key_serialize_plugboard) {
     memcpy(&key.plugboard, &example_plugboard, sizeof(bomm_letter_t) * BOMM_ALPHABET_SIZE);
     bomm_key_serialize_plugboard(actual_plugboard_string, 39, &key);
     cr_assert_str_eq(actual_plugboard_string, expected_plugboard_string);
-    
-    free(key.model);
 }

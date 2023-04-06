@@ -14,12 +14,12 @@ Test(message, bomm_letter_t) {
         "The alphabet is expected to fit into a single letter");
 }
 
-Test(message, bomm_message_alloc) {
+Test(message, bomm_message_init) {
     bomm_message_t* message;
     char* expected_string;
     
     expected_string = BOMM_ALPHABET;
-    message = bomm_message_alloc(expected_string);
+    message = bomm_message_init(expected_string);
     char string[bomm_message_serialize_size(message)];
     bomm_message_serialize(string, -1, message);
     cr_assert_str_eq(string, expected_string);
@@ -30,7 +30,7 @@ Test(message, bomm_message_alloc) {
 Test(message, bomm_message_the_quick_brown_fox) {
     char* input_string = "the quick brown fox jumps over the lazy dog";
     char* expected_string = "thequickbrownfoxjumpsoverthelazydog";
-    bomm_message_t* message = bomm_message_alloc(input_string);
+    bomm_message_t* message = bomm_message_init(input_string);
     cr_assert_eq(message->length, strlen(expected_string));
     char string[bomm_message_serialize_size(message)];
     bomm_message_serialize(string, -1, message);
