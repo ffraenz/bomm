@@ -20,7 +20,7 @@ inline static int bomm_enigma_scramble_letter(int x, bomm_key_t* state);
  * Simulate the Enigma on the given original message and key.
  * Original and result message structs are assumed to be of same length.
  * The message frequency of the result is updated.
- * The key is used in-place during evaluation and is reset afterwards. 
+ * The key is used in-place during evaluation and is reset afterwards.
  */
 inline static void bomm_enigma_encrypt(
     bomm_message_t* message,
@@ -30,9 +30,6 @@ inline static void bomm_enigma_encrypt(
     // Store the original positions as we will reinstate them afterwards
     unsigned int original_positions[key->slot_count];
     memcpy(&original_positions, key->positions, sizeof(original_positions));
-    
-    // Reset result message frequency
-    memset(&result->frequency, 0, sizeof(unsigned int) * BOMM_ALPHABET_SIZE);
     
     // Simulate the Enigma for each letter
     int letter;
@@ -46,7 +43,6 @@ inline static void bomm_enigma_encrypt(
         letter = key->plugboard[letter];
         
         result->letters[index] = letter;
-        result->frequency[letter]++;
     }
     
     // Reinstate original positions

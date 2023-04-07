@@ -73,7 +73,7 @@ bomm_key_space_t* bomm_key_space_enigma_i_init(void) {
     
     // Initialize wheels
     // TODO: Check if initialization succeeded
-    // TODO: Handle ownership of the wheels
+    // TODO: Handle ownership of the wheels           abcdefghijklmnopqrstuvwxyz
     bomm_wheel_t* w_i     = bomm_wheel_init("I",     "ekmflgdqvzntowyhxuspaibrcj", "q");
     bomm_wheel_t* w_ii    = bomm_wheel_init("II",    "ajdksiruxblhwtmcqgznpyfvoe", "e");
     bomm_wheel_t* w_iii   = bomm_wheel_init("III",   "bdfhjlcprtxvznyeiwgakmusqo", "v");
@@ -195,6 +195,9 @@ void bomm_key_serialize_plugboard(char* str, size_t size, bomm_key_t* key) {
 }
 
 void bomm_key_hold_print(bomm_hold_t* hold) {
+    // Lock hold while printing
+    pthread_mutex_lock(&hold->mutex);
+    
     if (hold->count == 0) {
         printf("Empty key hold\n");
         return;
@@ -206,4 +209,7 @@ void bomm_key_hold_print(bomm_hold_t* hold) {
         bomm_key_serialize(key_string, 128, (bomm_key_t*) element->data);
         printf("%2d │ %72s │ %10f │ %30s\n", i + 1, key_string, element->score, element->preview);
     }
+    
+    // Unlock hold
+    pthread_mutex_unlock(&hold->mutex);
 }

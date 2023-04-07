@@ -65,4 +65,20 @@ static inline size_t bomm_scrambler_size(unsigned int length) {
         length * BOMM_ALPHABET_SIZE * sizeof(bomm_letter_t);
 }
 
+/**
+ * Encrypt a message using the given scrambler mapping and plugboard.
+ */
+static inline void bomm_scrambler_encrypt(
+    bomm_scrambler_t* scrambler,
+    bomm_letter_t* plugboard,
+    bomm_message_t* message,
+    bomm_message_t* result
+) {
+    result->length = message->length;
+    for (unsigned int i = 0; i < message->length; i++) {
+        result->letters[i] =
+            plugboard[scrambler->map[i][plugboard[message->letters[i]]]];
+    }
+}
+
 #endif /* wiring_h */

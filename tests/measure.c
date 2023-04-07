@@ -8,19 +8,32 @@
 #include <criterion/criterion.h>
 #include "../src/measure.h"
 
-Test(message, bomm_measure_ic) {
+Test(message, bomm_measure_frequency) {
     bomm_message_t *message;
-
+    unsigned int frequencies[BOMM_ALPHABET_SIZE];
+    
     message = bomm_message_init("ff");
-    cr_assert_eq(bomm_measure_ic(message->frequency, message->length, BOMM_ALPHABET_SIZE), 26.0);
+    bomm_measure_message_frequency(1, frequencies, message);
+    cr_assert_eq(bomm_measure_frequency_ic(1, frequencies), 26.0);
+    cr_assert_eq(bomm_measure_frequency_entropy(1, frequencies), 0.0);
     free(message);
 
     message = bomm_message_init("fo");
-    cr_assert_eq(bomm_measure_ic(message->frequency, message->length, BOMM_ALPHABET_SIZE), 0.0);
+    bomm_measure_message_frequency(1, frequencies, message);
+    cr_assert_eq(bomm_measure_frequency_ic(1, frequencies), 0.0);
+    cr_assert_eq(bomm_measure_frequency_entropy(1, frequencies), 1.0);
     free(message);
 
     message = bomm_message_init("the quick brown fox jumps over the lazy dog");
-    cr_assert_eq(bomm_measure_ic(message->frequency, message->length, BOMM_ALPHABET_SIZE), 0.56806725263595581055);
+    bomm_measure_message_frequency(1, frequencies, message);
+    unsigned int expected_frequencies[BOMM_ALPHABET_SIZE] = {
+        1, 1, 1, 1, 3, 1, 1, 2, 1, 1,
+        1, 1, 1, 1, 4, 1, 1, 2, 1, 2,
+        2, 1, 1, 1, 1, 1
+    };
+    cr_assert_arr_eq(frequencies, expected_frequencies, sizeof(expected_frequencies));
+    cr_assert_eq(bomm_measure_frequency_ic(1, frequencies), 0.56806725263595581055);
+    cr_assert_eq(bomm_measure_frequency_entropy(1, frequencies), 4.53628635406494140625);
     free(message);
 }
 

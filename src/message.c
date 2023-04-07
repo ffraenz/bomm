@@ -14,8 +14,6 @@ bomm_message_t* bomm_message_init_length(unsigned int length) {
         return NULL;
     }
     message->length = length;
-    // Zero frequency array
-    memset(&message->frequency, 0, sizeof(unsigned int) * BOMM_ALPHABET_SIZE);
     return message;
 }
 
@@ -30,13 +28,11 @@ bomm_message_t* bomm_message_init(char* string) {
 
     // Reset message length and frequency
     message->length = 0;
-    memset(&message->frequency, 0, sizeof(unsigned int) * BOMM_ALPHABET_SIZE);
 
     unsigned char letter;
     for (unsigned int i = 0; i < length; i++) {
         if ((letter = bomm_message_letter_from_ascii(string[i])) != 255) {
             message->letters[message->length++] = letter;
-            message->frequency[letter]++;
         }
     }
 
@@ -45,12 +41,4 @@ bomm_message_t* bomm_message_init(char* string) {
         message = realloc(message, actual_message_size);
     }
     return message;
-}
-
-void bomm_message_serialize(char* str, size_t size, bomm_message_t* message) {
-    size_t actual_size = message->length < size ? message->length : size - 1;
-    for (unsigned int i = 0; i < actual_size; i++) {
-        str[i] = bomm_message_letter_to_ascii(message->letters[i]);
-    }
-    str[actual_size] = '\0';
 }

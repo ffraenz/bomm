@@ -24,18 +24,13 @@ typedef unsigned char bomm_letter_t;
 
 /**
  * Variable-size struct storing an Enigma message. It consists of an arbitrary
- * number of letter indices and the frequency thereof.
+ * number of letter indices.
  */
 typedef struct _bomm_message {
     /**
      * Total number of letters in message
      */
     unsigned int length;
-    
-    /**
-     * Letter frequency
-     */
-    unsigned int frequency[BOMM_ALPHABET_SIZE];
     
     /**
      * Letters
@@ -59,11 +54,6 @@ bomm_message_t* bomm_message_init(char* string);
 static inline size_t bomm_message_serialize_size(bomm_message_t* message) {
     return message->length + 1;
 }
-
-/**
- * Serialize the given message to a string.
- */
-void bomm_message_serialize(char* str, size_t size, bomm_message_t* message);
 
 /**
  * Calculate the number of bytes required to store a message struct of the
@@ -94,6 +84,17 @@ static inline unsigned char bomm_message_letter_from_ascii(char code_point) {
  */
 static inline char bomm_message_letter_to_ascii(unsigned char letter) {
     return letter + 97;
+}
+
+/**
+ * Serialize the given message to a string.
+ */
+static inline void bomm_message_serialize(char* str, size_t size, bomm_message_t* message) {
+    size_t actual_size = message->length < size ? message->length : size - 1;
+    for (unsigned int i = 0; i < actual_size; i++) {
+        str[i] = bomm_message_letter_to_ascii(message->letters[i]);
+    }
+    str[actual_size] = '\0';
 }
 
 #endif /* message_h */

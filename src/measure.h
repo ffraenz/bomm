@@ -66,68 +66,103 @@ static inline float bomm_measure_scrambler_ngram(
 }
 
 /**
+ * Measure the n-gram frequency of the given message.
+ * The frequency array is expected to be of size `BOMM_ALPHABET_SIZE^n`.
+ * TODO: Optimize speed for monograms.
+ */
+static inline void bomm_measure_message_frequency(
+    unsigned int n,
+    unsigned int* frequencies,
+    bomm_message_t* message
+) {
+    unsigned int count = pow(BOMM_ALPHABET_SIZE, n);
+    memset(frequencies, 0, count * sizeof(unsigned int));
+    
+    unsigned int letter;
+    unsigned int map_index = 0;
+    for (unsigned int index = 0; index < message->length; index++) {
+        letter = message->letters[index];
+        map_index = (map_index * BOMM_ALPHABET_SIZE + letter) % count;
+        if (index >= n - 1) {
+            frequencies[map_index]++;
+        }
+    }
+}
+
+/**
+ * Measure the n-gram frequency of the given scrambler, plugboard, and message.
+ * The frequency array is expected to be of size `BOMM_ALPHABET_SIZE^n`.
+ */
+static inline void bomm_measure_scrambler_frequency(
+    unsigned int n,
+    unsigned int* frequencies,
+    bomm_scrambler_t* scrambler,
+    bomm_letter_t* plugboard,
+    bomm_message_t* message
+) {
+    unsigned int count = pow(BOMM_ALPHABET_SIZE, n);
+    memset(frequencies, 0, count * sizeof(unsigned int));
+    
+    unsigned int letter;
+    unsigned int map_index = 0;
+    for (unsigned int index = 0; index < message->length; index++) {
+        letter = message->letters[index];
+        letter = plugboard[letter];
+        letter = scrambler->map[index][letter];
+        letter = plugboard[letter];
+        
+        map_index = (map_index * BOMM_ALPHABET_SIZE + letter) % count;
+        if (index >= n - 1) {
+            frequencies[map_index]++;
+        }
+    }
+}
+
+/**
  * Calculate the normalized Index of coincidence (IC) for the given message.
  *
  * Definition: `\text{IC} = c\frac{\sum_{i=1}^cf_i(f_i-1)}{n(n-1)}`
  * with `f_i` appearances of letter `i`, `n` the total number of letters, and
  * `c` the number of letters in the alphabet.
- *
- * @param frequencies Array of frequencies
- * @param n Length of the message the frequencies have been collected from
- * @param c Number of frequencies (alphabet size or power of it)
  */
-static inline float bomm_measure_ic(
-    unsigned int* frequencies,
+static inline float bomm_measure_frequency_ic(
     unsigned int n,
-    unsigned int c
+    unsigned int* frequencies
 ) {
+    unsigned int count = pow(BOMM_ALPHABET_SIZE, n);
     unsigned int coincidence = 0;
-    for (unsigned int index = 0; index < c; index++) {
-        coincidence += frequencies[index] * (frequencies[index] - 1);
+    unsigned int sum = 0;
+    unsigned int frequency;
+    for (unsigned int index = 0; index < count; index++) {
+        frequency = frequencies[index];
+        coincidence += frequency * (frequency - 1);
+        sum += frequency;
     }
-    return (float) (c * coincidence) / (n * (n - 1));
+    return (float) (count * coincidence) / (sum * (sum - 1));
 }
 
 /**
- * IC score a ciphertext put through the given scrabler and plugboard.
+ * Calculate the Entropy for the given message in bits.
  */
-static inline float bomm_measure_scrambler_ic(
-    bomm_scrambler_t* scrambler,
-    bomm_letter_t* plugboard,
-    bomm_message_t* ciphertext
-) {
-    unsigned int index, letter;
-    unsigned int letter_frequencies[BOMM_ALPHABET_SIZE];
-    memset(letter_frequencies, 0, BOMM_ALPHABET_SIZE * sizeof(unsigned int));
-    
-    for (index = 0; index < ciphertext->length; index++) {
-        letter = ciphertext->letters[index];
-        letter = plugboard[letter];
-        letter = scrambler->map[index][letter];
-        letter = plugboard[letter];
-        letter_frequencies[letter]++;
-    }
-    
-    return bomm_measure_ic(letter_frequencies, ciphertext->length, BOMM_ALPHABET_SIZE);
-}
-
-/**
- * Calculate the Entropy for the given message.
- *
- * @param frequencies Array of frequencies
- * @param n Length of the message the frequencies have been collected from
- * @param c Number of frequencies (alphabet size or power of it)
- */
-static inline float bomm_measure_entropy(
-    unsigned int* frequencies,
+static inline float bomm_measure_frequency_entropy(
     unsigned int n,
-    unsigned int c
+    unsigned int* frequencies
 ) {
+    unsigned int count = pow(BOMM_ALPHABET_SIZE, n);
+    
+    unsigned int sum = 0;
+    unsigned int index;
+    for (index = 0; index < count; index++) {
+        sum += frequencies[index];
+    }
+    
     double entropy = 0;
     double p;
-    for (unsigned int index = 0; index < c; index++) {
-        p = frequencies[index] / (float) n;
-        entropy -= p * log2(p);
+    if (sum > 0) {
+        for (index = 0; index < count; index++) {
+            p = (double) frequencies[index] / sum;
+            entropy -= (p > 0) ? (p * log2(p)) : 0;
+        }
     }
     return (float) entropy;
 }

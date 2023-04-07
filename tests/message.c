@@ -35,11 +35,5 @@ Test(message, bomm_message_the_quick_brown_fox) {
     char string[bomm_message_serialize_size(message)];
     bomm_message_serialize(string, -1, message);
     cr_assert_str_eq(string, expected_string);
-    unsigned int expected_frequency[BOMM_ALPHABET_SIZE] = {
-        1, 1, 1, 1, 3, 1, 1, 2, 1, 1,
-        1, 1, 1, 1, 4, 1, 1, 2, 1, 2,
-        2, 1, 1, 1, 1, 1
-    };
-    cr_assert_arr_eq(message->frequency, expected_frequency, BOMM_ALPHABET_SIZE * sizeof(unsigned int));
     free(message);
 }
