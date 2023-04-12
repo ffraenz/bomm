@@ -61,3 +61,61 @@ bomm_wheel_t* bomm_wheel_extract_json(bomm_wheel_t* wheel, json_t* wheel_json) {
     
     return wheel;
 }
+
+bool bomm_wheel_set_extract_json(
+    bomm_wheel_t* wheel_set[],
+    unsigned int wheel_set_size,
+    json_t* wheel_set_json,
+    bomm_wheel_t wheels[],
+    unsigned int wheel_count
+) {
+    if (wheel_set_json == NULL || wheel_set_json->type != JSON_ARRAY) {
+        fprintf(
+            stderr,
+            "Error: Wheel set is expected to be an array of strings\n"
+        );
+        return false;
+    }
+    
+    unsigned int size = (unsigned int) json_array_size(wheel_set_json);
+    if (size > wheel_set_size) {
+        fprintf(
+            stderr,
+            "Error: The wheel set is limited to %d wheels\n",
+            wheel_set_size
+        );
+        return false;
+    }
+    
+    for (unsigned int i = 0; i < size; i++) {
+        json_t* name_json = json_array_get(wheel_set_json, i);
+        if (name_json->type != JSON_STRING) {
+            fprintf(
+                stderr,
+                "Error: Wheel set is expected to be an array of strings\n"
+            );
+            return false;
+        }
+        
+        const char* name = json_string_value(name_json);
+        bomm_wheel_t* wheel = bomm_lookup_string(
+            wheels,
+            sizeof(bomm_wheel_t),
+            wheel_count,
+            name
+        );
+        
+        if (wheel == NULL) {
+            fprintf(
+                stderr,
+                "Error: The wheel named '%s' cannot be found\n",
+                name
+            );
+            return false;
+        }
+        
+        wheel_set[i] = wheel;
+    }
+    
+    return true;
+}

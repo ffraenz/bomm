@@ -49,4 +49,15 @@ bomm_wheel_t* bomm_wheel_init(
  */
 bomm_wheel_t* bomm_wheel_extract_json(bomm_wheel_t* wheel, json_t* wheel_json);
 
+/**
+ * Extract a set of wheels from the given JSON array.
+ */
+bool bomm_wheel_set_extract_json(
+    bomm_wheel_t* wheel_set[],
+    unsigned int wheel_set_size,
+    json_t* wheel_set_json,
+    bomm_wheel_t wheels[],
+    unsigned int wheel_count
+);
+
 #endif /* wheel_h */

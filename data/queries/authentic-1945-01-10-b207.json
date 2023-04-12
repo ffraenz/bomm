@@ -1,0 +1,81 @@
+{
+  "ciphertext": "tsunq rtlia bftqr nuwlq vnitr sctnq ipklm aheef dcabc uworu bswyr bggfd txcbx dvduc ezgfb kyilx aunpq rtuvs wm",
+  "attacks": [
+    {
+      "space": {
+        "slots": [
+          { "wheels": ["B207-UKW"] },
+          { "wheels": ["B207-I"], "rings": "a" },
+          { "wheels": ["B207-II", "B207-III"], "rings": "a" },
+          { "wheels": ["B207-II", "B207-III"], "rings": "abcdefghijklm" },
+          { "wheels": ["ETW-ABC"] }
+        ]
+      }
+    },
+    {
+      "space": {
+        "slots": [
+          { "wheels": ["B207-UKW"] },
+          { "wheels": ["B207-I"], "rings": "a" },
+          { "wheels": ["B207-II", "B207-III"], "rings": "a" },
+          { "wheels": ["B207-II", "B207-III"], "rings": "nopqrstuvwxyz" },
+          { "wheels": ["ETW-ABC"] }
+        ]
+      }
+    },
+    {
+      "space": {
+        "slots": [
+          { "wheels": ["B207-UKW"] },
+          { "wheels": ["B207-II"], "rings": "a" },
+          { "wheels": ["B207-I", "B207-III"], "rings": "a" },
+          { "wheels": ["B207-I", "B207-III"], "rings": "abcdefghijklm" },
+          { "wheels": ["ETW-ABC"] }
+        ]
+      }
+    },
+    {
+      "space": {
+        "slots": [
+          { "wheels": ["B207-UKW"] },
+          { "wheels": ["B207-II"], "rings": "a" },
+          { "wheels": ["B207-I", "B207-III"], "rings": "a" },
+          { "wheels": ["B207-I", "B207-III"], "rings": "nopqrstuvwxyz" },
+          { "wheels": ["ETW-ABC"] }
+        ]
+      }
+    },
+    {
+      "space": {
+        "slots": [
+          { "wheels": ["B207-UKW"] },
+          { "wheels": ["B207-III"], "rings": "a" },
+          { "wheels": ["B207-I", "B207-II"], "rings": "a" },
+          { "wheels": ["B207-I", "B207-II"], "rings": "abcdefghijklm" },
+          { "wheels": ["ETW-ABC"] }
+        ]
+      }
+    },
+    {
+      "space": {
+        "slots": [
+          { "wheels": ["B207-UKW"] },
+          { "wheels": ["B207-III"], "rings": "a" },
+          { "wheels": ["B207-I", "B207-II"], "rings": "a" },
+          { "wheels": ["B207-I", "B207-II"], "rings": "nopqrstuvwxyz" },
+          { "wheels": ["ETW-ABC"] }
+        ]
+      }
+    }
+  ],
+  "wheels": [
+    { "name": "B207-I",   "wiring": "iqynwgavkozscpfbumlextjdhr", "turnovers": "q" },
+    { "name": "B207-II",  "wiring": "ngsymwdjcboavzrlxfkuetqiph", "turnovers": "e" },
+    { "name": "B207-III", "wiring": "rheitxmofkduyqbzlwgscpanjv", "turnovers": "v" },
+    { "name": "ETW-ABC",  "wiring": "abcdefghijklmnopqrstuvwxyz" },
+    { "name": "B207-UKW", "wiring": "nmiedvhgcryubaqzojxwlftskp" }
+  ],
+  "frequencies": {
+    "trigram": "./data/frequencies/enigma1941-trigram.txt"
+  }
+}

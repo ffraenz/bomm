@@ -69,6 +69,6 @@
     { "name": "UKW-C",   "wiring": "fvpjiaoyedrzxwgctkuqsbnmhl" }
   ],
   "frequencies": {
-    "trigram": "/Users/ff/Projects/Bachelor/bomm/data/frequencies/en-trigram.txt"
+    "trigram": "./data/frequencies/en-trigram.txt"
   }
 }

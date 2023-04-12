@@ -72,7 +72,7 @@ void bomm_attack_key_space(bomm_attack_t* attack) {
     unsigned int wheel_indices[slot_count];
     memset(wheel_indices, 0, sizeof(unsigned int) * slot_count);
     
-    // Copy ciphertext to stack
+    // Copy ciphertext to the stack
     char ciphertext_store[bomm_message_size_for_length(attack->ciphertext->length)];
     memcpy(&ciphertext_store, attack->ciphertext, sizeof(ciphertext_store));
     bomm_message_t *ciphertext = (bomm_message_t*) &ciphertext_store;

@@ -32,7 +32,12 @@ bool bomm_wiring_extract(bomm_wiring_t* ptr, const char* string) {
     free(message);
 
     if (error) {
-        fprintf(stderr, "Encountered unexpected wiring string '%s' at position %d\n", string, position);
+        fprintf(
+            stderr,
+            "Encountered unexpected wiring string '%s' at position %d\n",
+            string,
+            position
+        );
         return false;
     }
     

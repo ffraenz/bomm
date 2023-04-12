@@ -31,12 +31,12 @@ bomm_key_space_t* bomm_key_space_init(
     
     // Clear wheel sets
     size_t wheel_sets_mem_size =
-        sizeof(bomm_wheel_t*) * BOMM_MAX_SLOT_COUNT * BOMM_MAX_WHEEL_SET_SIZE;
+    sizeof(bomm_wheel_t*) * BOMM_MAX_SLOT_COUNT * BOMM_MAX_WHEEL_SET_SIZE;
     memset(key_space->wheel_sets, 0, wheel_sets_mem_size);
     
-    // By default, use the full mask for all wheels except for the first
-    // wheel (representing the reflector) and the last wheel (representing
-    // the entry wheel) that usually are stagnant and have no ring setting
+    // By default, use the full ring setting and start position masks for all
+    // slots except for the first (housing the reflector) and the last (housing
+    // the entry wheel) that usually are stagnant
     for (unsigned int i = 0; i < slot_count; i++) {
         bool is_stagnant = i == 0 || i == slot_count - 1;
         bomm_lettermask_t lettermask =
@@ -91,34 +91,18 @@ bomm_key_space_t* bomm_key_space_extract_json(
     
     bool error = false;
     unsigned int slot = 0;
-    unsigned int wheel_set_size;
     while (!error && slot < slot_count) {
         json_t* slot_json = json_array_get(slots_json, slot);
         if (slot_json->type == JSON_OBJECT) {
             // Read wheel set
             json_t* wheel_set_json = json_object_get(slot_json, "wheels");
-            if (wheel_set_json != NULL && wheel_set_json->type == JSON_ARRAY) {
-                wheel_set_size = (unsigned int) json_array_size(wheel_set_json);
-                if (wheel_set_size <= BOMM_MAX_WHEEL_SET_SIZE) {
-                    for (unsigned int j = 0; j < wheel_set_size; j++) {
-                        json_t* name_json = json_array_get(wheel_set_json, j);
-                        if (name_json->type == JSON_STRING) {
-                            const char* name = json_string_value(name_json);
-                            bomm_wheel_t* wheel = bomm_lookup_string(
-                                wheels, sizeof(bomm_wheel_t), wheel_count, name);
-                            if (wheel != NULL) {
-                                key_space->wheel_sets[slot][j] = wheel;
-                            } else {
-                                error = true;
-                            }
-                        } else {
-                            error = true;
-                        }
-                    }
-                } else {
-                    error = true;
-                }
-            } else {
+            if (!bomm_wheel_set_extract_json(
+                key_space->wheel_sets[slot],
+                BOMM_MAX_WHEEL_SET_SIZE,
+                wheel_set_json,
+                wheels,
+                wheel_count
+            )) {
                 error = true;
             }
             
@@ -152,7 +136,7 @@ bomm_key_space_t* bomm_key_space_extract_json(
                 }
             }
             
-            // Read rotating (optional)
+            // Read slot rotating (optional)
             json_t* rotating_json = json_object_get(slot_json, "rotating");
             if (rotating_json != NULL) {
                 if (rotating_json->type == JSON_TRUE || rotating_json->type == JSON_FALSE) {
@@ -161,7 +145,6 @@ bomm_key_space_t* bomm_key_space_extract_json(
                     error = true;
                 }
             }
-            
         } else {
             error = true;
         }
