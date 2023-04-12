@@ -6,6 +6,7 @@
 //
 
 #include "hold.h"
+#include <math.h>
 
 bomm_hold_t* bomm_hold_init(size_t element_size, unsigned int hold_size) {
     size_t element_mem_size = sizeof(bomm_hold_element_t) + element_size;

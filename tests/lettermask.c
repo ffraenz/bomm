@@ -28,22 +28,19 @@ Test(lettermask, bomm_lettermask_extract) {
 
 Test(lettermask, bomm_lettermask_serialize) {
     bomm_lettermask_t lettermask;
-    char* actual_describe_string;
+    char actual_string[BOMM_ALPHABET_SIZE + 1];
     
     lettermask = BOMM_LETTERMASK_NONE;
-    actual_describe_string = bomm_lettermask_serialize(&lettermask);
-    cr_assert_str_eq(actual_describe_string, "");
-    free(actual_describe_string);
+    bomm_lettermask_serialize(actual_string, sizeof(actual_string), &lettermask);
+    cr_assert_str_eq(actual_string, "");
     
     lettermask = 0x024510a0;
-    actual_describe_string = bomm_lettermask_serialize(&lettermask);
-    cr_assert_str_eq(actual_describe_string, "fhmqswz");
-    free(actual_describe_string);
+    bomm_lettermask_serialize(actual_string, sizeof(actual_string), &lettermask);
+    cr_assert_str_eq(actual_string, "fhmqswz");
     
     lettermask = BOMM_LETTERMASK_ALL;
-    actual_describe_string = bomm_lettermask_serialize(&lettermask);
-    cr_assert_str_eq(actual_describe_string, "abcdefghijklmnopqrstuvwxyz");
-    free(actual_describe_string);
+    bomm_lettermask_serialize(actual_string, sizeof(actual_string), &lettermask);
+    cr_assert_str_eq(actual_string, "abcdefghijklmnopqrstuvwxyz");
 }
 
 Test(lettermask, bomm_lettermask_set) {

@@ -46,7 +46,7 @@ bomm_message_t* bomm_message_init_length(unsigned int length);
 /**
  * Allocate and load a message from the given C-string.
  */
-bomm_message_t* bomm_message_init(char* string);
+bomm_message_t* bomm_message_init(const char* string);
 
 /**
  * Calculate the serialize string size for the given message.

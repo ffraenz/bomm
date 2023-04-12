@@ -30,3 +30,12 @@ Test(key, bomm_key_serialize_plugboard) {
     bomm_key_serialize_plugboard(actual_plugboard_string, 39, &key);
     cr_assert_str_eq(actual_plugboard_string, expected_plugboard_string);
 }
+
+Test(key, bomm_key_mechanism_extract) {
+    bomm_mechanism_t actual_mechanism = bomm_key_mechanism_extract("stepping");
+    cr_assert_eq(actual_mechanism, BOMM_MECHANISM_STEPPING);
+    actual_mechanism = bomm_key_mechanism_extract("odometer");
+    cr_assert_eq(actual_mechanism, BOMM_MECHANISM_ODOMETER);
+    actual_mechanism = bomm_key_mechanism_extract("none");
+    cr_assert_eq(actual_mechanism, BOMM_MECHANISM_NONE);
+}

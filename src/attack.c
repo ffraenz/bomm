@@ -44,52 +44,28 @@ static inline bool _enum_lettermask(unsigned char slot_count, unsigned int* posi
     return carry;
 }
 
-bomm_attack_t* bomm_attack_init(unsigned int slice_count) {
-    size_t slice_mem_size = sizeof(bomm_attack_slice_t);
-    size_t attack_mem_size = sizeof(bomm_attack_t) + slice_mem_size * slice_count;
-    
-    bomm_attack_t* attack = malloc(attack_mem_size);
-    if (attack == NULL) {
-        return NULL;
-    }
-    
-    attack->slice_count = slice_count;
-    
-    for (unsigned int i = 0; i < slice_count; i++) {
-        attack->slices[i].attack = attack;
-        attack->slices[i].id = i + 1;
-        attack->slices[i].thread = NULL;
-        attack->slices[i].ciphertext = NULL;
-        attack->slices[i].key_space = NULL;
-    }
-    
-    return attack;
-}
-
 void bomm_attack_destroy(bomm_attack_t* attack) {
     free(attack);
 }
 
-void* bomm_attack_slice_run(void* arg) {
+void* bomm_attack_execute(void* arg) {
     // The argument is assumed to be an attack slice
-    bomm_attack_slice_t* slice = (bomm_attack_slice_t*) arg;
-    bomm_attack_key_space(slice);
+    bomm_attack_t* attack = (bomm_attack_t*) arg;
+    bomm_attack_key_space(attack);
     return NULL;
 }
 
-void bomm_attack_key_space(bomm_attack_slice_t* attack_slice) {
+void bomm_attack_key_space(bomm_attack_t* attack) {
     int i, j;
     bool carry, relevant;
     char key_string[128];
     float score;
     float min_score = -INFINITY;
 
-    // Load ngram map
-    bomm_ngram_map_t* ngram_map = bomm_measure_ngram_map_init(3, "/Users/ff/Projects/Bachelor/bomm/data/enigma1941-trigram.txt");
-
     // Prepare working key instance
-    bomm_key_space_t* key_space = attack_slice->key_space;
-    bomm_hold_t* hold = attack_slice->attack->hold;
+    bomm_key_space_t* key_space = &attack->key_space;
+    bomm_mechanism_t mechanism = key_space->mechanism;
+    bomm_hold_t* hold = attack->query->hold;
     int slot_count = key_space->slot_count;
     bomm_key_t key;
     bomm_key_init(&key, key_space);
@@ -97,8 +73,8 @@ void bomm_attack_key_space(bomm_attack_slice_t* attack_slice) {
     memset(wheel_indices, 0, sizeof(unsigned int) * slot_count);
     
     // Copy ciphertext to stack
-    char ciphertext_store[bomm_message_size_for_length(attack_slice->ciphertext->length)];
-    memcpy(&ciphertext_store, attack_slice->ciphertext, sizeof(ciphertext_store));
+    char ciphertext_store[bomm_message_size_for_length(attack->ciphertext->length)];
+    memcpy(&ciphertext_store, attack->ciphertext, sizeof(ciphertext_store));
     bomm_message_t *ciphertext = (bomm_message_t*) &ciphertext_store;
     
     // Reserve space for plaintext on the stack
@@ -151,18 +127,17 @@ void bomm_attack_key_space(bomm_attack_slice_t* attack_slice) {
             do {
                 // 3. Enumerate relevant start positions
                 do {
-                    // TODO: When the stepping mechanism is used, middle wheel
-                    // positions that are equal to one of the middle wheel
-                    // turnovers can be neglected as the following middle wheel
-                    // position is identical
-                    relevant = true;
+                    // Skip redundant positions caused by the double stepping anomaly
+                    relevant =
+                        mechanism != BOMM_MECHANISM_STEPPING ||
+                        !bomm_lettermask_has(&key.wheels[2].turnovers, key.positions[2]);
 
                     if (relevant) {
                         // Generate scrambler
                         bomm_enigma_generate_scrambler(scrambler, &key);
 
                         // Attack ciphertext
-                        score = bomm_attack_plugboard(key.plugboard, scrambler, ciphertext, ngram_map);
+                        score = bomm_attack_plugboard(key.plugboard, scrambler, ciphertext);
 
                         if (score > min_score) {
                             // Generate preview
@@ -200,8 +175,7 @@ const bomm_letter_t _plug_order[] = {
 float bomm_attack_plugboard(
     bomm_letter_t* plugboard,
     bomm_scrambler_t* scrambler,
-    bomm_message_t* ciphertext,
-    bomm_ngram_map_t* ngram_map
+    bomm_message_t* ciphertext
 ) {
     unsigned int i, j, a, b, best_b;
     float score, best_score;
@@ -210,7 +184,7 @@ float bomm_attack_plugboard(
     memcpy(plugboard, &bomm_key_plugboard_identity, sizeof(bomm_letter_t) * BOMM_ALPHABET_SIZE);
 
     // Score empty plugboard
-    best_score = bomm_measure_scrambler_ngram(3, scrambler, plugboard, ciphertext, ngram_map);
+    best_score = bomm_measure_scrambler_ngram(3, scrambler, plugboard, ciphertext);
 
     // Enumerate over the first plug
     for (i = 0; i < BOMM_ALPHABET_SIZE; i++) {
@@ -239,7 +213,7 @@ float bomm_attack_plugboard(
             plugboard[b] = a;
 
             // Measure score and compare it to the previous best score
-            score = bomm_measure_scrambler_ngram(3, scrambler, plugboard, ciphertext, ngram_map);
+            score = bomm_measure_scrambler_ngram(3, scrambler, plugboard, ciphertext);
             if (score > best_score) {
                 best_score = score;
                 best_b = b;

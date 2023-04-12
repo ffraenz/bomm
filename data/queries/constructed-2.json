@@ -1,0 +1,74 @@
+{
+  "ciphertext": "tdgvs nacui fmmvd odmts pfwpw mhtaa xlekn wewih xwvqz mvdbj tvzcn poumt mzftl sudfa itjny zstup kzdtf shpgf puurx qlmtw crqii qscgu jkvkm exkuy pxmuq adsfe zpmme qyezr fgslm ldale awdou qwbec xcbrm reqgz dtboe dlxgz jdsx",
+  "attacks": [
+    {
+      "space": {
+        "slots": [
+          { "wheels": ["UKW-B"] },
+          { "wheels": ["I"], "rings": "a" },
+          { "wheels": ["II", "III", "IV", "V"], "rings": "a" },
+          { "wheels": ["II", "III", "IV", "V"] },
+          { "wheels": ["ETW-ABC"] }
+        ]
+      }
+    },
+    {
+      "space": {
+        "slots": [
+          { "wheels": ["UKW-B"] },
+          { "wheels": ["II"], "rings": "a" },
+          { "wheels": ["I", "III", "IV", "V"], "rings": "a" },
+          { "wheels": ["I", "III", "IV", "V"] },
+          { "wheels": ["ETW-ABC"] }
+        ]
+      }
+    },
+    {
+      "space": {
+        "slots": [
+          { "wheels": ["UKW-B"] },
+          { "wheels": ["III"], "rings": "a" },
+          { "wheels": ["I", "II", "IV", "V"], "rings": "a" },
+          { "wheels": ["I", "II", "IV", "V"] },
+          { "wheels": ["ETW-ABC"] }
+        ]
+      }
+    },
+    {
+      "space": {
+        "slots": [
+          { "wheels": ["UKW-B"] },
+          { "wheels": ["IV"], "rings": "a" },
+          { "wheels": ["I", "II", "III", "V"], "rings": "a" },
+          { "wheels": ["I", "II", "III", "V"] },
+          { "wheels": ["ETW-ABC"] }
+        ]
+      }
+    },
+    {
+      "space": {
+        "slots": [
+          { "wheels": ["UKW-B"] },
+          { "wheels": ["V"], "rings": "a" },
+          { "wheels": ["I", "II", "III", "IV"], "rings": "a" },
+          { "wheels": ["I", "II", "III", "IV"] },
+          { "wheels": ["ETW-ABC"] }
+        ]
+      }
+    }
+  ],
+  "wheels": [
+    { "name": "I",       "wiring": "ekmflgdqvzntowyhxuspaibrcj", "turnovers": "q" },
+    { "name": "II",      "wiring": "ajdksiruxblhwtmcqgznpyfvoe", "turnovers": "e" },
+    { "name": "III",     "wiring": "bdfhjlcprtxvznyeiwgakmusqo", "turnovers": "v" },
+    { "name": "IV",      "wiring": "esovpzjayquirhxlnftgkdcmwb", "turnovers": "j" },
+    { "name": "V",       "wiring": "vzbrgityupsdnhlxawmjqofeck", "turnovers": "z" },
+    { "name": "ETW-ABC", "wiring": "abcdefghijklmnopqrstuvwxyz" },
+    { "name": "UKW-A",   "wiring": "ejmzalyxvbwfcrquontspikhgd" },
+    { "name": "UKW-B",   "wiring": "yruhqsldpxngokmiebfzcwvjat" },
+    { "name": "UKW-C",   "wiring": "fvpjiaoyedrzxwgctkuqsbnmhl" }
+  ],
+  "frequencies": {
+    "trigram": "/Users/ff/Projects/Bachelor/bomm/data/frequencies/en-trigram.txt"
+  }
+}

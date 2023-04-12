@@ -13,7 +13,6 @@
 #include <string.h>
 #include <stdbool.h>
 #include <pthread.h>
-#include <math.h>
 
 #define BOMM_HOLD_PREVIEW_SIZE 64
 

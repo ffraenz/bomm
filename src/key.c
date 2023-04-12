@@ -13,27 +13,16 @@ const bomm_letter_t bomm_key_plugboard_identity[] = {
    20, 21, 22, 23, 24, 25
 };
 
-bomm_wheel_t* bomm_wheel_init(
-    char* name,
-    char* wiring_string,
-    char* turnovers_string
+bomm_key_space_t* bomm_key_space_init(
+    bomm_key_space_t* key_space,
+    bomm_mechanism_t mechanism,
+    unsigned int slot_count
 ) {
-    bomm_wheel_t* wheel = malloc(sizeof(bomm_wheel_t));
-    if (wheel == NULL) {
-        return NULL;
-    }
-    
-    bomm_strncpy(wheel->name, name, BOMM_WHEEL_NAME_MAX_LENGTH);
-    bomm_wiring_extract(&wheel->wiring, wiring_string);
-    bomm_lettermask_extract(&wheel->turnovers, turnovers_string);
-    
-    return wheel;
-}
-
-bomm_key_space_t* bomm_key_space_init(bomm_mechanism_t mechanism, unsigned int slot_count) {
-    bomm_key_space_t* key_space = malloc(sizeof(bomm_key_space_t));
     if (key_space == NULL) {
-        return NULL;
+        key_space = malloc(sizeof(bomm_key_space_t));
+        if (key_space == NULL) {
+            return NULL;
+        }
     }
     
     // Store meta data
@@ -60,29 +49,158 @@ bomm_key_space_t* bomm_key_space_init(bomm_mechanism_t mechanism, unsigned int s
     return key_space;
 }
 
+bomm_mechanism_t bomm_key_mechanism_extract(const char* mechanism_string) {
+    if (strcmp(mechanism_string, "stepping") == 0) {
+        return BOMM_MECHANISM_STEPPING;
+    } else if (strcmp(mechanism_string, "odometer") == 0) {
+        return BOMM_MECHANISM_ODOMETER;
+    } else {
+        return BOMM_MECHANISM_NONE;
+    }
+}
+
+bomm_key_space_t* bomm_key_space_extract_json(
+    bomm_key_space_t* key_space_ptr,
+    json_t* key_space_json,
+    bomm_wheel_t wheels[],
+    unsigned int wheel_count
+) {
+    if (key_space_json->type != JSON_OBJECT) {
+        return NULL;
+    }
+    
+    // Read mechanism
+    json_t* mechanism_json = json_object_get(key_space_json, "mechanism");
+    bomm_mechanism_t mechanism = BOMM_MECHANISM_STEPPING;
+    if (mechanism_json != NULL) {
+        mechanism = bomm_key_mechanism_extract(json_string_value(mechanism_json));
+    }
+    
+    // Read slot count
+    json_t* slots_json = json_object_get(key_space_json, "slots");
+    if (slots_json->type != JSON_ARRAY) {
+        return NULL;
+    }
+    unsigned int slot_count = (unsigned int) json_array_size(slots_json);
+    if (slot_count > BOMM_MAX_SLOT_COUNT) {
+        return NULL;
+    }
+    
+    // Init key space
+    bomm_key_space_t* key_space = bomm_key_space_init(key_space_ptr, mechanism, slot_count);
+    
+    bool error = false;
+    unsigned int slot = 0;
+    unsigned int wheel_set_size;
+    while (!error && slot < slot_count) {
+        json_t* slot_json = json_array_get(slots_json, slot);
+        if (slot_json->type == JSON_OBJECT) {
+            // Read wheel set
+            json_t* wheel_set_json = json_object_get(slot_json, "wheels");
+            if (wheel_set_json != NULL && wheel_set_json->type == JSON_ARRAY) {
+                wheel_set_size = (unsigned int) json_array_size(wheel_set_json);
+                if (wheel_set_size <= BOMM_MAX_WHEEL_SET_SIZE) {
+                    for (unsigned int j = 0; j < wheel_set_size; j++) {
+                        json_t* name_json = json_array_get(wheel_set_json, j);
+                        if (name_json->type == JSON_STRING) {
+                            const char* name = json_string_value(name_json);
+                            bomm_wheel_t* wheel = bomm_lookup_string(
+                                wheels, sizeof(bomm_wheel_t), wheel_count, name);
+                            if (wheel != NULL) {
+                                key_space->wheel_sets[slot][j] = wheel;
+                            } else {
+                                error = true;
+                            }
+                        } else {
+                            error = true;
+                        }
+                    }
+                } else {
+                    error = true;
+                }
+            } else {
+                error = true;
+            }
+            
+            // Read ring mask
+            json_t* ring_mask_json = json_object_get(slot_json, "rings");
+            if (ring_mask_json != NULL) {
+                if (ring_mask_json->type == JSON_STRING) {
+                    if (bomm_lettermask_extract(
+                        &key_space->ring_masks[slot],
+                        json_string_value(ring_mask_json)
+                    ) == NULL) {
+                        error = true;
+                    }
+                } else {
+                    error = true;
+                }
+            }
+            
+            // Read position mask
+            json_t* position_mask_json = json_object_get(slot_json, "positions");
+            if (position_mask_json != NULL) {
+                if (position_mask_json->type == JSON_STRING) {
+                    if (bomm_lettermask_extract(
+                        &key_space->position_masks[slot],
+                        json_string_value(position_mask_json)
+                    ) == NULL) {
+                        error = true;
+                    }
+                } else {
+                    error = true;
+                }
+            }
+            
+            // Read rotating (optional)
+            json_t* rotating_json = json_object_get(slot_json, "rotating");
+            if (rotating_json != NULL) {
+                if (rotating_json->type == JSON_TRUE || rotating_json->type == JSON_FALSE) {
+                    key_space->rotating_slots[slot] = rotating_json->type == JSON_TRUE;
+                } else {
+                    error = true;
+                }
+            }
+            
+        } else {
+            error = true;
+        }
+        
+        slot++;
+    }
+    
+    if (error) {
+        if (key_space_ptr == NULL) {
+            free(key_space);
+        }
+        return NULL;
+    }
+    
+    return key_space;
+}
+
 void bomm_key_space_destroy(bomm_key_space_t* key_space) {
-    // TODO: Free wheels referenced by this key space
     free(key_space);
 }
 
 bomm_key_space_t* bomm_key_space_enigma_i_init(void) {
-    bomm_key_space_t* key_space = bomm_key_space_init(BOMM_MECHANISM_STEPPING, 5);
+    bomm_key_space_t* key_space = bomm_key_space_init(NULL, BOMM_MECHANISM_STEPPING, 5);
     if (key_space == NULL) {
         return NULL;
     }
     
     // Initialize wheels
     // TODO: Check if initialization succeeded
-    // TODO: Handle ownership of the wheels           abcdefghijklmnopqrstuvwxyz
-    bomm_wheel_t* w_i     = bomm_wheel_init("I",     "ekmflgdqvzntowyhxuspaibrcj", "q");
-    bomm_wheel_t* w_ii    = bomm_wheel_init("II",    "ajdksiruxblhwtmcqgznpyfvoe", "e");
-    bomm_wheel_t* w_iii   = bomm_wheel_init("III",   "bdfhjlcprtxvznyeiwgakmusqo", "v");
-    bomm_wheel_t* w_iv    = bomm_wheel_init("IV",    "esovpzjayquirhxlnftgkdcmwb", "j");
-    bomm_wheel_t* w_v     = bomm_wheel_init("V",     "vzbrgityupsdnhlxawmjqofeck", "z");
-    bomm_wheel_t* w_abc   = bomm_wheel_init("ABC",   "abcdefghijklmnopqrstuvwxyz", "");
-    bomm_wheel_t* w_ukw_a = bomm_wheel_init("UKW-A", "ejmzalyxvbwfcrquontspikhgd", "");
-    bomm_wheel_t* w_ukw_b = bomm_wheel_init("UKW-B", "yruhqsldpxngokmiebfzcwvjat", "");
-    bomm_wheel_t* w_ukw_c = bomm_wheel_init("UKW-C", "fvpjiaoyedrzxwgctkuqsbnmhl", "");
+    // TODO: Handle ownership of the wheels
+    bomm_wheel_t* w_i     = bomm_wheel_init(NULL, "I",     "ekmflgdqvzntowyhxuspaibrcj", "q");
+    bomm_wheel_t* w_ii    = bomm_wheel_init(NULL, "II",    "ajdksiruxblhwtmcqgznpyfvoe", "e");
+    bomm_wheel_t* w_iii   = bomm_wheel_init(NULL, "III",   "bdfhjlcprtxvznyeiwgakmusqo", "v");
+    bomm_wheel_t* w_iv    = bomm_wheel_init(NULL, "IV",    "esovpzjayquirhxlnftgkdcmwb", "j");
+    bomm_wheel_t* w_v     = bomm_wheel_init(NULL, "V",     "vzbrgityupsdnhlxawmjqofeck", "z");
+    bomm_wheel_t* w_abc   = bomm_wheel_init(NULL, "ABC",   "abcdefghijklmnopqrstuvwxyz", "");
+    bomm_wheel_t* w_ukw_a = bomm_wheel_init(NULL, "UKW-A", "ejmzalyxvbwfcrquontspikhgd", "");
+    bomm_wheel_t* w_ukw_b = bomm_wheel_init(NULL, "UKW-B", "yruhqsldpxngokmiebfzcwvjat", "");
+    bomm_wheel_t* w_ukw_c = bomm_wheel_init(NULL, "UKW-C", "fvpjiaoyedrzxwgctkuqsbnmhl", "");
     
     // Set of reflectors (in the order they are tested)
     key_space->wheel_sets[0][0] = w_ukw_b;
@@ -207,7 +325,7 @@ void bomm_key_hold_print(bomm_hold_t* hold) {
     for (unsigned int i = 0; i < hold->count; i++) {
         element = bomm_hold_at(hold, i);
         bomm_key_serialize(key_string, 128, (bomm_key_t*) element->data);
-        printf("%2d │ %72s │ %10f │ %30s\n", i + 1, key_string, element->score, element->preview);
+        printf("%2d │ %80s │ %10f │ %30s\n", i + 1, key_string, element->score, element->preview);
     }
     
     // Unlock hold

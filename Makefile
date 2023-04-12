@@ -1,8 +1,9 @@
 
 CC := cc
 RELEASE_CFLAGS := -O3 -std=c17 -pthread -pedantic -Wall -Werror -Wextra
+RELEASE_LDFLAGS := -ljansson
 TEST_CFLAGS := -std=c17 -pthread -pedantic -Wall -Werror -Wextra
-TEST_LDFLAGS := -lcriterion
+TEST_LDFLAGS := -lcriterion -ljansson
 
 TARGET_EXEC := bomm
 BUILD_PATH := build
@@ -34,7 +35,7 @@ build/obj/%.o: $(RELEASE_SRC_PATH)/%.c
 # Link release task
 $(TARGET_PATH): $(RELEASE_OBJS)
 	mkdir -p $(dir $@)
-	$(CC) $(RELEASE_OBJS) -o $@ $(RELEASE_CFLAGS)
+	$(CC) $(RELEASE_LDFLAGS) $(RELEASE_OBJS) -o $@
 
 # Compile tests task
 $(TEST_OBJ_PATH)/%.o: $(TEST_SRC_PATH)/%.c
@@ -45,6 +46,9 @@ $(TEST_OBJ_PATH)/%.o: $(TEST_SRC_PATH)/%.c
 $(TEST_BIN_PATH)/%: $(TEST_OBJ_PATH)/%.o $(filter-out $(RELEASE_OBJ_MAIN_PATH), $(RELEASE_OBJS))
 	mkdir -p $(dir $@)
 	$(CC) $(TEST_LDFLAGS) $^ -o $@
+
+# Build program task
+build: $(TARGET_PATH)
 
 # Run program task
 run: $(TARGET_PATH)

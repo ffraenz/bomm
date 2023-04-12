@@ -8,10 +8,22 @@ Bomm is a program for breaking Enigma ciphertext. It was written as part of the 
 Make sure the following dependencies are present on your system:
 
 ```bash
-brew install criterion
+brew install criterion jansson
 ```
 
-## Data sources
+Build and test the program using `make`:
+
+```bash
+make clean && make test && make build
+```
+
+The input to a program is provided through a query JSON file. You can execute it like so:
+
+```bash
+./build/bomm ./data/queries/authentic-1945-01-10.json
+```
+
+## Sources
 
 ### Frequency of English text
 

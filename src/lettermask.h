@@ -64,11 +64,11 @@ inline static void bomm_lettermask_clear(bomm_lettermask_t* mask, bomm_letter_t 
 /**
  * Load the given lettermask string into memory at the specified pointer
  */
-void bomm_lettermask_extract(bomm_lettermask_t* ptr, char* string);
+bomm_lettermask_t* bomm_lettermask_extract(bomm_lettermask_t* ptr, const char* string);
 
 /**
  * Export the given lettermask to a string
  */
-char* bomm_lettermask_serialize(bomm_lettermask_t* lettermask);
+void bomm_lettermask_serialize(char* str, size_t size, bomm_lettermask_t* lettermask);
 
 #endif /* lettermask_h */

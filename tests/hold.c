@@ -6,6 +6,7 @@
 //
 
 #include <criterion/criterion.h>
+#include <math.h>
 #include "../src/hold.h"
 
 Test(key, bomm_hold_init) {

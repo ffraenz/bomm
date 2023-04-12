@@ -11,38 +11,23 @@
 #include <math.h>
 #include <stdio.h>
 #include "hold.h"
+#include "wheel.h"
 #include "wiring.h"
 #include "lettermask.h"
 #include "utility.h"
 
-#define BOMM_WHEEL_NAME_MAX_LENGTH 16
 #define BOMM_MAX_SLOT_COUNT 6
 #define BOMM_MAX_WHEEL_SET_SIZE 15
-
-/**
- * Struct representing a wheel without its state (e.g. ring setting, position).
- */
-typedef struct _bomm_wheel {
-    /**
-     * Wheel name (null terminated string of max. 15 chars)
-     */
-    char name[BOMM_WHEEL_NAME_MAX_LENGTH];
-    
-    /**
-     * Wheel wiring
-     */
-    bomm_wiring_t wiring;
-    
-    /**
-     * Wheel turnovers
-     */
-    bomm_lettermask_t turnovers;
-} bomm_wheel_t;
 
 /**
  * Rotation mechanism options
  */
 typedef enum {
+    /**
+     * No mechanism; The position does not change throughout the message.
+     */
+    BOMM_MECHANISM_NONE,
+    
     /**
      * Assumes exactly 5 slots with one entry wheel, 3 rotating wheels, and
      * one reflector. Implements the double stepping anomaly.
@@ -50,9 +35,9 @@ typedef enum {
     BOMM_MECHANISM_STEPPING,
     
     /**
-     * Cog wheel mechanism. Works with any number of slots.
+     * Odometer mechanism. Works with any number of slots.
      */
-    BOMM_MECHANISM_COG_WHEEL
+    BOMM_MECHANISM_ODOMETER
 } bomm_mechanism_t;
 
 /**
@@ -144,18 +129,32 @@ typedef struct _bomm_key {
 extern const bomm_letter_t bomm_key_plugboard_identity[BOMM_ALPHABET_SIZE];
 
 /**
- * Initialize a wheel with the given name, wiring, and turnovers.
+ * Extract a mechanism value from the given string.
  */
-bomm_wheel_t* bomm_wheel_init(
-    char* name,
-    char* wiring_string,
-    char* turnovers_string
-);
+bomm_mechanism_t bomm_key_mechanism_extract(const char* mechanism_string);
 
 /**
  * Initialize a key space with the given mechanism and slot count.
  */
-bomm_key_space_t* bomm_key_space_init(bomm_mechanism_t mechanism, unsigned int slot_count);
+bomm_key_space_t* bomm_key_space_init(
+    bomm_key_space_t* key_space,
+    bomm_mechanism_t mechanism,
+    unsigned int slot_count
+);
+
+/**
+ * Extract a key space from the given JSON object.
+ * @param key_space Existing key space or NULL to allocate a new one
+ * @param key_space_json JSON key space object
+ * @param wheels Pointer to an array of wheels for lookup
+ * @param wheel_count Number of elements in `wheels`
+ */
+bomm_key_space_t* bomm_key_space_extract_json(
+    bomm_key_space_t* key_space,
+    json_t* key_space_json,
+    bomm_wheel_t wheels[],
+    unsigned int wheel_count
+);
 
 /**
  * Initialize a key space for the Enigma I model.

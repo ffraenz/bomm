@@ -28,29 +28,38 @@ typedef struct _bomm_ngram_map_t {
 } bomm_ngram_map_t;
 
 /**
- * Allocate an n-gram map and load the frequency from the given file.
+ * Global variable storing pointers to n-gram maps that have been initialized
+ * previously. The array index specifies the n in n-gram.
  */
-bomm_ngram_map_t* bomm_measure_ngram_map_init(unsigned char n, char* filename);
+extern const bomm_ngram_map_t* bomm_ngram_map[9];
 
 /**
- * n-gram score a ciphertext put through the given scrabler and plugboard.
- * @param n 1 for unigram, 2 for bigram, 3 for bigram, etc.
+ * Allocate an n-gram frequency map in memory and fill it with the contents
+ * parsed from the given file.
+ * Stores the pointer to the global variable `bomm_ngram_map[n]`.
+ */
+bomm_ngram_map_t* bomm_measure_ngram_map_init(unsigned char n, const char* filename);
+
+/**
+ * Measure the n-gram score of a message put through the given
+ * scrabler and plugboard.
+ * @param n The n in n-gram
  */
 static inline float bomm_measure_scrambler_ngram(
     unsigned int n,
     bomm_scrambler_t* scrambler,
     bomm_letter_t* plugboard,
-    bomm_message_t* ciphertext,
-    bomm_ngram_map_t* ngram_map
+    bomm_message_t* message
 ) {
     unsigned int map_size = pow(BOMM_ALPHABET_SIZE, n);
+    const bomm_ngram_map_t* map = bomm_ngram_map[n];
     unsigned int index, letter;
 
     float score = 0;
     unsigned int map_index = 0;
 
-    for (index = 0; index < ciphertext->length; index++) {
-        letter = ciphertext->letters[index];
+    for (index = 0; index < message->length; index++) {
+        letter = message->letters[index];
         letter = plugboard[letter];
         letter = scrambler->map[index][letter];
         letter = plugboard[letter];
@@ -58,17 +67,18 @@ static inline float bomm_measure_scrambler_ngram(
         map_index = (map_index * BOMM_ALPHABET_SIZE + letter) % map_size;
         
         if (index >= n - 1) {
-            score += ngram_map->map[map_index];
+            score += map->map[map_index];
         }
     }
 
-    return score / (ciphertext->length - n + 1);
+    return score / (message->length - n + 1);
 }
 
 /**
  * Measure the n-gram frequency of the given message.
- * The frequency array is expected to be of size `BOMM_ALPHABET_SIZE^n`.
  * TODO: Optimize speed for monograms.
+ * @param n The n in n-gram
+ * @param frequencies Frequencies map of size `pow(BOMM_ALPHABET_SIZE, n)`
  */
 static inline void bomm_measure_message_frequency(
     unsigned int n,
@@ -91,7 +101,8 @@ static inline void bomm_measure_message_frequency(
 
 /**
  * Measure the n-gram frequency of the given scrambler, plugboard, and message.
- * The frequency array is expected to be of size `BOMM_ALPHABET_SIZE^n`.
+ * @param n The n in n-gram
+ * @param frequencies Frequencies map of size `pow(BOMM_ALPHABET_SIZE, n)`
  */
 static inline void bomm_measure_scrambler_frequency(
     unsigned int n,
@@ -124,6 +135,9 @@ static inline void bomm_measure_scrambler_frequency(
  * Definition: `\text{IC} = c\frac{\sum_{i=1}^cf_i(f_i-1)}{n(n-1)}`
  * with `f_i` appearances of letter `i`, `n` the total number of letters, and
  * `c` the number of letters in the alphabet.
+ *
+ * @param n The n in n-gram
+ * @param frequencies Frequencies map of size `pow(BOMM_ALPHABET_SIZE, n)`
  */
 static inline float bomm_measure_frequency_ic(
     unsigned int n,
@@ -143,6 +157,8 @@ static inline float bomm_measure_frequency_ic(
 
 /**
  * Calculate the Entropy for the given message in bits.
+ * @param n The n in n-gram
+ * @param frequencies Frequencies map of size `pow(BOMM_ALPHABET_SIZE, n)`
  */
 static inline float bomm_measure_frequency_entropy(
     unsigned int n,

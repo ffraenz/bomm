@@ -7,7 +7,11 @@
 
 #include "measure.h"
 
-bomm_ngram_map_t* bomm_measure_ngram_map_init(unsigned char n, char* filename) {
+const bomm_ngram_map_t* bomm_ngram_map[9] = {
+    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL
+};
+
+bomm_ngram_map_t* bomm_measure_ngram_map_init(unsigned char n, const char* filename) {
     // Open file in reading mode
     FILE* file = fopen(filename, "r");
     if (!file) {
@@ -20,7 +24,7 @@ bomm_ngram_map_t* bomm_measure_ngram_map_init(unsigned char n, char* filename) {
     size_t ngram_map_size = sizeof(bomm_ngram_map_t) + map_size * sizeof(bomm_ngram_map_entry);
     bomm_ngram_map_t* ngram_map = malloc(ngram_map_size);
     if (!ngram_map) {
-        fprintf(stderr, "Out of memory while loading ngram map\n");
+        fprintf(stderr, "Out of memory while loading %d-gram map\n", n);
         return NULL;
     }
     
@@ -33,7 +37,8 @@ bomm_ngram_map_t* bomm_measure_ngram_map_init(unsigned char n, char* filename) {
     char ascii;
     bomm_letter_t letter;
     
-    // Reset frequencies
+    // Reset
+    ngram_map->n = n;
     memset(ngram_map->map, 0, map_size);
     
     // Parse file
@@ -82,7 +87,7 @@ bomm_ngram_map_t* bomm_measure_ngram_map_init(unsigned char n, char* filename) {
     // Handle parsing error
     if (state == 255 || frequency_sum == 0) {
         free(ngram_map);
-        fprintf(stderr, "Error parsing n-gram file\n");
+        fprintf(stderr, "Error parsing %d-gram file %s\n", n, filename);
         return NULL;
     }
     
@@ -102,5 +107,6 @@ bomm_ngram_map_t* bomm_measure_ngram_map_init(unsigned char n, char* filename) {
             (float) log(probability > 0 ? probability : fallback_probability);
     }
     
+    bomm_ngram_map[n] = ngram_map;
     return ngram_map;
 }

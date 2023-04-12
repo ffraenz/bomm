@@ -84,6 +84,9 @@ inline static void bomm_enigma_generate_scrambler(
  */
 inline static void bomm_enigma_engage_mechanism(bomm_key_t* state) {
     switch (state->mechanism) {
+        case BOMM_MECHANISM_NONE: {
+            break;
+        }
         case BOMM_MECHANISM_STEPPING: {
             // The Enigma stepping rotation mechanism assumes 1 entry wheel,
             // 3 rotating wheels, and 1 reflector. The fast rotating wheel is
@@ -108,7 +111,7 @@ inline static void bomm_enigma_engage_mechanism(bomm_key_t* state) {
             state->positions[3]++;
             break;
         }
-        case BOMM_MECHANISM_COG_WHEEL: {
+        case BOMM_MECHANISM_ODOMETER: {
             // The gear rotation mechanism behaves exactly like an odometer
             // of a car
             bool step_next_slot = true;

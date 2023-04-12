@@ -17,7 +17,7 @@ bomm_message_t* bomm_message_init_length(unsigned int length) {
     return message;
 }
 
-bomm_message_t* bomm_message_init(char* string) {
+bomm_message_t* bomm_message_init(const char* string) {
     size_t length = strlen(string);
     size_t message_size = bomm_message_size_for_length((unsigned int) length);
     bomm_message_t* message = (bomm_message_t*) malloc(message_size);

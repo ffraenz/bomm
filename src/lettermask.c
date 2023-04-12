@@ -7,38 +7,32 @@
 
 #include "lettermask.h"
 
-void bomm_lettermask_extract(bomm_lettermask_t* ptr, char* string) {
+bomm_lettermask_t* bomm_lettermask_extract(bomm_lettermask_t* lettermask, const char* string) {
     // TODO: Implement parser for lettermask notation
     bomm_message_t *message = bomm_message_init(string);
     if (!message) {
         fprintf(stderr, "Out of memory while loading lettermask\n");
-        return;
+        return NULL;
     }
     
-    *ptr = 0;
+    *lettermask = 0;
     for (unsigned int i = 0; i < message->length; i++) {
         // Set bits at letter positions
-        *ptr = *ptr | (1 << message->letters[i]);
+        *lettermask = *lettermask | (1 << message->letters[i]);
     }
 
     free(message);
+    return lettermask;
 }
 
-char* bomm_lettermask_serialize(bomm_lettermask_t* lettermask) {
-    char* string = (char*) malloc(sizeof(char) * (BOMM_ALPHABET_SIZE + 1));
-    if (!string) {
-        fprintf(stderr, "Out of memory while describing lettermask\n");
-        return "";
-    }
-    
-    int j = 0;
-    for (bomm_letter_t letter = 0; letter < BOMM_ALPHABET_SIZE; letter++) {
+void bomm_lettermask_serialize(char* str, size_t size, bomm_lettermask_t* lettermask) {
+    unsigned int i = 0;
+    unsigned int letter = 0;
+    while (letter < BOMM_ALPHABET_SIZE && i < size - 1) {
         if (bomm_lettermask_has(lettermask, letter)) {
-            string[j++] = BOMM_ALPHABET[letter];
+            str[i++] = BOMM_ALPHABET[letter];
         }
+        letter++;
     }
-    
-    string[j++] = '\0';
-    string = realloc(string, sizeof(char) * j);
-    return string;
+    str[i] = '\0';
 }
