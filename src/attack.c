@@ -137,7 +137,7 @@ void bomm_attack_key_space(bomm_attack_t* attack) {
                         bomm_enigma_generate_scrambler(scrambler, &key);
 
                         // Attack ciphertext
-                        score = bomm_attack_plugboard(key.plugboard, scrambler, ciphertext);
+                        score = bomm_attack_plugboard_enigma_suite(key.plugboard, scrambler, ciphertext);
 
                         if (score > min_score) {
                             // Generate preview
@@ -166,14 +166,14 @@ void bomm_attack_key_space(bomm_attack_t* attack) {
 
 // During the hillclimb we exhaust the following plugs in order
 // The I-Stecker strategy starts with E, N, R, X, S, I
-const bomm_letter_t _plug_order[] = {
+const unsigned int _plug_order[] = {
      4, 13, 17, 23, 18,  8,  0,  1,  2,  3,
      5,  6,  7,  9, 10, 11, 12, 14, 15, 16,
     19, 20, 21, 22, 24, 25
 };
 
 float bomm_attack_plugboard(
-    bomm_letter_t* plugboard,
+    unsigned int* plugboard,
     bomm_scrambler_t* scrambler,
     bomm_message_t* ciphertext
 ) {
@@ -181,7 +181,7 @@ float bomm_attack_plugboard(
     float score, best_score;
 
     // Reset plugboard
-    memcpy(plugboard, &bomm_key_plugboard_identity, sizeof(bomm_letter_t) * BOMM_ALPHABET_SIZE);
+    memcpy(plugboard, &bomm_key_plugboard_identity, sizeof(bomm_key_plugboard_identity));
 
     // Score empty plugboard
     best_score = bomm_measure_scrambler_ngram(3, scrambler, plugboard, ciphertext);
@@ -227,6 +227,158 @@ float bomm_attack_plugboard(
         // Choose best option to go forward
         plugboard[a] = best_b;
         plugboard[best_b] = a;
+    }
+
+    return best_score;
+}
+
+float bomm_attack_plugboard_enigma_suite(
+    unsigned int* plugboard,
+    bomm_scrambler_t* scrambler,
+    bomm_message_t* ciphertext
+) {
+    // Action encoding: The most significant hex digit signifies whether a
+    // measurement should be taken after the swap (non-zero value) or not
+    // (zero value). The remaining, least significant hex digit describes the
+    // two plugs in the `plugs` 4-tuple to be swapped like so:
+    //
+    // Swap | Swap bin | 0123
+    // ---- | -------- | ----
+    //  0xb |    10 11 | __23
+    //  0x7 |    01 11 | _1_3
+    //  0x6 |    01 10 | _12_
+    //  0x3 |    00 11 | 0__3
+    //  0x2 |    00 10 | 0_2_
+    //  0x1 |    00 01 | 01__
+    
+    // Case 1: Both plugs are either self-steckered or a steckered pair
+    //
+    // Legend: / not relevant, * self-steckered, AA steckered with each other
+    //
+    // N | Action | 0123 | 0123 | Measure
+    // - | ------ | ---- | ---- | -------
+    // 0 |      / | /**/ | /AA/ | /
+    // 1 |   0x16 | /AA/ | /**/ | Yes
+    const unsigned char case_1_actions[] =
+        { 0x16, 0 };
+    
+    // Case 2: The first plug is self-steckered and the second one is steckered
+    //
+    // N | Action | 0123 | Measure
+    // - | ------ | ---- | -------
+    // 0 |      / | /*AA | /
+    // 1 |   0x1b | /*** | Yes
+    // 2 |   0x16 | /AA* | Yes (KZ_IK)
+    // 3 |   0x06 | /*** | No
+    // 4 |   0x17 | /A*A | Yes (KZ_IZ)
+    const unsigned char case_2_actions[] =
+        { 0x1b, 0x16, 0x06, 0x17, 0 };
+    
+    // Case 3: Both plugs are steckered separately
+    //
+    // N  | Action | 0123 | Measure
+    // -- | ------ | ---- | -------
+    //  0 |      / | AABB | /
+    //  1 |   0x11 | ABCC | Yes
+    //  2 |   0x1b | **** | Yes
+    //  3 |   0x16 | *AA* | Yes (IXKZ_IK)
+    //  4 |   0x13 | BAAB | Yes (IXKZ_IKXZ)
+    //  5 |   0x16 | B**B | Yes
+    //  6 |   0x03 | **** | No
+    //  7 |   0x17 | *A*A | Yes (IXKZ_IZ)
+    //  8 |   0x12 | BABA | Yes (IXKZ_IZXK)
+    //  9 |   0x17 | A*A* | Yes
+    // 10 |   0x02 | **** | No
+    // 11 |   0x11 | AA** | Yes
+    const unsigned char case_3_actions[] =
+        { 0x11, 0x1b, 0x16, 0x13, 0x16, 0x03, 0x17, 0x12, 0x17, 0x02, 0x11, 0 };
+    
+    float best_score = 0;
+    float score;
+    
+    const unsigned char* action;
+    const unsigned char* best_action;
+    const unsigned char* actions;
+    
+    unsigned int scrambler_frequencies[BOMM_ALPHABET_SIZE];
+    
+    // Reset plugboard
+    memcpy(plugboard, &bomm_key_plugboard_identity, sizeof(bomm_key_plugboard_identity));
+    
+    // Enumerate measurements:
+    // - 0: Index of coincidence (IC)
+    // - 1: n-gram score
+    for (unsigned int measure = 0; measure < 2; measure++) {
+        if (measure == 0) {
+            bomm_measure_scrambler_frequency(1, scrambler_frequencies, scrambler, plugboard, ciphertext);
+            best_score = bomm_measure_frequency_ic(1, scrambler_frequencies);
+        } else {
+            best_score = bomm_measure_scrambler_ngram(3, scrambler, plugboard, ciphertext);
+        }
+        
+        // Enumerate all possible plugboard pairs exactly once
+        for (unsigned int i = 0; i < BOMM_ALPHABET_SIZE; i++) {
+            for (unsigned int k = i + 1; k < BOMM_ALPHABET_SIZE; k++) {
+                // Selected plugs 4-tuple (`i` partner, `i`, `k`, `k` partner)
+                unsigned int* plugs[4];
+                plugs[0] = &plugboard[plugboard[_plug_order[i]]]; // x
+                plugs[1] = &plugboard[_plug_order[i]]; // i
+                plugs[2] = &plugboard[_plug_order[k]]; // k
+                plugs[3] = &plugboard[plugboard[_plug_order[k]]]; // z
+                
+                // Determine what case we are in
+                if (
+                    (plugs[1] == plugs[0] && plugs[2] == plugs[3]) ||
+                    plugs[2] == plugs[0]
+                ) {
+                    actions = case_1_actions;
+                } else if (
+                    (plugs[1] == plugs[0] && plugs[2] != plugs[3]) ||
+                    (plugs[2] == plugs[3] && plugs[1] != plugs[0])
+                ) {
+                    // Swap such that `i` becomes self-steckered
+                    if (plugs[2] == plugs[3]) {
+                        bomm_swap_pointer((void**) &plugs[1], (void**) &plugs[2]);
+                        bomm_swap_pointer((void**) &plugs[0], (void**) &plugs[3]);
+                    }
+                    actions = case_2_actions;
+                } else {
+                    actions = case_3_actions;
+                }
+                
+                // Set initial action pointer
+                action = actions;
+                best_action = actions - 1;
+                
+                while (*action != 0) {
+                    // The two least significant bits signify the first plug and
+                    // the next two bits the second plug to be swapped
+                    bomm_swap(plugs[*action & 0x03], plugs[(*action >> 2) & 0x03]);
+                    
+                    if ((*action >> 4) != 0) {
+                        // We are interested in a measurement here
+                        if (measure == 0) {
+                            bomm_measure_scrambler_frequency(1, scrambler_frequencies, scrambler, plugboard, ciphertext);
+                            score = bomm_measure_frequency_ic(1, scrambler_frequencies);
+                        } else {
+                            score = bomm_measure_scrambler_ngram(3, scrambler, plugboard, ciphertext);
+                        }
+                        
+                        if (score > best_score) {
+                            best_score = score;
+                            best_action = action;
+                        }
+                    }
+                    
+                    action++;
+                }
+                
+                // Rollback actions up to the one that scored best
+                while (--action != best_action) {
+                    bomm_swap(plugs[*action & 0x03], plugs[(*action >> 2) & 0x03]);
+                }
+            }
+        }
     }
 
     return best_score;

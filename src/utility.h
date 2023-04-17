@@ -36,6 +36,24 @@ inline static int bomm_mod(int a, int b) {
 }
 
 /**
+ * Swap the values of the given unsigned integers.
+ */
+inline static void bomm_swap(unsigned int* a, unsigned int* b) {
+    unsigned int tmp = *a;
+    *a = *b;
+    *b = tmp;
+}
+
+/**
+ * Swap the values of the given pointers.
+ */
+inline static void bomm_swap_pointer(void** a, void** b) {
+    void* tmp = *a;
+    *a = *b;
+    *b = tmp;
+}
+
+/**
  * Lookup the given string in an array of arbitrary elements.
  * @param elements Pointer to the first element's string
  * @param element_size Number of bytes until reaching the next element's string

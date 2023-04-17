@@ -120,13 +120,13 @@ typedef struct _bomm_key {
     /**
      * Plugboard setting (Steckerverbindungen) to be used
      */
-    bomm_letter_t plugboard[BOMM_ALPHABET_SIZE];
+    unsigned int plugboard[BOMM_ALPHABET_SIZE];
 } bomm_key_t;
 
 /**
  * Identity or empty plugboard having all plugs self-steckered.
  */
-extern const bomm_letter_t bomm_key_plugboard_identity[BOMM_ALPHABET_SIZE];
+extern const unsigned int bomm_key_plugboard_identity[BOMM_ALPHABET_SIZE];
 
 /**
  * Extract a mechanism value from the given string.

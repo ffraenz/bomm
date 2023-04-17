@@ -70,7 +70,7 @@ static inline size_t bomm_scrambler_size(unsigned int length) {
  */
 static inline void bomm_scrambler_encrypt(
     bomm_scrambler_t* scrambler,
-    bomm_letter_t* plugboard,
+    unsigned int* plugboard,
     bomm_message_t* message,
     bomm_message_t* result
 ) {

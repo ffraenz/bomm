@@ -32,7 +32,17 @@ void bomm_attack_key_space(bomm_attack_t* attack);
  * Attack the plugboard using the given scrambler and ciphertext.
  */
 float bomm_attack_plugboard(
-    bomm_letter_t* plugboard,
+    unsigned int* plugboard,
+    bomm_scrambler_t* scrambler,
+    bomm_message_t* ciphertext
+);
+
+/**
+ * Attack the plugboard following a technique similar to the one used in
+ * the Enigma Suite software.
+ */
+float bomm_attack_plugboard_enigma_suite(
+    unsigned int* plugboard,
     bomm_scrambler_t* scrambler,
     bomm_message_t* ciphertext
 );

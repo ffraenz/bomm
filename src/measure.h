@@ -48,7 +48,7 @@ bomm_ngram_map_t* bomm_measure_ngram_map_init(unsigned char n, const char* filen
 static inline float bomm_measure_scrambler_ngram(
     unsigned int n,
     bomm_scrambler_t* scrambler,
-    bomm_letter_t* plugboard,
+    unsigned int* plugboard,
     bomm_message_t* message
 ) {
     unsigned int map_size = pow(BOMM_ALPHABET_SIZE, n);
@@ -75,6 +75,36 @@ static inline float bomm_measure_scrambler_ngram(
 }
 
 /**
+ * Measure the n-gram frequency of the given scrambler, plugboard, and message.
+ * @param n The n in n-gram
+ * @param frequencies Frequencies map of size `pow(BOMM_ALPHABET_SIZE, n)`
+ */
+static inline void bomm_measure_scrambler_frequency(
+    unsigned int n,
+    unsigned int* frequencies,
+    bomm_scrambler_t* scrambler,
+    unsigned int* plugboard,
+    bomm_message_t* message
+) {
+    unsigned int count = pow(BOMM_ALPHABET_SIZE, n);
+    memset(frequencies, 0, count * sizeof(unsigned int));
+    
+    unsigned int letter;
+    unsigned int map_index = 0;
+    for (unsigned int index = 0; index < message->length; index++) {
+        letter = message->letters[index];
+        letter = plugboard[letter];
+        letter = scrambler->map[index][letter];
+        letter = plugboard[letter];
+        
+        map_index = (map_index * BOMM_ALPHABET_SIZE + letter) % count;
+        if (index >= n - 1) {
+            frequencies[map_index]++;
+        }
+    }
+}
+
+/**
  * Measure the n-gram frequency of the given message.
  * TODO: Optimize speed for monograms.
  * @param n The n in n-gram
@@ -92,36 +122,6 @@ static inline void bomm_measure_message_frequency(
     unsigned int map_index = 0;
     for (unsigned int index = 0; index < message->length; index++) {
         letter = message->letters[index];
-        map_index = (map_index * BOMM_ALPHABET_SIZE + letter) % count;
-        if (index >= n - 1) {
-            frequencies[map_index]++;
-        }
-    }
-}
-
-/**
- * Measure the n-gram frequency of the given scrambler, plugboard, and message.
- * @param n The n in n-gram
- * @param frequencies Frequencies map of size `pow(BOMM_ALPHABET_SIZE, n)`
- */
-static inline void bomm_measure_scrambler_frequency(
-    unsigned int n,
-    unsigned int* frequencies,
-    bomm_scrambler_t* scrambler,
-    bomm_letter_t* plugboard,
-    bomm_message_t* message
-) {
-    unsigned int count = pow(BOMM_ALPHABET_SIZE, n);
-    memset(frequencies, 0, count * sizeof(unsigned int));
-    
-    unsigned int letter;
-    unsigned int map_index = 0;
-    for (unsigned int index = 0; index < message->length; index++) {
-        letter = message->letters[index];
-        letter = plugboard[letter];
-        letter = scrambler->map[index][letter];
-        letter = plugboard[letter];
-        
         map_index = (map_index * BOMM_ALPHABET_SIZE + letter) % count;
         if (index >= n - 1) {
             frequencies[map_index]++;
