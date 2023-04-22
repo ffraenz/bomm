@@ -69,6 +69,7 @@
     { "name": "UKW-C",   "wiring": "fvpjiaoyedrzxwgctkuqsbnmhl" }
   ],
   "frequencies": {
+    "bigram": "./data/frequencies/en-bigram.txt",
     "trigram": "./data/frequencies/en-trigram.txt"
   }
 }

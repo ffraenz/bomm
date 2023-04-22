@@ -5,42 +5,9 @@
       "space": {
         "slots": [
           { "wheels": ["UKW-B"] },
-          { "wheels": ["II"], "rings": "a" },
-          { "wheels": ["III"], "rings": "a" },
-          { "wheels": ["IV"], "rings": "abcdefghijklm", "positions": "abcdefghijklm" },
-          { "wheels": ["ETW-ABC"] }
-        ]
-      }
-    },
-    {
-      "space": {
-        "slots": [
-          { "wheels": ["UKW-B"] },
-          { "wheels": ["II"], "rings": "a" },
-          { "wheels": ["III"], "rings": "a" },
-          { "wheels": ["IV"], "rings": "abcdefghijklm", "positions": "nopqrstuvwxyz" },
-          { "wheels": ["ETW-ABC"] }
-        ]
-      }
-    },
-    {
-      "space": {
-        "slots": [
-          { "wheels": ["UKW-B"] },
-          { "wheels": ["II"], "rings": "a" },
-          { "wheels": ["III"], "rings": "a" },
-          { "wheels": ["IV"], "rings": "nopqrstuvwxyz", "positions": "abcdefghijklm" },
-          { "wheels": ["ETW-ABC"] }
-        ]
-      }
-    },
-    {
-      "space": {
-        "slots": [
-          { "wheels": ["UKW-B"] },
-          { "wheels": ["II"], "rings": "a" },
-          { "wheels": ["III"], "rings": "a" },
-          { "wheels": ["IV"], "rings": "nopqrstuvwxyz", "positions": "nopqrstuvwxyz" },
+          { "wheels": ["II"], "rings": "x", "positions": "m" },
+          { "wheels": ["III"], "rings": "d", "positions": "j" },
+          { "wheels": ["IV"], "rings": "q", "positions": "w" },
           { "wheels": ["ETW-ABC"] }
         ]
       }

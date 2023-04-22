@@ -32,7 +32,31 @@ bomm_wheel_t* bomm_wheel_init(
     return wheel;
 }
 
-bomm_wheel_t* bomm_wheel_extract_json(bomm_wheel_t* wheel, json_t* wheel_json) {
+bomm_wheel_t* bomm_wheel_init_with_name(bomm_wheel_t* wheel, const char* name) {
+    if (strcmp(name, "I") == 0) {
+        return bomm_wheel_init(wheel, name, "ekmflgdqvzntowyhxuspaibrcj", "q");
+    } else if (strcmp(name, "II") == 0) {
+        return bomm_wheel_init(wheel, name, "ajdksiruxblhwtmcqgznpyfvoe", "e");
+    } else if (strcmp(name, "III") == 0) {
+        return bomm_wheel_init(wheel, name, "bdfhjlcprtxvznyeiwgakmusqo", "v");
+    } else if (strcmp(name, "IV") == 0) {
+        return bomm_wheel_init(wheel, name, "esovpzjayquirhxlnftgkdcmwb", "j");
+    } else if (strcmp(name, "V") == 0) {
+        return bomm_wheel_init(wheel, name, "vzbrgityupsdnhlxawmjqofeck", "z");
+    } else if (strcmp(name, "ETW-ABC") == 0) {
+        return bomm_wheel_init(wheel, name, "abcdefghijklmnopqrstuvwxyz", "");
+    } else if (strcmp(name, "UKW-A") == 0) {
+        return bomm_wheel_init(wheel, name, "ejmzalyxvbwfcrquontspikhgd", "");
+    } else if (strcmp(name, "UKW-B") == 0) {
+        return bomm_wheel_init(wheel, name, "yruhqsldpxngokmiebfzcwvjat", "");
+    } else if (strcmp(name, "UKW-C") == 0) {
+        return bomm_wheel_init(wheel, name, "fvpjiaoyedrzxwgctkuqsbnmhl", "");
+    } else {
+        return NULL;
+    }
+}
+
+bomm_wheel_t* bomm_wheel_init_with_json(bomm_wheel_t* wheel, json_t* wheel_json) {
     if (wheel_json->type != JSON_OBJECT) {
         return NULL;
     }
@@ -62,7 +86,7 @@ bomm_wheel_t* bomm_wheel_extract_json(bomm_wheel_t* wheel, json_t* wheel_json) {
     return wheel;
 }
 
-bool bomm_wheel_set_extract_json(
+bool bomm_wheel_set_init_with_json(
     bomm_wheel_t* wheel_set[],
     unsigned int wheel_set_size,
     json_t* wheel_set_json,

@@ -7,7 +7,7 @@
 
 #include "measure.h"
 
-const bomm_ngram_map_t* bomm_ngram_map[9] = {
+const bomm_ngram_map_t* bomm_ngram_map[BOMM_MAX_INDEXED_MEASURE] = {
     NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL
 };
 

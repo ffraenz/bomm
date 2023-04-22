@@ -18,7 +18,7 @@ Test(wiring, bomm_wheel_extract_json) {
     json_t* wheel_json = json_loads(wheel_json_string, 0, &error);
     
     bomm_wheel_t wheel;
-    bomm_wheel_t* result = bomm_wheel_extract_json(&wheel, wheel_json);
+    bomm_wheel_t* result = bomm_wheel_init_with_json(&wheel, wheel_json);
     json_decref(wheel_json);
     
     char actual_string[BOMM_ALPHABET_SIZE + 1];
@@ -44,7 +44,7 @@ Test(wiring, bomm_wheel_set_extract_json) {
     
     unsigned int wheel_set_size = 3;
     bomm_wheel_t* wheel_set[wheel_set_size];
-    bool success = bomm_wheel_set_extract_json(
+    bool success = bomm_wheel_set_init_with_json(
         wheel_set,
         wheel_set_size,
         wheel_set_json,

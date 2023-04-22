@@ -1,0 +1,133 @@
+{
+  "sources": [
+    "https://cryptocellar.org/bgac/keyofE.html"
+  ],
+  "ciphertext": "ftmkv drjmg fbudk lzctr fltuu iwvjl oykyx gdckj tmdfb wnlzq jaxhp ggkfg sbzoq kqkuk tinmh bajoo auila qvftk lstmm xgaql cnhuw lfhka ultxt bivif ewwdy pucns tpjhr obwhe kyusb canyc w",
+  "attacks": [
+    {
+      "space": {
+        "slots": [
+          { "wheels": ["UKW-B"] },
+          { "wheels": ["I"], "rings": "a" },
+          { "wheels": ["II", "III", "IV", "V"], "rings": "a" },
+          { "wheels": ["II", "III", "IV", "V"], "rings": "abcdefghijklm" },
+          { "wheels": ["ETW-ABC"] }
+        ]
+      }
+    },
+    {
+      "space": {
+        "slots": [
+          { "wheels": ["UKW-B"] },
+          { "wheels": ["I"], "rings": "a" },
+          { "wheels": ["II", "III", "IV", "V"], "rings": "a" },
+          { "wheels": ["II", "III", "IV", "V"], "rings": "nopqrstuvwxyz" },
+          { "wheels": ["ETW-ABC"] }
+        ]
+      }
+    },
+    {
+      "space": {
+        "slots": [
+          { "wheels": ["UKW-B"] },
+          { "wheels": ["II"], "rings": "a" },
+          { "wheels": ["I", "III", "IV", "V"], "rings": "a" },
+          { "wheels": ["I", "III", "IV", "V"], "rings": "abcdefghijklm" },
+          { "wheels": ["ETW-ABC"] }
+        ]
+      }
+    },
+    {
+      "space": {
+        "slots": [
+          { "wheels": ["UKW-B"] },
+          { "wheels": ["II"], "rings": "a" },
+          { "wheels": ["I", "III", "IV", "V"], "rings": "a" },
+          { "wheels": ["I", "III", "IV", "V"], "rings": "nopqrstuvwxyz" },
+          { "wheels": ["ETW-ABC"] }
+        ]
+      }
+    },
+    {
+      "space": {
+        "slots": [
+          { "wheels": ["UKW-B"] },
+          { "wheels": ["III"], "rings": "a" },
+          { "wheels": ["I", "II", "IV", "V"], "rings": "a" },
+          { "wheels": ["I", "II", "IV", "V"], "rings": "abcdefghijklm" },
+          { "wheels": ["ETW-ABC"] }
+        ]
+      }
+    },
+    {
+      "space": {
+        "slots": [
+          { "wheels": ["UKW-B"] },
+          { "wheels": ["III"], "rings": "a" },
+          { "wheels": ["I", "II", "IV", "V"], "rings": "a" },
+          { "wheels": ["I", "II", "IV", "V"], "rings": "nopqrstuvwxyz" },
+          { "wheels": ["ETW-ABC"] }
+        ]
+      }
+    },
+    {
+      "space": {
+        "slots": [
+          { "wheels": ["UKW-B"] },
+          { "wheels": ["IV"], "rings": "a" },
+          { "wheels": ["I", "II", "III", "V"], "rings": "a" },
+          { "wheels": ["I", "II", "III", "V"], "rings": "abcdefghijklm" },
+          { "wheels": ["ETW-ABC"] }
+        ]
+      }
+    },
+    {
+      "space": {
+        "slots": [
+          { "wheels": ["UKW-B"] },
+          { "wheels": ["IV"], "rings": "a" },
+          { "wheels": ["I", "II", "III", "V"], "rings": "a" },
+          { "wheels": ["I", "II", "III", "V"], "rings": "nopqrstuvwxyz" },
+          { "wheels": ["ETW-ABC"] }
+        ]
+      }
+    },
+    {
+      "space": {
+        "slots": [
+          { "wheels": ["UKW-B"] },
+          { "wheels": ["V"], "rings": "a" },
+          { "wheels": ["I", "II", "III", "IV"], "rings": "a" },
+          { "wheels": ["I", "II", "III", "IV"], "rings": "abcdefghijklm" },
+          { "wheels": ["ETW-ABC"] }
+        ]
+      }
+    },
+    {
+      "space": {
+        "slots": [
+          { "wheels": ["UKW-B"] },
+          { "wheels": ["V"], "rings": "a" },
+          { "wheels": ["I", "II", "III", "IV"], "rings": "a" },
+          { "wheels": ["I", "II", "III", "IV"], "rings": "nopqrstuvwxyz" },
+          { "wheels": ["ETW-ABC"] }
+        ]
+      }
+    }
+  ],
+  "wheels": [
+    { "name": "I",       "wiring": "ekmflgdqvzntowyhxuspaibrcj", "turnovers": "q" },
+    { "name": "II",      "wiring": "ajdksiruxblhwtmcqgznpyfvoe", "turnovers": "e" },
+    { "name": "III",     "wiring": "bdfhjlcprtxvznyeiwgakmusqo", "turnovers": "v" },
+    { "name": "IV",      "wiring": "esovpzjayquirhxlnftgkdcmwb", "turnovers": "j" },
+    { "name": "V",       "wiring": "vzbrgityupsdnhlxawmjqofeck", "turnovers": "z" },
+    { "name": "ETW-ABC", "wiring": "abcdefghijklmnopqrstuvwxyz" },
+    { "name": "UKW-A",   "wiring": "ejmzalyxvbwfcrquontspikhgd" },
+    { "name": "UKW-B",   "wiring": "yruhqsldpxngokmiebfzcwvjat" },
+    { "name": "UKW-C",   "wiring": "fvpjiaoyedrzxwgctkuqsbnmhl" }
+  ],
+  "frequencies": {
+    "bigram": "./data/frequencies/enigma1941-bigram.txt",
+    "trigram": "./data/frequencies/enigma1941-trigram.txt"
+  }
+}

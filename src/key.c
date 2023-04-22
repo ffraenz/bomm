@@ -96,7 +96,7 @@ bomm_key_space_t* bomm_key_space_extract_json(
         if (slot_json->type == JSON_OBJECT) {
             // Read wheel set
             json_t* wheel_set_json = json_object_get(slot_json, "wheels");
-            if (!bomm_wheel_set_extract_json(
+            if (!bomm_wheel_set_init_with_json(
                 key_space->wheel_sets[slot],
                 BOMM_MAX_WHEEL_SET_SIZE,
                 wheel_set_json,
@@ -175,15 +175,15 @@ bomm_key_space_t* bomm_key_space_enigma_i_init(void) {
     // Initialize wheels
     // TODO: Check if initialization succeeded
     // TODO: Handle ownership of the wheels
-    bomm_wheel_t* w_i     = bomm_wheel_init(NULL, "I",     "ekmflgdqvzntowyhxuspaibrcj", "q");
-    bomm_wheel_t* w_ii    = bomm_wheel_init(NULL, "II",    "ajdksiruxblhwtmcqgznpyfvoe", "e");
-    bomm_wheel_t* w_iii   = bomm_wheel_init(NULL, "III",   "bdfhjlcprtxvznyeiwgakmusqo", "v");
-    bomm_wheel_t* w_iv    = bomm_wheel_init(NULL, "IV",    "esovpzjayquirhxlnftgkdcmwb", "j");
-    bomm_wheel_t* w_v     = bomm_wheel_init(NULL, "V",     "vzbrgityupsdnhlxawmjqofeck", "z");
-    bomm_wheel_t* w_abc   = bomm_wheel_init(NULL, "ABC",   "abcdefghijklmnopqrstuvwxyz", "");
-    bomm_wheel_t* w_ukw_a = bomm_wheel_init(NULL, "UKW-A", "ejmzalyxvbwfcrquontspikhgd", "");
-    bomm_wheel_t* w_ukw_b = bomm_wheel_init(NULL, "UKW-B", "yruhqsldpxngokmiebfzcwvjat", "");
-    bomm_wheel_t* w_ukw_c = bomm_wheel_init(NULL, "UKW-C", "fvpjiaoyedrzxwgctkuqsbnmhl", "");
+    bomm_wheel_t* w_i       = bomm_wheel_init_with_name(NULL, "I");
+    bomm_wheel_t* w_ii      = bomm_wheel_init_with_name(NULL, "II");
+    bomm_wheel_t* w_iii     = bomm_wheel_init_with_name(NULL, "III");
+    bomm_wheel_t* w_iv      = bomm_wheel_init_with_name(NULL, "IV");
+    bomm_wheel_t* w_v       = bomm_wheel_init_with_name(NULL, "V");
+    bomm_wheel_t* w_etw_abc = bomm_wheel_init_with_name(NULL, "ETW-ABC");
+    bomm_wheel_t* w_ukw_a   = bomm_wheel_init_with_name(NULL, "UKW-A");
+    bomm_wheel_t* w_ukw_b   = bomm_wheel_init_with_name(NULL, "UKW-B");
+    bomm_wheel_t* w_ukw_c   = bomm_wheel_init_with_name(NULL, "UKW-C");
     
     // Set of reflectors (in the order they are tested)
     key_space->wheel_sets[0][0] = w_ukw_b;
@@ -200,7 +200,7 @@ bomm_key_space_t* bomm_key_space_enigma_i_init(void) {
     }
     
     // Set of entry wheels
-    key_space->wheel_sets[4][0] = w_abc;
+    key_space->wheel_sets[4][0] = w_etw_abc;
     
     // Don't test ring settings for the left and middle wheel
     // as they can be neglected

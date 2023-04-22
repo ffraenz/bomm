@@ -157,7 +157,7 @@ bomm_query_t* bomm_query_init(int argc, char *argv[]) {
         }
     }
     for (unsigned int i = 0; i < query->wheel_count; i++) {
-        if (bomm_wheel_extract_json(&query->wheels[i], json_array_get(wheels_json, i)) == NULL) {
+        if (bomm_wheel_init_with_json(&query->wheels[i], json_array_get(wheels_json, i)) == NULL) {
             bomm_query_destroy(query);
             json_decref(query_json);
             return NULL;

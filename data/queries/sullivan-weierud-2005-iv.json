@@ -2,7 +2,7 @@
   "sources": [
     "https://cryptocellar.org/bgac/keyofE.html"
   ],
-  "ciphertext": "pbnxa smdax nooyh rczgv vzcbi gibgw hmxkr rvqcf jczpt unswa ddsti gqqcs agpkr xxlom gfxap hhmrf sdkyt mypmv rohas qyrwf wvavg ccudb ibxxd yzsac jsyot mwucn womhh jpywd cclup gswcl mbczs syxpg mgmqx auful nozeq enhei zzakl c",
+  "ciphertext": "lmhnx weklm uerds evhlc jsqqk vldes anevt yedgi zqdod rmdkg sxgsq shdqp vieap ienli clzcl lagwc bjzd",
   "attacks": [
     {
       "space": {
@@ -10,7 +10,18 @@
           { "wheels": ["UKW-B"] },
           { "wheels": ["I"], "rings": "a" },
           { "wheels": ["II", "III", "IV", "V"], "rings": "a" },
-          { "wheels": ["II", "III", "IV", "V"] },
+          { "wheels": ["II", "III", "IV", "V"], "rings": "abcdefghijklm" },
+          { "wheels": ["ETW-ABC"] }
+        ]
+      }
+    },
+    {
+      "space": {
+        "slots": [
+          { "wheels": ["UKW-B"] },
+          { "wheels": ["I"], "rings": "a" },
+          { "wheels": ["II", "III", "IV", "V"], "rings": "a" },
+          { "wheels": ["II", "III", "IV", "V"], "rings": "nopqrstuvwxyz" },
           { "wheels": ["ETW-ABC"] }
         ]
       }
@@ -21,7 +32,18 @@
           { "wheels": ["UKW-B"] },
           { "wheels": ["II"], "rings": "a" },
           { "wheels": ["I", "III", "IV", "V"], "rings": "a" },
-          { "wheels": ["I", "III", "IV", "V"] },
+          { "wheels": ["I", "III", "IV", "V"], "rings": "abcdefghijklm" },
+          { "wheels": ["ETW-ABC"] }
+        ]
+      }
+    },
+    {
+      "space": {
+        "slots": [
+          { "wheels": ["UKW-B"] },
+          { "wheels": ["II"], "rings": "a" },
+          { "wheels": ["I", "III", "IV", "V"], "rings": "a" },
+          { "wheels": ["I", "III", "IV", "V"], "rings": "nopqrstuvwxyz" },
           { "wheels": ["ETW-ABC"] }
         ]
       }
@@ -32,7 +54,18 @@
           { "wheels": ["UKW-B"] },
           { "wheels": ["III"], "rings": "a" },
           { "wheels": ["I", "II", "IV", "V"], "rings": "a" },
-          { "wheels": ["I", "II", "IV", "V"] },
+          { "wheels": ["I", "II", "IV", "V"], "rings": "abcdefghijklm" },
+          { "wheels": ["ETW-ABC"] }
+        ]
+      }
+    },
+    {
+      "space": {
+        "slots": [
+          { "wheels": ["UKW-B"] },
+          { "wheels": ["III"], "rings": "a" },
+          { "wheels": ["I", "II", "IV", "V"], "rings": "a" },
+          { "wheels": ["I", "II", "IV", "V"], "rings": "nopqrstuvwxyz" },
           { "wheels": ["ETW-ABC"] }
         ]
       }
@@ -43,7 +76,18 @@
           { "wheels": ["UKW-B"] },
           { "wheels": ["IV"], "rings": "a" },
           { "wheels": ["I", "II", "III", "V"], "rings": "a" },
-          { "wheels": ["I", "II", "III", "V"] },
+          { "wheels": ["I", "II", "III", "V"], "rings": "abcdefghijklm" },
+          { "wheels": ["ETW-ABC"] }
+        ]
+      }
+    },
+    {
+      "space": {
+        "slots": [
+          { "wheels": ["UKW-B"] },
+          { "wheels": ["IV"], "rings": "a" },
+          { "wheels": ["I", "II", "III", "V"], "rings": "a" },
+          { "wheels": ["I", "II", "III", "V"], "rings": "nopqrstuvwxyz" },
           { "wheels": ["ETW-ABC"] }
         ]
       }
@@ -54,7 +98,18 @@
           { "wheels": ["UKW-B"] },
           { "wheels": ["V"], "rings": "a" },
           { "wheels": ["I", "II", "III", "IV"], "rings": "a" },
-          { "wheels": ["I", "II", "III", "IV"] },
+          { "wheels": ["I", "II", "III", "IV"], "rings": "abcdefghijklm" },
+          { "wheels": ["ETW-ABC"] }
+        ]
+      }
+    },
+    {
+      "space": {
+        "slots": [
+          { "wheels": ["UKW-B"] },
+          { "wheels": ["V"], "rings": "a" },
+          { "wheels": ["I", "II", "III", "IV"], "rings": "a" },
+          { "wheels": ["I", "II", "III", "IV"], "rings": "nopqrstuvwxyz" },
           { "wheels": ["ETW-ABC"] }
         ]
       }

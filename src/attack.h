@@ -47,4 +47,13 @@ float bomm_attack_plugboard_enigma_suite(
     bomm_message_t* ciphertext
 );
 
+/**
+ * Try reswapping each self-steckered pair. Steepest ascent.
+ */
+float bomm_attack_plugboard_enigma_suite_reswapping(
+    unsigned int* plugboard,
+    bomm_scrambler_t* scrambler,
+    bomm_message_t* ciphertext
+);
+
 #endif /* attack_h */

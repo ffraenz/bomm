@@ -13,6 +13,8 @@
 #include "message.h"
 #include "wiring.h"
 
+#define BOMM_MAX_INDEXED_MEASURE 9
+
 typedef float bomm_ngram_map_entry;
 
 typedef struct _bomm_ngram_map_t {
@@ -181,6 +183,27 @@ static inline float bomm_measure_frequency_entropy(
         }
     }
     return (float) entropy;
+}
+
+/**
+ * Measure a message put through the given scrabler and plugboard using an
+ * indexed measure.
+ * @param indexed_measure Index between 0 and `BOMM_MAX_INDEXED_MEASURE`
+ */
+static inline float bomm_scrambler_measure(
+    unsigned int indexed_measure,
+    bomm_scrambler_t* scrambler,
+    unsigned int* plugboard,
+    bomm_message_t* message
+) {
+    unsigned int n = indexed_measure + 1;
+    if (bomm_ngram_map[n] != NULL) {
+        return bomm_measure_scrambler_ngram(n, scrambler, plugboard, message);
+    }
+    
+    unsigned int frequencies[(unsigned int) pow(BOMM_ALPHABET_SIZE, n)];
+    bomm_measure_scrambler_frequency(n, frequencies, scrambler, plugboard, message);
+    return bomm_measure_frequency_ic(n, frequencies);
 }
 
 #endif /* measure_h */
