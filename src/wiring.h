@@ -24,7 +24,7 @@ typedef struct _bomm_wiring {
      * Forward map
      */
     bomm_letter_t map[BOMM_ALPHABET_SIZE];
-    
+
     /**
      * Reverse map
      */
@@ -39,7 +39,7 @@ typedef struct _bomm_scrambler {
      * Number of letter maps contained
      */
     unsigned int length;
-    
+
     /**
      * Letter maps
      */

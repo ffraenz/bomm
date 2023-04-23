@@ -24,28 +24,28 @@ bomm_key_space_t* bomm_key_space_init(
             return NULL;
         }
     }
-    
+
     // Store meta data
     key_space->mechanism = mechanism;
     key_space->slot_count = slot_count;
-    
+
     // Clear wheel sets
     size_t wheel_sets_mem_size =
-    sizeof(bomm_wheel_t*) * BOMM_MAX_SLOT_COUNT * BOMM_MAX_WHEEL_SET_SIZE;
+        sizeof(bomm_wheel_t*) * BOMM_MAX_SLOT_COUNT * BOMM_MAX_WHEEL_SET_SIZE;
     memset(key_space->wheel_sets, 0, wheel_sets_mem_size);
-    
+
     // By default, use the full ring setting and start position masks for all
     // slots except for the first (housing the reflector) and the last (housing
     // the entry wheel) that usually are stagnant
-    for (unsigned int i = 0; i < slot_count; i++) {
-        bool is_stagnant = i == 0 || i == slot_count - 1;
+    for (unsigned int slot = 0; slot < slot_count; slot++) {
+        bool is_stagnant = slot == 0 || slot == slot_count - 1;
         bomm_lettermask_t lettermask =
             is_stagnant ? BOMM_LETTERMASK_FIRST : BOMM_LETTERMASK_ALL;
-        key_space->rotating_slots[i] = !is_stagnant;
-        key_space->ring_masks[i] = lettermask;
-        key_space->position_masks[i] = lettermask;
+        key_space->rotating_slots[slot] = !is_stagnant;
+        key_space->ring_masks[slot] = lettermask;
+        key_space->position_masks[slot] = lettermask;
     }
-    
+
     return key_space;
 }
 
@@ -68,14 +68,14 @@ bomm_key_space_t* bomm_key_space_extract_json(
     if (key_space_json->type != JSON_OBJECT) {
         return NULL;
     }
-    
+
     // Read mechanism
     json_t* mechanism_json = json_object_get(key_space_json, "mechanism");
     bomm_mechanism_t mechanism = BOMM_MECHANISM_STEPPING;
     if (mechanism_json != NULL) {
         mechanism = bomm_key_mechanism_extract(json_string_value(mechanism_json));
     }
-    
+
     // Read slot count
     json_t* slots_json = json_object_get(key_space_json, "slots");
     if (slots_json->type != JSON_ARRAY) {
@@ -85,10 +85,10 @@ bomm_key_space_t* bomm_key_space_extract_json(
     if (slot_count > BOMM_MAX_SLOT_COUNT) {
         return NULL;
     }
-    
+
     // Init key space
     bomm_key_space_t* key_space = bomm_key_space_init(key_space_ptr, mechanism, slot_count);
-    
+
     bool error = false;
     unsigned int slot = 0;
     while (!error && slot < slot_count) {
@@ -105,7 +105,7 @@ bomm_key_space_t* bomm_key_space_extract_json(
             )) {
                 error = true;
             }
-            
+
             // Read ring mask
             json_t* ring_mask_json = json_object_get(slot_json, "rings");
             if (ring_mask_json != NULL) {
@@ -120,7 +120,7 @@ bomm_key_space_t* bomm_key_space_extract_json(
                     error = true;
                 }
             }
-            
+
             // Read position mask
             json_t* position_mask_json = json_object_get(slot_json, "positions");
             if (position_mask_json != NULL) {
@@ -135,7 +135,7 @@ bomm_key_space_t* bomm_key_space_extract_json(
                     error = true;
                 }
             }
-            
+
             // Read slot rotating (optional)
             json_t* rotating_json = json_object_get(slot_json, "rotating");
             if (rotating_json != NULL) {
@@ -148,17 +148,17 @@ bomm_key_space_t* bomm_key_space_extract_json(
         } else {
             error = true;
         }
-        
+
         slot++;
     }
-    
+
     if (error) {
         if (key_space_ptr == NULL) {
             free(key_space);
         }
         return NULL;
     }
-    
+
     return key_space;
 }
 
@@ -171,7 +171,7 @@ bomm_key_space_t* bomm_key_space_enigma_i_init(void) {
     if (key_space == NULL) {
         return NULL;
     }
-    
+
     // Initialize wheels
     // TODO: Check if initialization succeeded
     // TODO: Handle ownership of the wheels
@@ -184,12 +184,12 @@ bomm_key_space_t* bomm_key_space_enigma_i_init(void) {
     bomm_wheel_t* w_ukw_a   = bomm_wheel_init_with_name(NULL, "UKW-A");
     bomm_wheel_t* w_ukw_b   = bomm_wheel_init_with_name(NULL, "UKW-B");
     bomm_wheel_t* w_ukw_c   = bomm_wheel_init_with_name(NULL, "UKW-C");
-    
+
     // Set of reflectors (in the order they are tested)
     key_space->wheel_sets[0][0] = w_ukw_b;
     key_space->wheel_sets[0][1] = w_ukw_c;
     key_space->wheel_sets[0][2] = w_ukw_a;
-    
+
     // Wheel sets for slots 1, 2, and 3
     for (int slot = 1; slot <= 3; slot++) {
         key_space->wheel_sets[slot][0] = w_i;
@@ -198,10 +198,10 @@ bomm_key_space_t* bomm_key_space_enigma_i_init(void) {
         key_space->wheel_sets[slot][3] = w_iv;
         key_space->wheel_sets[slot][4] = w_v;
     }
-    
+
     // Set of entry wheels
     key_space->wheel_sets[4][0] = w_etw_abc;
-    
+
     // Don't test ring settings for the left and middle wheel
     // as they can be neglected
     key_space->ring_masks[1] = BOMM_LETTERMASK_FIRST;
@@ -217,21 +217,30 @@ bomm_key_t* bomm_key_init(bomm_key_t* key, bomm_key_space_t* key_space) {
             return NULL;
         }
     }
-    
+
     // Initialize key from key space meta data
     key->mechanism = key_space->mechanism;
     key->slot_count = key_space->slot_count;
     memcpy(&key->rotating_slots, &key_space->rotating_slots, sizeof(key->rotating_slots));
-    
-    // Reset ring settings and start positions to 0
+
+    // Reset the wheel order, ring settings, and start positions
     for (unsigned int slot = 0; slot < key_space->slot_count; slot++) {
+        memcpy(
+            &key->wheels[slot],
+            key_space->wheel_sets[slot][0],
+            sizeof(bomm_wheel_t)
+        );
         key->rings[slot] = 0;
         key->positions[slot] = 0;
     }
-    
+
     // Initialize the key with the identity plugboard
-    memcpy(&key->plugboard, &bomm_key_plugboard_identity, sizeof(bomm_key_plugboard_identity));
-    
+    memcpy(
+        &key->plugboard,
+        &bomm_key_plugboard_identity,
+        sizeof(bomm_key_plugboard_identity)
+    );
+
     return key;
 }
 
@@ -239,18 +248,18 @@ void bomm_key_serialize(char* str, size_t size, bomm_key_t* key) {
     size_t wheel_order_string_size = (key->slot_count * BOMM_WHEEL_NAME_MAX_LENGTH + 1) + 1;
     char wheel_order_string[wheel_order_string_size];
     bomm_key_serialize_wheel_order(wheel_order_string, wheel_order_string_size, key);
-    
+
     size_t rings_string_size = key->slot_count + 1;
     char rings_string[rings_string_size];
     bomm_key_serialize_ring_settings(rings_string, rings_string_size, key);
-    
+
     size_t positions_string_size = key->slot_count + 1;
     char positions_string[positions_string_size];
     bomm_key_serialize_start_positions(positions_string, positions_string_size, key);
-    
+
     char plugboard_string[39];
     bomm_key_serialize_plugboard(plugboard_string, 39, key);
-    
+
     snprintf(str, size, "%s %s %s %-39s", wheel_order_string, rings_string, positions_string, plugboard_string);
 }
 
@@ -279,9 +288,9 @@ void bomm_key_serialize_start_positions(char* str, size_t size, bomm_key_t* key)
 void bomm_key_serialize_plugboard(char* str, size_t size, bomm_key_t* key) {
     unsigned int i = 0;
     unsigned int j = 0;
-    
+
     bomm_lettermask_t used_letters = BOMM_LETTERMASK_NONE;
-    
+
     while (i < BOMM_ALPHABET_SIZE && j + 3 < size) {
         if (key->plugboard[i] != i && !bomm_lettermask_has(&used_letters, i)) {
             bomm_lettermask_set(&used_letters, key->plugboard[i]);
@@ -298,7 +307,7 @@ void bomm_key_serialize_plugboard(char* str, size_t size, bomm_key_t* key) {
 void bomm_key_hold_print(bomm_hold_t* hold) {
     // Lock hold while printing
     pthread_mutex_lock(&hold->mutex);
-    
+
     if (hold->count == 0) {
         printf("Empty key hold\n");
         return;
@@ -310,7 +319,7 @@ void bomm_key_hold_print(bomm_hold_t* hold) {
         bomm_key_serialize(key_string, 128, (bomm_key_t*) element->data);
         printf("%2d │ %80s │ %10f │ %30s\n", i + 1, key_string, element->score, element->preview);
     }
-    
+
     // Unlock hold
     pthread_mutex_unlock(&hold->mutex);
 }

@@ -30,21 +30,21 @@ inline static void bomm_enigma_encrypt(
     // Store the original positions as we will reinstate them afterwards
     unsigned int original_positions[key->slot_count];
     memcpy(&original_positions, key->positions, sizeof(original_positions));
-    
+
     // Simulate the Enigma for each letter
     int letter;
     for (unsigned int index = 0; index < message->length; index++) {
         // Engaging the mechanism will change the key
         bomm_enigma_engage_mechanism(key);
-        
+
         letter = message->letters[index];
         letter = key->plugboard[letter];
         letter = bomm_enigma_scramble_letter(letter, key);
         letter = key->plugboard[letter];
-        
+
         result->letters[index] = letter;
     }
-    
+
     // Reinstate original positions
     memcpy(key->positions, &original_positions, sizeof(original_positions));
 }
@@ -61,19 +61,19 @@ inline static void bomm_enigma_generate_scrambler(
     // Store the original positions as we will reinstate them afterwards
     unsigned int original_positions[key->slot_count];
     memcpy(&original_positions, key->positions, sizeof(original_positions));
-    
+
     unsigned int index, letter;
     for (index = 0; index < scrambler->length; index++) {
         // Engaging the mechanism will change the key
         bomm_enigma_engage_mechanism(key);
-        
+
         // Create map for this index
         for (letter = 0; letter < BOMM_ALPHABET_SIZE; letter++) {
             scrambler->map[index][letter] =
                 bomm_enigma_scramble_letter(letter, key);
         }
     }
-    
+
     // Reinstate original positions
     memcpy(key->positions, &original_positions, sizeof(original_positions));
 }
@@ -106,7 +106,7 @@ inline static void bomm_enigma_engage_mechanism(bomm_key_t* state) {
                 // If at right wheel turnover: Step middle wheel
                 state->positions[2]++;
             }
-            
+
             // Always step right (fast) wheel
             state->positions[3]++;
             break;
@@ -124,7 +124,7 @@ inline static void bomm_enigma_engage_mechanism(bomm_key_t* state) {
                     bomm_lettermask_has(
                         &state->wheels[slot].turnovers,
                         state->positions[slot] % BOMM_ALPHABET_SIZE);
-            
+
                 // Step wheel
                 state->positions[slot]++;
                 slot--;
@@ -145,21 +145,21 @@ inline static void bomm_enigma_engage_mechanism(bomm_key_t* state) {
 inline static int bomm_enigma_scramble_letter(int x, bomm_key_t* state) {
     int slot_count = state->slot_count;
     int slot;
-    
+
     // Wheels (entry wheel, wheels right to left, reflector wheel)
     for (slot = slot_count - 1; slot >= 0; slot--) {
         x += state->positions[slot] - state->rings[slot];
         x = state->wheels[slot].wiring.map[bomm_mod(x, BOMM_ALPHABET_SIZE)];
         x += state->rings[slot] - state->positions[slot];
     }
-    
+
     // Wheels (wheels left to right, entry wheel)
     for (slot = 1; slot < slot_count; slot++) {
         x += state->positions[slot] - state->rings[slot];
         x = state->wheels[slot].wiring.rev[bomm_mod(x, BOMM_ALPHABET_SIZE)];
         x += state->rings[slot] - state->positions[slot];
     }
-    
+
     return bomm_mod(x, BOMM_ALPHABET_SIZE);
 }
 

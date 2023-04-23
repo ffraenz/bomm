@@ -12,13 +12,13 @@ Test(key, bomm_key_serialize_plugboard) {
     char actual_plugboard_string[39];
     char* expected_plugboard_string;
     bomm_key_t key;
-    
+
     // Identity plugboard
     expected_plugboard_string = "";
     memcpy(&key.plugboard, &bomm_key_plugboard_identity, sizeof(bomm_key_plugboard_identity));
     bomm_key_serialize_plugboard(actual_plugboard_string, 39, &key);
     cr_assert_str_eq(actual_plugboard_string, expected_plugboard_string);
-    
+
     // Plugboard sample
     expected_plugboard_string = "bc dx eq fl hy mo nz pr st vw";
     unsigned int example_plugboard[] = {
@@ -38,4 +38,12 @@ Test(key, bomm_key_mechanism_extract) {
     cr_assert_eq(actual_mechanism, BOMM_MECHANISM_ODOMETER);
     actual_mechanism = bomm_key_mechanism_extract("none");
     cr_assert_eq(actual_mechanism, BOMM_MECHANISM_NONE);
+}
+
+Test(key, bomm_key_iterator) {
+    bomm_key_space_t* key_space = bomm_key_space_enigma_i_init();
+    bomm_key_iterator_t key_iterator;
+    bomm_key_iterator_init(&key_iterator, key_space);
+    cr_assert_eq(bomm_key_iterator_count(&key_iterator), 79092000);
+    free(key_space);
 }

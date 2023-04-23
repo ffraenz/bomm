@@ -22,7 +22,7 @@ typedef struct _bomm_ngram_map_t {
      * The n in n-gram
      */
     unsigned char n;
-    
+
     /**
      * Maps n-grams to their respective log probabilities
      */
@@ -67,7 +67,7 @@ static inline float bomm_measure_scrambler_ngram(
         letter = plugboard[letter];
 
         map_index = (map_index * BOMM_ALPHABET_SIZE + letter) % map_size;
-        
+
         if (index >= n - 1) {
             score += map->map[map_index];
         }
@@ -90,7 +90,7 @@ static inline void bomm_measure_scrambler_frequency(
 ) {
     unsigned int count = pow(BOMM_ALPHABET_SIZE, n);
     memset(frequencies, 0, count * sizeof(unsigned int));
-    
+
     unsigned int letter;
     unsigned int map_index = 0;
     for (unsigned int index = 0; index < message->length; index++) {
@@ -98,7 +98,7 @@ static inline void bomm_measure_scrambler_frequency(
         letter = plugboard[letter];
         letter = scrambler->map[index][letter];
         letter = plugboard[letter];
-        
+
         map_index = (map_index * BOMM_ALPHABET_SIZE + letter) % count;
         if (index >= n - 1) {
             frequencies[map_index]++;
@@ -119,7 +119,7 @@ static inline void bomm_measure_message_frequency(
 ) {
     unsigned int count = pow(BOMM_ALPHABET_SIZE, n);
     memset(frequencies, 0, count * sizeof(unsigned int));
-    
+
     unsigned int letter;
     unsigned int map_index = 0;
     for (unsigned int index = 0; index < message->length; index++) {
@@ -167,13 +167,13 @@ static inline float bomm_measure_frequency_entropy(
     unsigned int* frequencies
 ) {
     unsigned int count = pow(BOMM_ALPHABET_SIZE, n);
-    
+
     unsigned int sum = 0;
     unsigned int index;
     for (index = 0; index < count; index++) {
         sum += frequencies[index];
     }
-    
+
     double entropy = 0;
     double p;
     if (sum > 0) {
@@ -200,7 +200,7 @@ static inline float bomm_scrambler_measure(
     if (bomm_ngram_map[n] != NULL) {
         return bomm_measure_scrambler_ngram(n, scrambler, plugboard, message);
     }
-    
+
     unsigned int frequencies[(unsigned int) pow(BOMM_ALPHABET_SIZE, n)];
     bomm_measure_scrambler_frequency(n, frequencies, scrambler, plugboard, message);
     return bomm_measure_frequency_ic(n, frequencies);

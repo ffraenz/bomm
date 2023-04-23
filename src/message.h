@@ -31,7 +31,7 @@ typedef struct _bomm_message {
      * Total number of letters in message
      */
     unsigned int length;
-    
+
     /**
      * Letters
      */

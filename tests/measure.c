@@ -11,7 +11,7 @@
 Test(message, bomm_measure_frequency) {
     bomm_message_t *message;
     unsigned int frequencies[BOMM_ALPHABET_SIZE];
-    
+
     message = bomm_message_init("ff");
     bomm_measure_message_frequency(1, frequencies, message);
     cr_assert_eq(bomm_measure_frequency_ic(1, frequencies), 26.0);

@@ -69,7 +69,7 @@ inline static void* bomm_lookup_string(
     void* match = NULL;
     char* element_string = (char*) elements;
     unsigned int i = 0;
-    
+
     while (match == NULL && i < count) {
         if (strcmp(element_string, string) == 0) {
             match = element_string;
@@ -78,7 +78,7 @@ inline static void* bomm_lookup_string(
             element_string += element_size;
         }
     }
-    
+
     return match;
 }
 

@@ -40,7 +40,7 @@ bool bomm_wiring_extract(bomm_wiring_t* ptr, const char* string) {
         );
         return false;
     }
-    
+
     return true;
 }
 

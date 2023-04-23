@@ -50,13 +50,13 @@ bomm_query_t* bomm_query_init(int argc, char *argv[]) {
             }
         }
     }
-    
+
     // Make sure the query filename is given
     if (optind != argc - 1) {
         fprintf(stderr, "Error: A single argument with the query filename is expected\n");
         return NULL;
     }
-    
+
     // Read the query
     char* query_filename = argv[optind];
     FILE* query_file = fopen(query_filename, "r");
@@ -64,7 +64,7 @@ bomm_query_t* bomm_query_init(int argc, char *argv[]) {
         fprintf(stderr, "Error: The query file %s cannot be read\n", query_filename);
         return NULL;
     }
-    
+
     // Parse the query
     json_error_t error;
     json_t* query_json = json_loadf(query_file, 0, &error);
@@ -78,7 +78,7 @@ bomm_query_t* bomm_query_init(int argc, char *argv[]) {
         fprintf(stderr, "Error: The query is expected to be an object\n");
         return NULL;
     }
-    
+
     // Read frequencies
     json_t* frequencies_json = json_object_get(query_json, "frequencies");
     if (frequencies_json != NULL) {
@@ -102,7 +102,7 @@ bomm_query_t* bomm_query_init(int argc, char *argv[]) {
             }
         }
     }
-    
+
     // Read attack count
     json_t* attacks_json = json_object_get(query_json, "attacks");
     if (attacks_json->type != JSON_ARRAY) {
@@ -111,7 +111,7 @@ bomm_query_t* bomm_query_init(int argc, char *argv[]) {
         return NULL;
     }
     unsigned int attack_count = (unsigned int) json_array_size(attacks_json);
-    
+
     // Alloc query
     size_t query_size = sizeof(bomm_query_t) + attack_count * sizeof(bomm_attack_t);
     bomm_query_t* query = malloc(query_size);
@@ -120,13 +120,13 @@ bomm_query_t* bomm_query_init(int argc, char *argv[]) {
         fprintf(stderr, "Error: Out of memory\n");
         return NULL;
     }
-    
+
     // Set defaults
     query->ciphertext = NULL;
     query->hold = NULL;
     query->verbose = verbose;
     query->attack_count = attack_count;
-    
+
     // Read ciphertext
     json_t* ciphertext_json = json_object_get(query_json, "ciphertext");
     if (ciphertext_json != NULL) {
@@ -138,7 +138,7 @@ bomm_query_t* bomm_query_init(int argc, char *argv[]) {
         }
         query->ciphertext = bomm_message_init(json_string_value(ciphertext_json));
     }
-    
+
     // Read wheels
     json_t* wheels_json = json_object_get(query_json, "wheels");
     if (wheels_json != NULL) {
@@ -163,7 +163,7 @@ bomm_query_t* bomm_query_init(int argc, char *argv[]) {
             return NULL;
         }
     }
-    
+
     // Read attacks
     json_t* attack_json;
     bomm_attack_t* attack;
@@ -172,7 +172,7 @@ bomm_query_t* bomm_query_init(int argc, char *argv[]) {
         attack->id = i + 1;
         attack->query = query;
         attack->thread = NULL;
-        
+
         attack_json = json_array_get(attacks_json, i);
         if (attack_json->type != JSON_OBJECT) {
             bomm_query_destroy(query);
@@ -180,7 +180,7 @@ bomm_query_t* bomm_query_init(int argc, char *argv[]) {
             fprintf(stderr, "Error: An attack is expected to be an object\n");
             return NULL;
         }
-        
+
         // Read attack ciphertext
         json_t* ciphertext_json = json_object_get(attack_json, "ciphertext");
         if (ciphertext_json != NULL) {
@@ -194,7 +194,7 @@ bomm_query_t* bomm_query_init(int argc, char *argv[]) {
         } else {
             attack->ciphertext = query->ciphertext;
         }
-        
+
         // Read attack key space
         json_t* key_space_json = json_object_get(attack_json, "space");
         if (bomm_key_space_extract_json(&attack->key_space, key_space_json, query->wheels, query->wheel_count) == NULL) {
@@ -203,10 +203,10 @@ bomm_query_t* bomm_query_init(int argc, char *argv[]) {
             return NULL;
         }
     }
-    
+
     // Prepare hold
     query->hold = bomm_hold_init(sizeof(bomm_key_t), hold_size);
-    
+
     json_decref(query_json);
     return query;
 }

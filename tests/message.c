@@ -17,7 +17,7 @@ Test(message, bomm_letter_t) {
 Test(message, bomm_message_init) {
     bomm_message_t* message;
     char* expected_string;
-    
+
     expected_string = BOMM_ALPHABET;
     message = bomm_message_init(expected_string);
     char string[bomm_message_serialize_size(message)];

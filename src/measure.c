@@ -18,7 +18,7 @@ bomm_ngram_map_t* bomm_measure_ngram_map_init(unsigned char n, const char* filen
         fprintf(stderr, "Error opening file %s\n", filename);
         return NULL;
     }
-    
+
     // Allocate map
     unsigned int map_size = pow(BOMM_ALPHABET_SIZE, n);
     size_t ngram_map_size = sizeof(bomm_ngram_map_t) + map_size * sizeof(bomm_ngram_map_entry);
@@ -27,7 +27,7 @@ bomm_ngram_map_t* bomm_measure_ngram_map_init(unsigned char n, const char* filen
         fprintf(stderr, "Out of memory while loading %d-gram map\n", n);
         return NULL;
     }
-    
+
     size_t line_restrict = 32;
     ssize_t line_size;
     char line[line_restrict];
@@ -36,11 +36,11 @@ bomm_ngram_map_t* bomm_measure_ngram_map_init(unsigned char n, const char* filen
     double frequency, frequency_sum, frequency_min;
     char ascii;
     bomm_letter_t letter;
-    
+
     // Reset
     ngram_map->n = n;
     memset(ngram_map->map, 0, map_size);
-    
+
     // Parse file
     frequency_sum = 0;
     frequency_min = INFINITY;
@@ -51,11 +51,11 @@ bomm_ngram_map_t* bomm_measure_ngram_map_init(unsigned char n, const char* filen
         map_index = 0;
         frequency = 0;
         line_index = 0;
-        
+
         // Parse line
         while (state != 255 && line_index < line_size) {
             ascii = line[line_index++];
-            
+
             if (ascii == ' ' || ascii == '\t' || ascii == '\r' || ascii == '\n') {
                 // Ignore white spaces
             } else if (state < n && (letter = bomm_message_letter_from_ascii(ascii)) != 255) {
@@ -71,7 +71,7 @@ bomm_ngram_map_t* bomm_measure_ngram_map_init(unsigned char n, const char* filen
                 state = 255;
             }
         }
-        
+
         // Store frequency
         if (state == n) {
             ngram_map->map[map_index] = frequency;
@@ -80,17 +80,17 @@ bomm_ngram_map_t* bomm_measure_ngram_map_init(unsigned char n, const char* filen
             state = 0;
         }
     }
-    
+
     // Close file
     fclose(file);
-    
+
     // Handle parsing error
     if (state == 255 || frequency_sum == 0) {
         free(ngram_map);
         fprintf(stderr, "Error parsing %d-gram file %s\n", n, filename);
         return NULL;
     }
-    
+
     // When an n-gram is not listed in the dictionary, we would get
     // a probability of 0, leading to the worst possible penalty of -inf in our
     // fitness function. However, the actual probability of such an n-gram
@@ -98,7 +98,7 @@ bomm_ngram_map_t* bomm_measure_ngram_map_init(unsigned char n, const char* filen
     // cases to a value smaller than the minimum probability
     double min_probability = frequency_min / frequency_sum;
     double fallback_probability = min_probability * 0.5;
-    
+
     // Turn frequencies into log probabilities
     double probability;
     for (map_index = 0; map_index < map_size; map_index++) {
@@ -106,7 +106,7 @@ bomm_ngram_map_t* bomm_measure_ngram_map_init(unsigned char n, const char* filen
         ngram_map->map[map_index] =
             (float) log(probability > 0 ? probability : fallback_probability);
     }
-    
+
     bomm_ngram_map[n] = ngram_map;
     return ngram_map;
 }

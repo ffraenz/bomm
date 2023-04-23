@@ -14,7 +14,7 @@ bomm_lettermask_t* bomm_lettermask_extract(bomm_lettermask_t* lettermask, const 
         fprintf(stderr, "Out of memory while loading lettermask\n");
         return NULL;
     }
-    
+
     *lettermask = 0;
     for (unsigned int i = 0; i < message->length; i++) {
         // Set bits at letter positions

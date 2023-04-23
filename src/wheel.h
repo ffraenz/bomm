@@ -22,12 +22,12 @@ typedef struct _bomm_wheel {
      * Wheel name (null terminated string of max. 15 chars)
      */
     char name[BOMM_WHEEL_NAME_MAX_LENGTH];
-    
+
     /**
      * Wheel wiring
      */
     bomm_wiring_t wiring;
-    
+
     /**
      * Wheel turnovers
      */

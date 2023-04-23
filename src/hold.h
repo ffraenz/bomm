@@ -24,12 +24,12 @@ typedef struct _bomm_hold_element {
      * Score positioning this element in a hold
      */
     float score;
-    
+
     /**
      * Preview string visualizing the hold element
      */
     char preview[BOMM_HOLD_PREVIEW_SIZE];
-    
+
     /**
      * Arbitrary element data (e.g. key)
      */
@@ -49,22 +49,22 @@ typedef struct _bomm_hold {
      * Size of an element's data in memory.
      */
     size_t element_size;
-    
+
     /**
      * Maximum number of elements to be hold
      */
     unsigned int size;
-    
+
     /**
      * Current number of elements
      */
     unsigned int count;
-    
+
     /**
      * Mutex for access control across threads
      */
     pthread_mutex_t mutex;
-    
+
     /**
      * Hold elements
      */
@@ -100,9 +100,9 @@ static inline bomm_hold_element_t* bomm_hold_at(bomm_hold_t* hold, int index) {
     if (index < 0) {
         index = hold->size + index;
     }
-    
+
     // TODO: Assert `index < hold->size`
-    
+
     size_t element_mem_size = sizeof(bomm_hold_element_t) + hold->element_size;
     return (bomm_hold_element_t*) (&hold->elements[0] + element_mem_size * index);
 }
