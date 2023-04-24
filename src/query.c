@@ -138,6 +138,9 @@ bomm_query_t* bomm_query_init(int argc, char *argv[]) {
             return NULL;
         }
         query->ciphertext = bomm_message_init(json_string_value(ciphertext_json));
+        
+        // TODO: Use the same measure as in the selected attack strategy
+        query->ciphertext_score = bomm_measure_message_ngram(3, query->ciphertext);
     }
 
     // Read wheels
@@ -228,4 +231,94 @@ void bomm_query_destroy(bomm_query_t* query) {
     free(query->ciphertext);
     free(query->hold);
     free(query);
+}
+
+void bomm_query_report_print(bomm_query_t* query, unsigned int count) {
+    bomm_progress_t* attack_progress[query->attack_count];
+    for (unsigned int i = 0; i < query->attack_count; i++) {
+        attack_progress[i] = &query->attacks[i].progress;
+    }
+
+    bomm_progress_t joint_progress;
+    joint_progress.batch_unit_size = 26;
+
+    char space_string[80] =
+        "                                        " \
+        "                                        ";
+    char line_string[240] =
+        "────────────────────────────────────────" \
+        "────────────────────────────────────────";
+
+    char duration_string[16];
+    char time_remaining_string[16];
+    char key_string[80];
+    char score_string[10];
+
+    // Lock progress updates
+    for (unsigned int i = 0; i < query->attack_count; i++) {
+        pthread_mutex_lock(&query->attacks[i].progress_mutex);
+    }
+
+    // Calculate joint progress
+    bomm_progress_parallel(&joint_progress, attack_progress, query->attack_count);
+
+    // Unlock progress updates
+    for (unsigned int i = 0; i < query->attack_count; i++) {
+        pthread_mutex_unlock(&query->attacks[i].progress_mutex);
+    }
+
+    double percentage = bomm_progress_percentage(&joint_progress);
+    bomm_duration_stringify(duration_string, 16, joint_progress.duration_sec);
+    double time_remaining_sec = bomm_progress_time_remaining_sec(&joint_progress);
+    bomm_duration_stringify(time_remaining_string, 16, time_remaining_sec);
+
+    // Lock hold mutex while printing
+    pthread_mutex_lock(&query->hold->mutex);
+
+    // Print header
+    printf("┌──────┬─%1$-.207s─┐\n", line_string);
+    printf(
+        "│ Bomm │ Progress \x1b[32m%10.3f %%\x1b[37m │ " \
+        "Elapsed \x1b[32m%13.13s\x1b[37m │ " \
+        "Remaining \x1b[32m%11.11s\x1b[37m │\n",
+        percentage,
+        duration_string,
+        time_remaining_string
+    );
+    printf("├──────┴─%1$-.171s─┬─%1$-.27s─┤\n", line_string);
+
+    // Print hold entries
+    for (unsigned int i = 0; i < count; i++) {
+        if (i < query->hold->count) {
+            bomm_hold_element_t* element = bomm_hold_at(query->hold, i);
+            bomm_key_stringify(key_string, sizeof(key_string), (bomm_key_t*) element->data);
+            snprintf(score_string, sizeof(score_string), "%+10.10f", element->score);
+            printf(
+                "│ \x1b[32m%-64.64s\x1b[37m   %9.9s │\n",
+                element->preview,
+                score_string
+            );
+            printf("│ %-76.76s │\n", key_string);
+        } else {
+            printf("│ N/A %-.72s │\n", space_string);
+            printf("│ %-.76s │\n", space_string);
+        }
+        printf("├─%1$-.192s─┬─%1$-.27s─┤\n", line_string);
+    }
+    
+    char ciphertext_string[77];
+    bomm_message_stringify(ciphertext_string, sizeof(ciphertext_string), query->ciphertext);
+    snprintf(score_string, sizeof(score_string), "%+10.10f", query->ciphertext_score);
+    snprintf(key_string, sizeof(key_string), "Unchanged ciphertext (%d letters)", query->ciphertext->length);
+    
+    printf(
+        "│ \x1b[32m%-64.64s\x1b[37m   %9.9s │\n",
+        ciphertext_string,
+        score_string
+    );
+    printf("│ %-76.76s │\n", key_string);
+    printf("└─%1$-.228s─┘\n", line_string);
+
+    // Unlock hold mutex
+    pthread_mutex_unlock(&query->hold->mutex);
 }

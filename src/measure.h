@@ -77,6 +77,33 @@ static inline float bomm_measure_scrambler_ngram(
 }
 
 /**
+ * Measure the n-gram score of the given message.
+ * @param n The n in n-gram
+ */
+static inline float bomm_measure_message_ngram(
+    unsigned int n,
+    bomm_message_t* message
+) {
+    unsigned int map_size = pow(BOMM_ALPHABET_SIZE, n);
+    const bomm_ngram_map_t* map = bomm_ngram_map[n];
+    unsigned int index, letter;
+
+    float score = 0;
+    unsigned int map_index = 0;
+
+    for (index = 0; index < message->length; index++) {
+        letter = message->letters[index];
+        map_index = (map_index * BOMM_ALPHABET_SIZE + letter) % map_size;
+
+        if (index >= n - 1) {
+            score += map->map[map_index];
+        }
+    }
+
+    return score / (message->length - n + 1);
+}
+
+/**
  * Measure the n-gram frequency of the given scrambler, plugboard, and message.
  * @param n The n in n-gram
  * @param frequencies Frequencies map of size `pow(BOMM_ALPHABET_SIZE, n)`

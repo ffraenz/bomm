@@ -73,6 +73,11 @@ typedef struct _bomm_query {
      * Default ciphertext
      */
     bomm_message_t* ciphertext;
+    
+    /**
+     * Ciphertext score
+     */
+    float ciphertext_score;
 
     /**
      * Shared hold the best results are reported in
@@ -114,5 +119,10 @@ bomm_query_t* bomm_query_init(int argc, char *argv[]);
  * Destroy the given query and free its memory.
  */
 void bomm_query_destroy(bomm_query_t* query);
+
+/**
+ * Print the report screen.
+ */
+void bomm_query_report_print(bomm_query_t* query, unsigned int count);
 
 #endif /* query_h */
