@@ -12,6 +12,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/time.h>
 
 /**
  * Safe alternative to `strncpy`: Up to `n` characters of the `src` string are
@@ -80,6 +81,15 @@ inline static void* bomm_lookup_string(
     }
 
     return match;
+}
+
+/**
+ * Return the wall clock time as a Unix timestamp (seconds).
+ */
+inline static double bomm_timestamp_sec(void) {
+    struct timeval time;
+    gettimeofday(&time, NULL);
+    return time.tv_sec + time.tv_usec / 1000000.0;
 }
 
 #endif /* utility_h */

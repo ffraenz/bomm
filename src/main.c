@@ -14,25 +14,42 @@
 #include "message.h"
 #include "measure.h"
 #include "query.h"
+#include "progress.h"
 
 void* bomm_report_thread_run(void* arg) {
     bomm_query_t* query = (bomm_query_t*) arg;
 
-    struct timeval start_time, end_time;
-    gettimeofday(&start_time, NULL);
-    double elapsed_time_ms;
+    bomm_progress_t* attack_progress[query->attack_count];
+    for (unsigned int i = 0; i < query->attack_count; i++) {
+        attack_progress[i] = &query->attacks[i].progress;
+    }
+
+    bomm_progress_t joint_progress;
+    joint_progress.batch_unit_size = 26;
 
     sleep(1);
 
+    char progress_string[128];
     while (true) {
-        gettimeofday(&end_time, NULL);
-        elapsed_time_ms = (end_time.tv_sec - start_time.tv_sec) * 1000.0 + (end_time.tv_usec - start_time.tv_usec) / 1000.0;
+        // Lock progress updates
+        for (unsigned int i = 0; i < query->attack_count; i++) {
+            pthread_mutex_lock(&query->attacks[i].progress_mutex);
+        }
 
-        printf("\n");
-        printf("Hold after %.3f seconds:\n", elapsed_time_ms / 1000.0);
+        // Gather data
+        bomm_progress_parallel(&joint_progress, attack_progress, query->attack_count);
+
+        // Unlock progress updates
+        for (unsigned int i = 0; i < query->attack_count; i++) {
+            pthread_mutex_unlock(&query->attacks[i].progress_mutex);
+        }
+
+        // Joint progress
+        bomm_progress_stringify(progress_string, 128, &joint_progress);
+        printf("\n%s\n", progress_string);
         bomm_key_hold_print(query->hold);
 
-        sleep(5);
+        sleep(6);
     }
 
     return NULL;

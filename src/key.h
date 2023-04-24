@@ -339,7 +339,7 @@ static inline bool bomm_key_is_relevant(bomm_key_t* key) {
 }
 
 /**
- * Increment the given iterator.
+ * Increment the given key iterator, ignoring the plugboard setting.
  * @return Whether a full revolution was completed (carry)
  */
 static inline bool bomm_key_iterator_next(bomm_key_iterator_t* iterator) {
@@ -360,6 +360,7 @@ static inline bool bomm_key_iterator_next(bomm_key_iterator_t* iterator) {
 
 /**
  * Count the number of elements for the given iterator (needs to be reset).
+ * The plugboard is ignored, here. The iterator is reset after the call.
  */
 static inline unsigned int bomm_key_iterator_count(
     bomm_key_iterator_t* iterator

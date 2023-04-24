@@ -7,6 +7,7 @@
 
 #include "key.h"
 
+// TODO: Make this generic (depending on `BOMM_ALPHABET_SIZE`)
 const unsigned int bomm_key_plugboard_identity[] = {
     0,  1,  2,  3,  4,  5,  6,  7,  8,  9,
    10, 11, 12, 13, 14, 15, 16, 17, 18, 19,

@@ -1,5 +1,4 @@
 .DS_Store
 /Bomm.xcodeproj
 /build
-/data/queries/sullivan-weierud-2005-i-plugboard.json
-/data/queries/sullivan-weierud-2005-vi-plugboard.json
+/data/queries/_*

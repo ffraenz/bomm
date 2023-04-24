@@ -69,7 +69,10 @@ Test(key, bomm_key_iterator_init_empty_position_mask) {
 Test(key, bomm_key_iterator_count) {
     bomm_key_space_t* key_space = bomm_key_space_init_enigma_i();
     bomm_key_iterator_t key_iterator;
+    bomm_key_iterator_t expected_key_iterator;
     bomm_key_iterator_init(&key_iterator, key_space);
+    memcpy(&expected_key_iterator, &key_iterator, sizeof(key_iterator));
     cr_assert_eq(bomm_key_iterator_count(&key_iterator), 79092000);
+    cr_assert_arr_eq(&key_iterator, &expected_key_iterator, sizeof(key_iterator));
     free(key_space);
 }

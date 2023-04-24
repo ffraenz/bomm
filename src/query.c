@@ -173,6 +173,13 @@ bomm_query_t* bomm_query_init(int argc, char *argv[]) {
         attack->query = query;
         attack->thread = NULL;
 
+        pthread_mutex_init(&attack->progress_mutex, NULL);
+        attack->progress.batch_unit_size = 1;
+        attack->progress.completed_unit_count = 0;
+        attack->progress.unit_count = 0;
+        attack->progress.duration_sec = 0;
+        attack->progress.batch_duration_sec = 0;
+
         attack_json = json_array_get(attacks_json, i);
         if (attack_json->type != JSON_OBJECT) {
             bomm_query_destroy(query);

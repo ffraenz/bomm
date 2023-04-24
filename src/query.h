@@ -12,6 +12,7 @@
 #include "hold.h"
 #include "key.h"
 #include "message.h"
+#include "progress.h"
 
 #define BOMM_QUERY_MAX_WHEEL_COUNT 24
 
@@ -46,6 +47,17 @@ typedef struct _bomm_attack {
      * Pointer to object identifying the thread that is executing this slice
      */
     pthread_t thread;
+
+    /**
+     * Current progress of the attack.
+     * Protected by mutex `progress_mutex`.
+     */
+    bomm_progress_t progress;
+
+    /**
+     * Mutex for access control on progress related fields across threads
+     */
+    pthread_mutex_t progress_mutex;
 } bomm_attack_t;
 
 /**

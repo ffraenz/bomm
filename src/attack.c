@@ -42,6 +42,24 @@ void bomm_attack_key_space(bomm_attack_t* attack) {
         return;
     }
 
+    double start_timestamp = bomm_timestamp_sec();
+    double batch_start_timestamp = start_timestamp;
+    double batch_duration_sec;
+
+    unsigned long key_space_size = bomm_key_iterator_count(&key_iterator);
+    unsigned int batch_count = 0;
+    unsigned int batch_size = 26 * 26;
+
+    // Initial progress update
+    pthread_mutex_lock(&attack->progress_mutex);
+    attack->progress.batch_unit_size = batch_size;
+    attack->progress.unit_count = key_space_size;
+    attack->progress.completed_unit_count = 0;
+    attack->progress.batch_duration_sec = 0;
+    attack->progress.duration_sec = 0;
+    pthread_mutex_unlock(&attack->progress_mutex);
+
+    // Iterate over keys in the key space
     do {
         // Generate scrambler
         bomm_enigma_generate_scrambler(scrambler, &key_iterator.key);
@@ -62,11 +80,34 @@ void bomm_attack_key_space(bomm_attack_t* attack) {
             // Add to hold
             min_score = bomm_hold_add(hold, score, &key_iterator.key, hold_preview);
         }
+
+        if (++batch_count >= batch_size) {
+            // Measure time
+            batch_duration_sec = batch_start_timestamp;
+            batch_start_timestamp = bomm_timestamp_sec();
+            batch_duration_sec = batch_start_timestamp - batch_duration_sec;
+
+            // Intermediate progress update
+            pthread_mutex_lock(&attack->progress_mutex);
+            attack->progress.completed_unit_count += batch_count;
+            attack->progress.duration_sec = batch_start_timestamp - start_timestamp;
+            attack->progress.batch_duration_sec = batch_duration_sec;
+            pthread_mutex_unlock(&attack->progress_mutex);
+
+            // Reset batch count
+            batch_count = 0;
+        }
     } while (!bomm_key_iterator_next(&key_iterator));
+
+    // Final progress update
+    pthread_mutex_lock(&attack->progress_mutex);
+    attack->progress.completed_unit_count = attack->progress.unit_count;
+    pthread_mutex_unlock(&attack->progress_mutex);
 }
 
 // During the hillclimb we exhaust the following plugs in order
 // The I-Stecker strategy starts with E, N, R, X, S, I
+// TODO: Make dependent on monogram frequencies
 const unsigned int _plug_order[] = {
      4, 13, 17, 23, 18,  8,  0,  1,  2,  3,
      5,  6,  7,  9, 10, 11, 12, 14, 15, 16,
