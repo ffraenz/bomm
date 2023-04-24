@@ -197,7 +197,7 @@ bomm_query_t* bomm_query_init(int argc, char *argv[]) {
 
         // Read attack key space
         json_t* key_space_json = json_object_get(attack_json, "space");
-        if (bomm_key_space_extract_json(&attack->key_space, key_space_json, query->wheels, query->wheel_count) == NULL) {
+        if (bomm_key_space_init_with_json(&attack->key_space, key_space_json, query->wheels, query->wheel_count) == NULL) {
             bomm_query_destroy(query);
             json_decref(query_json);
             return NULL;

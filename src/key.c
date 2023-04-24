@@ -49,7 +49,7 @@ bomm_key_space_t* bomm_key_space_init(
     return key_space;
 }
 
-bomm_mechanism_t bomm_key_mechanism_extract(const char* mechanism_string) {
+bomm_mechanism_t bomm_key_mechanism_from_string(const char* mechanism_string) {
     if (strcmp(mechanism_string, "stepping") == 0) {
         return BOMM_MECHANISM_STEPPING;
     } else if (strcmp(mechanism_string, "odometer") == 0) {
@@ -59,7 +59,7 @@ bomm_mechanism_t bomm_key_mechanism_extract(const char* mechanism_string) {
     }
 }
 
-bomm_key_space_t* bomm_key_space_extract_json(
+bomm_key_space_t* bomm_key_space_init_with_json(
     bomm_key_space_t* key_space_ptr,
     json_t* key_space_json,
     bomm_wheel_t wheels[],
@@ -73,7 +73,7 @@ bomm_key_space_t* bomm_key_space_extract_json(
     json_t* mechanism_json = json_object_get(key_space_json, "mechanism");
     bomm_mechanism_t mechanism = BOMM_MECHANISM_STEPPING;
     if (mechanism_json != NULL) {
-        mechanism = bomm_key_mechanism_extract(json_string_value(mechanism_json));
+        mechanism = bomm_key_mechanism_from_string(json_string_value(mechanism_json));
     }
 
     // Read slot count
@@ -166,7 +166,7 @@ void bomm_key_space_destroy(bomm_key_space_t* key_space) {
     free(key_space);
 }
 
-bomm_key_space_t* bomm_key_space_enigma_i_init(void) {
+bomm_key_space_t* bomm_key_space_init_enigma_i(void) {
     bomm_key_space_t* key_space = bomm_key_space_init(NULL, BOMM_MECHANISM_STEPPING, 5);
     if (key_space == NULL) {
         return NULL;
@@ -242,6 +242,61 @@ bomm_key_t* bomm_key_init(bomm_key_t* key, bomm_key_space_t* key_space) {
     );
 
     return key;
+}
+
+bomm_key_iterator_t* bomm_key_iterator_init(
+    bomm_key_iterator_t* iterator,
+    bomm_key_space_t* key_space
+) {
+    unsigned int slot_count = key_space->slot_count;
+    bool empty = false;
+
+    // Validate wheel sets are not empty
+    for (unsigned int slot = 0; slot < slot_count; slot++) {
+        empty = empty || key_space->wheel_sets[slot][0] == NULL;
+    }
+    if (empty) {
+        return NULL;
+    }
+
+    bool owning = iterator == NULL;
+    if (owning) {
+        if ((iterator = malloc(sizeof(bomm_key_iterator_t))) == NULL) {
+            return NULL;
+        }
+    }
+
+    // Reference key space
+    iterator->key_space = key_space;
+
+    // Init key
+    bomm_key_init(&iterator->key, key_space);
+
+    // Reset wheels, ring masks, and position masks
+    size_t masks_size = sizeof(bomm_lettermask_t) * slot_count;
+    memset(&iterator->wheel_indices, 0, sizeof(unsigned int) * slot_count);
+    memcpy(&iterator->ring_masks, key_space->ring_masks, masks_size);
+    memcpy(&iterator->position_masks, key_space->position_masks, masks_size);
+
+    // Find initial sets of wheels, rings, and positions
+    empty = (
+        empty ||
+        bomm_key_iterator_wheels_next(
+            iterator, false) ||
+        bomm_key_iterator_positions_init(
+            iterator->key.rings, iterator->ring_masks, slot_count) ||
+        bomm_key_iterator_positions_init(
+            iterator->key.positions, iterator->position_masks, slot_count)
+    );
+
+    if (empty) {
+        if (owning) {
+            free(iterator);
+        }
+        return NULL;
+    }
+
+    return iterator;
 }
 
 void bomm_key_serialize(char* str, size_t size, bomm_key_t* key) {

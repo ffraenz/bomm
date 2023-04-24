@@ -31,17 +31,43 @@ Test(key, bomm_key_serialize_plugboard) {
     cr_assert_str_eq(actual_plugboard_string, expected_plugboard_string);
 }
 
-Test(key, bomm_key_mechanism_extract) {
-    bomm_mechanism_t actual_mechanism = bomm_key_mechanism_extract("stepping");
+Test(key, bomm_key_mechanism_from_string) {
+    bomm_mechanism_t actual_mechanism;
+    actual_mechanism = bomm_key_mechanism_from_string("stepping");
     cr_assert_eq(actual_mechanism, BOMM_MECHANISM_STEPPING);
-    actual_mechanism = bomm_key_mechanism_extract("odometer");
+    actual_mechanism = bomm_key_mechanism_from_string("odometer");
     cr_assert_eq(actual_mechanism, BOMM_MECHANISM_ODOMETER);
-    actual_mechanism = bomm_key_mechanism_extract("none");
+    actual_mechanism = bomm_key_mechanism_from_string("none");
     cr_assert_eq(actual_mechanism, BOMM_MECHANISM_NONE);
 }
 
-Test(key, bomm_key_iterator) {
-    bomm_key_space_t* key_space = bomm_key_space_enigma_i_init();
+Test(key, bomm_key_iterator_init_empty_wheel_order) {
+    bomm_key_space_t* key_space = bomm_key_space_init_enigma_i();
+    bomm_key_iterator_t key_iterator;
+    key_space->wheel_sets[1][1] = NULL;
+    key_space->wheel_sets[2][1] = NULL;
+    cr_assert_eq(bomm_key_iterator_init(&key_iterator, key_space), NULL);
+    free(key_space);
+}
+
+Test(key, bomm_key_iterator_init_empty_wheel_set) {
+    bomm_key_space_t* key_space = bomm_key_space_init_enigma_i();
+    bomm_key_iterator_t key_iterator;
+    key_space->wheel_sets[1][0] = NULL;
+    cr_assert_eq(bomm_key_iterator_init(&key_iterator, key_space), NULL);
+    free(key_space);
+}
+
+Test(key, bomm_key_iterator_init_empty_position_mask) {
+    bomm_key_space_t* key_space = bomm_key_space_init_enigma_i();
+    bomm_key_iterator_t key_iterator;
+    key_space->position_masks[1] = BOMM_LETTERMASK_NONE;
+    cr_assert_eq(bomm_key_iterator_init(&key_iterator, key_space), NULL);
+    free(key_space);
+}
+
+Test(key, bomm_key_iterator_count) {
+    bomm_key_space_t* key_space = bomm_key_space_init_enigma_i();
     bomm_key_iterator_t key_iterator;
     bomm_key_iterator_init(&key_iterator, key_space);
     cr_assert_eq(bomm_key_iterator_count(&key_iterator), 79092000);

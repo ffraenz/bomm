@@ -9,7 +9,7 @@
 #include "../src/enigma.h"
 
 void _load_test_key(bomm_key_t* key) {
-    bomm_key_space_t* key_space = bomm_key_space_enigma_i_init();
+    bomm_key_space_t* key_space = bomm_key_space_init_enigma_i();
     bomm_key_init(key, key_space);
 
     // Steal wheels from key space for wheel order UKW-B, I, II, III, ABC

@@ -42,6 +42,7 @@ typedef enum {
 
 /**
  * Struct representing a key space, from which a set of keys can be derived.
+ * It can be traversed using an `bomm_key_iterator_t` and related functions.
  */
 typedef struct _bomm_key_space {
     /**
@@ -56,13 +57,14 @@ typedef struct _bomm_key_space {
     unsigned int slot_count;
 
     /**
-     * Set of wheels per slot
+     * Set of wheels per slot.
+     * Each set is terminated with a null pointer.
      */
     bomm_wheel_t* wheel_sets[BOMM_MAX_SLOT_COUNT]
         [BOMM_MAX_WHEEL_SET_SIZE + 1];
 
     /**
-     * Whether wheel is rotating for each slot
+     * Whether a wheel is rotating for each slot
      */
     bool rotating_slots[BOMM_MAX_SLOT_COUNT];
 
@@ -82,8 +84,6 @@ typedef struct _bomm_key_space {
 /**
  * Struct describing a single location in a search space.
  * Struct is optimized to being used in-place.
- * TODO: Optimize key storage by separating key and state structs.
- * TODO: Make struct variable size depending on the slot count.
  */
 typedef struct _bomm_key {
     /**
@@ -123,11 +123,14 @@ typedef struct _bomm_key {
     unsigned int plugboard[BOMM_ALPHABET_SIZE];
 } bomm_key_t;
 
+/**
+ * Iterator struct that enables traversing a key space.
+ */
 typedef struct _bomm_key_iterator {
     /**
      * Key space iterator was created for
      */
-    bomm_key_space_t* key_space;
+    const bomm_key_space_t* key_space;
 
     /**
      * Current key
@@ -135,7 +138,7 @@ typedef struct _bomm_key_iterator {
     bomm_key_t key;
 
     /**
-     * Wheel indices
+     * Wheel set index per slot
      */
     unsigned int wheel_indices[BOMM_MAX_SLOT_COUNT];
 
@@ -158,7 +161,7 @@ extern const unsigned int bomm_key_plugboard_identity[BOMM_ALPHABET_SIZE];
 /**
  * Extract a mechanism value from the given string.
  */
-bomm_mechanism_t bomm_key_mechanism_extract(const char* mechanism_string);
+bomm_mechanism_t bomm_key_mechanism_from_string(const char* mechanism_string);
 
 /**
  * Initialize a key space with the given mechanism and slot count.
@@ -176,7 +179,7 @@ bomm_key_space_t* bomm_key_space_init(
  * @param wheels Pointer to an array of wheels for lookup
  * @param wheel_count Number of elements in `wheels`
  */
-bomm_key_space_t* bomm_key_space_extract_json(
+bomm_key_space_t* bomm_key_space_init_with_json(
     bomm_key_space_t* key_space,
     json_t* key_space_json,
     bomm_wheel_t wheels[],
@@ -186,7 +189,7 @@ bomm_key_space_t* bomm_key_space_extract_json(
 /**
  * Initialize a key space for the Enigma I model.
  */
-bomm_key_space_t* bomm_key_space_enigma_i_init(void);
+bomm_key_space_t* bomm_key_space_init_enigma_i(void);
 
 /**
  * Destroy the given key space.
@@ -194,33 +197,46 @@ bomm_key_space_t* bomm_key_space_enigma_i_init(void);
 void bomm_key_space_destroy(bomm_key_space_t* key_space);
 
 /**
- * Initialize a key from the given key space. Wheels are not initialized.
- * @param key Pointer to an existing key in memory or null, if a new location
+ * Initialize a key from the given key space. Wheels are initialized to the
+ * first wheel in each wheel set (might not be valid for duplicate wheels).
+ * @param key Pointer to an existing key in memory or null, if a new key
  * should be allocated and returned.
  */
 bomm_key_t* bomm_key_init(bomm_key_t* key, bomm_key_space_t* key_space);
 
-static inline void bomm_key_iterator_lettermask_init(
-    unsigned char slot_count,
+/**
+ * Apply initial values to a set of positions using the given shifting masks.
+ * @return True, if no initial set of positions is available.
+ */
+static inline bool bomm_key_iterator_positions_init(
     unsigned int* positions,
-    bomm_lettermask_t* shifting_masks
+    bomm_lettermask_t* shifting_masks,
+    unsigned int size
 ) {
-    memset(positions, 0, BOMM_MAX_SLOT_COUNT * sizeof(bomm_letter_t));
-    for (int slot = 0; slot < slot_count; slot++) {
-        while ((shifting_masks[slot] & 0x1) == 0) {
-            shifting_masks[slot] = shifting_masks[slot] >> 1;
-            positions[slot]++;
+    memset(positions, 0, size * sizeof(bomm_letter_t));
+    bool empty = false;
+    for (unsigned int slot = 0; slot < size; slot++) {
+        if (!(empty = empty || shifting_masks[slot] == BOMM_LETTERMASK_NONE)) {
+            while ((shifting_masks[slot] & 0x1) == 0) {
+                shifting_masks[slot] = shifting_masks[slot] >> 1;
+                positions[slot]++;
+            }
         }
     }
+    return empty;
 }
 
-static inline bool bomm_key_iterator_lettermask_next(
-    unsigned char slot_count,
+/**
+ * Increment a set of positions like an odometer using the given shifting masks.
+ * @return Whether a full revolution was completed (carry)
+ */
+static inline bool bomm_key_iterator_positions_next(
     unsigned int* positions,
-    bomm_lettermask_t* shifting_masks
+    bomm_lettermask_t* shifting_masks,
+    unsigned int size
 ) {
     bool carry = true;
-    int slot = slot_count;
+    int slot = size;
     while (carry && --slot >= 0) {
         // Optimization: If there's only one bit set on the mask we can skip the
         // loops and literally carry on to the next slot
@@ -246,9 +262,9 @@ static inline bool bomm_key_iterator_lettermask_next(
 }
 
 /**
- * Validate the iterator wheel order
+ * Validate the iterator wheel order, i.e. make sure no wheel appears twice.
  */
-static inline bool bomm_key_iterator_validate_wheel_order(
+static inline bool bomm_key_iterator_wheels_validate(
     bomm_key_iterator_t* iterator
 ) {
     int slot_count = iterator->key_space->slot_count;
@@ -266,18 +282,21 @@ static inline bool bomm_key_iterator_validate_wheel_order(
 }
 
 /**
- * Find the next relevant wheel order
- * @param increment Leaves a valid wheel order intact if set to false
+ * Move to the next valid set of wheels (wheel order).
+ * @param increment If set to false, does not increment a set of wheels that is
+ * already valid.
+ * @return Whether a full revolution was completed (carry)
  */
-static inline bool bomm_key_iterator_wheel_order_next(
+static inline bool bomm_key_iterator_wheels_next(
     bomm_key_iterator_t* iterator,
     bool increment
 ) {
-    bool carry_out = false;
-    while (!bomm_key_iterator_validate_wheel_order(iterator) || increment) {
+    unsigned int slot_count = iterator->key_space->slot_count;
+    unsigned int revolutions = 0;
+    while (revolutions < 2 && (!bomm_key_iterator_wheels_validate(iterator) || increment)) {
         increment = false;
         bool carry = true;
-        int slot = iterator->key_space->slot_count;
+        int slot = slot_count;
         while (carry && --slot >= 0) {
             iterator->wheel_indices[slot]++;
             if ((carry = (iterator->key_space->wheel_sets[slot][iterator->wheel_indices[slot]] == NULL))) {
@@ -290,80 +309,62 @@ static inline bool bomm_key_iterator_wheel_order_next(
             );
         }
         if (carry) {
-            carry_out = true;
+            revolutions++;
         }
     }
-    return carry_out;
+    return revolutions > 0;
 }
 
 /**
  * Initialize an iterator for the given key space.
+ * @return Pointer to iterator or NULL, if out of memory or if the key space
+ * is empty.
  */
-static inline bomm_key_iterator_t* bomm_key_iterator_init(
+bomm_key_iterator_t* bomm_key_iterator_init(
     bomm_key_iterator_t* iterator,
     bomm_key_space_t* key_space
-) {
-    if (iterator == NULL) {
-        if ((iterator = malloc(sizeof(bomm_key_iterator_t))) == NULL) {
-            return NULL;
-        }
-    }
+);
 
-    // Reference key space
-    iterator->key_space = key_space;
-    unsigned int slot_count = key_space->slot_count;
-
-    // Init key
-    bomm_key_init(&iterator->key, key_space);
-
-    // Find initial wheel indices
-    memset(&iterator->wheel_indices, 0, sizeof(unsigned int) * slot_count);
-    bomm_key_iterator_wheel_order_next(iterator, false);
-
-    // Find initial rings
-    memcpy(&iterator->ring_masks, key_space->ring_masks, sizeof(bomm_lettermask_t) * slot_count);
-    bomm_key_iterator_lettermask_init(slot_count, iterator->key.rings, iterator->ring_masks);
-
-    // Find initial positions
-    memcpy(&iterator->position_masks, key_space->position_masks, sizeof(bomm_lettermask_t) * slot_count);
-    bomm_key_iterator_lettermask_init(slot_count, iterator->key.positions, iterator->position_masks);
-
-    return iterator;
+/**
+ * Determine the relevancy of the given key. An irrelevant key is one that is
+ * equivalent to a canonicalized version of itself. Right now, keys equivalent
+ * due to the double stepping anomaly are flagged as irrelevant.
+ */
+static inline bool bomm_key_relevant(bomm_key_t* key) {
+    return (
+        key->mechanism != BOMM_MECHANISM_STEPPING ||
+        !bomm_lettermask_has(&key->wheels[2].turnovers, key->positions[2])
+    );
 }
 
 /**
- * Increment the iterator. Return false, if the end has been reached.
+ * Increment the given iterator.
+ * @return Whether a full revolution was completed (carry)
  */
 static inline bool bomm_key_iterator_next(bomm_key_iterator_t* iterator) {
     bomm_key_t* key = &iterator->key;
     unsigned int slot_count = key->slot_count;
-    bool relevant = false;
-    bool carry = false;
-
-    while (!carry && !relevant) {
-        carry = false;
-        if (bomm_key_iterator_lettermask_next(slot_count, key->positions, iterator->position_masks)) {
-            if (bomm_key_iterator_lettermask_next(slot_count, key->rings, iterator->ring_masks)) {
-                carry = bomm_key_iterator_wheel_order_next(iterator, true);
-            }
-        }
-
-        // Skip redundant positions caused by the double stepping anomaly
-        relevant = !carry && (
-            key->mechanism != BOMM_MECHANISM_STEPPING ||
-            !bomm_lettermask_has(&key->wheels[2].turnovers, key->positions[2])
-        );
-    }
-
-    return !carry;
+    bool carry_out = false;
+    do {
+        bool carry =
+            bomm_key_iterator_positions_next(
+                key->positions, iterator->position_masks, slot_count) &&
+            bomm_key_iterator_positions_next(
+                key->rings, iterator->ring_masks, slot_count) &&
+            bomm_key_iterator_wheels_next(iterator, true);
+        carry_out = carry_out || carry;
+    } while (!bomm_key_relevant(key));
+    return carry_out;
 }
 
 /**
  * Count the number of elements for the given iterator (needs to be reset).
  */
-static inline unsigned int bomm_key_iterator_count(bomm_key_iterator_t* iterator) {
+static inline unsigned int bomm_key_iterator_count(
+    bomm_key_iterator_t* iterator
+) {
     unsigned int count = 1;
-    while (bomm_key_iterator_next(iterator)) {
+    while (!bomm_key_iterator_next(iterator)) {
         count++;
     }
     return count;

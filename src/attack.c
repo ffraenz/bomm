@@ -41,7 +41,10 @@ void bomm_attack_key_space(bomm_attack_t* attack) {
     scrambler->length = ciphertext->length;
 
     bomm_key_iterator_t key_iterator;
-    bomm_key_iterator_init(&key_iterator, &attack->key_space);
+    if (bomm_key_iterator_init(&key_iterator, &attack->key_space) == NULL) {
+        // Key space is empty
+        return;
+    }
 
     do {
         // Generate scrambler
@@ -63,7 +66,7 @@ void bomm_attack_key_space(bomm_attack_t* attack) {
             // Add to hold
             min_score = bomm_hold_add(hold, score, &key_iterator.key, hold_preview);
         }
-    } while (bomm_key_iterator_next(&key_iterator));
+    } while (!bomm_key_iterator_next(&key_iterator));
 }
 
 // During the hillclimb we exhaust the following plugs in order
