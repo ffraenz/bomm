@@ -7,7 +7,7 @@
 
 #include "attack.h"
 
-void* bomm_attack_execute(void* arg) {
+void* bomm_attack_thread(void* arg) {
     // The argument is assumed to be an attack slice
     bomm_attack_t* attack = (bomm_attack_t*) arg;
     bomm_attack_key_space(attack);

@@ -316,7 +316,7 @@ void bomm_key_stringify(char* str, size_t size, bomm_key_t* key) {
     char plugboard_string[39];
     bomm_key_plugboard_stringify(plugboard_string, 39, key);
 
-    snprintf(str, size, "%s %s %s %-39s", wheel_order_string, rings_string, positions_string, plugboard_string);
+    snprintf(str, size, "%s %s %s %s", wheel_order_string, rings_string, positions_string, plugboard_string);
 }
 
 void bomm_key_wheels_stringify(char* str, size_t size, bomm_key_t* key) {

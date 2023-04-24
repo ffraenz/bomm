@@ -65,6 +65,11 @@ typedef struct _bomm_attack {
  */
 typedef struct _bomm_query {
     /**
+     * Name of the query (usually the filename)
+     */
+    char name[80];
+
+    /**
      * Default ciphertext
      */
     bomm_message_t* ciphertext;

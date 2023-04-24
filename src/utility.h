@@ -92,4 +92,22 @@ inline static double bomm_timestamp_sec(void) {
     return time.tv_sec + time.tv_usec / 1000000.0;
 }
 
+/**
+ * Export the given duration to a string.
+ */
+static inline void bomm_duration_stringify(
+    char* str,
+    size_t size,
+    double duration
+) {
+    snprintf(
+        str,
+        size,
+        "%02d:%02d:%02d",
+        (unsigned int) (duration / 3600),
+        (unsigned int) (duration / 60) % 60,
+        (unsigned int) duration % 60
+    );
+}
+
 #endif /* utility_h */

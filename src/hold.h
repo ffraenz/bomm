@@ -14,7 +14,7 @@
 #include <stdbool.h>
 #include <pthread.h>
 
-#define BOMM_HOLD_PREVIEW_SIZE 64
+#define BOMM_HOLD_PREVIEW_SIZE 72
 
 /**
  * Variable-size struct representing a single element in a hold.

@@ -21,7 +21,7 @@
  * Execute the given attack.
  * Function that can be used from `pthread_create`.
  */
-void* bomm_attack_execute(void* arg);
+void* bomm_attack_thread(void* arg);
 
 /**
  * Exhaust the given key space.

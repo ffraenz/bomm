@@ -34,7 +34,7 @@ Test(enigma, bomm_enigma_encrypt) {
 
     char key_string[128];
     bomm_key_stringify(key_string, 128, &key);
-    cr_assert_str_eq(key_string, "UKW-B,I,II,III,ETW-ABC aaaaa ameua                                        ");
+    cr_assert_str_eq(key_string, "UKW-B,I,II,III,ETW-ABC aaaaa ameua ");
 
     bomm_message_t* ciphertext = bomm_message_init("aaaaa");
     bomm_message_t* plaintext = bomm_message_init_with_length(ciphertext->length);

@@ -122,6 +122,7 @@ bomm_query_t* bomm_query_init(int argc, char *argv[]) {
     }
 
     // Set defaults
+    bomm_strncpy(query->name, query_filename, 80);
     query->ciphertext = NULL;
     query->hold = NULL;
     query->verbose = verbose;

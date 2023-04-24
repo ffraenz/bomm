@@ -9,6 +9,7 @@
 #define progress_h
 
 #include <stdio.h>
+#include "utility.h"
 
 /**
  * Struct representing the progress of an arbitrary workload.
@@ -104,14 +105,21 @@ static inline void bomm_progress_stringify(
     bomm_progress_t* progress
 ) {
     double percentage = bomm_progress_percentage(progress);
+
+    char duration_string[16];
+    bomm_duration_stringify(duration_string, 16, progress->duration_sec);
+
+    char time_remaining_string[16];
     double time_remaining_sec = bomm_progress_time_remaining_sec(progress);
+    bomm_duration_stringify(time_remaining_string, 16, time_remaining_sec);
+
     snprintf(
         str,
         size,
-        "Progress: %.2f%%, Time elapsed: %.1f min, Time remaining: %.0f min",
+        "[Progress: %.2f%%] [Elapsed: %s] [Remaining: %s]",
         percentage * 100.0,
-        progress->duration_sec / 60.0,
-        time_remaining_sec / 60.0
+        duration_string,
+        time_remaining_string
     );
 }
 
