@@ -50,12 +50,12 @@ bomm_wheel_t* bomm_wheel_init(
 bomm_wheel_t* bomm_wheel_init_with_name(bomm_wheel_t* wheel, const char* name);
 
 /**
- * Extract a wheel from the given JSON object.
+ * Initialize a wheel from the given JSON object.
  */
 bomm_wheel_t* bomm_wheel_init_with_json(bomm_wheel_t* wheel, json_t* wheel_json);
 
 /**
- * Init a wheel set from the given JSON array.
+ * Initialize a wheel set from the given JSON array.
  */
 bool bomm_wheel_set_init_with_json(
     bomm_wheel_t* wheel_set[],

@@ -8,7 +8,7 @@
 #include <criterion/criterion.h>
 #include "../src/measure.h"
 
-Test(message, bomm_measure_frequency) {
+Test(message, bomm_measure_message_frequency) {
     bomm_message_t *message;
     unsigned int frequencies[BOMM_ALPHABET_SIZE];
 

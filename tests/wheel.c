@@ -9,7 +9,7 @@
 #include <jansson.h>
 #include "../src/wheel.h"
 
-Test(wiring, bomm_wheel_extract_json) {
+Test(wiring, bomm_wheel_init_with_json) {
     const char* wheel_json_string =
         "{ \"name\": \"I\", \"wiring\": \"ekmflgdqvzntowyhxuspaibrcj\", " \
         "\"turnovers\": \"q\" }";
@@ -24,13 +24,13 @@ Test(wiring, bomm_wheel_extract_json) {
     char actual_string[BOMM_ALPHABET_SIZE + 1];
     cr_assert_eq(result, &wheel);
     cr_assert_str_eq(wheel.name, "I");
-    bomm_wiring_serialize(actual_string, sizeof(actual_string), &wheel.wiring);
+    bomm_wiring_stringify(actual_string, sizeof(actual_string), &wheel.wiring);
     cr_assert_str_eq(actual_string, "ekmflgdqvzntowyhxuspaibrcj");
-    bomm_lettermask_serialize(actual_string, sizeof(actual_string), &wheel.turnovers);
+    bomm_lettermask_stringify(actual_string, sizeof(actual_string), &wheel.turnovers);
     cr_assert_str_eq(actual_string, "q");
 }
 
-Test(wiring, bomm_wheel_set_extract_json) {
+Test(wiring, bomm_wheel_set_init_with_json) {
     unsigned int wheel_count = 3;
     bomm_wheel_t wheels[wheel_count];
     bomm_wheel_init(&wheels[0], "I",   "ekmflgdqvzntowyhxuspaibrcj", "q");

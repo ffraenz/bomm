@@ -33,17 +33,17 @@ Test(enigma, bomm_enigma_encrypt) {
     memcpy(&original_key, &key, sizeof(original_key));
 
     char key_string[128];
-    bomm_key_serialize(key_string, 128, &key);
+    bomm_key_stringify(key_string, 128, &key);
     cr_assert_str_eq(key_string, "UKW-B,I,II,III,ETW-ABC aaaaa ameua                                        ");
 
     bomm_message_t* ciphertext = bomm_message_init("aaaaa");
-    bomm_message_t* plaintext = bomm_message_init_length(ciphertext->length);
+    bomm_message_t* plaintext = bomm_message_init_with_length(ciphertext->length);
 
     bomm_enigma_encrypt(ciphertext, &key, plaintext);
     cr_assert_arr_eq(&key, &original_key, sizeof(original_key));
 
     char actual_plaintext_string[bomm_message_serialize_size(plaintext)];
-    bomm_message_serialize(actual_plaintext_string, -1, plaintext);
+    bomm_message_stringify(actual_plaintext_string, -1, plaintext);
     cr_assert_str_eq(actual_plaintext_string, "gdxtz");
 
     free(ciphertext);

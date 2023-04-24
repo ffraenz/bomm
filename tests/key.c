@@ -8,7 +8,7 @@
 #include <criterion/criterion.h>
 #include "../src/key.h"
 
-Test(key, bomm_key_serialize_plugboard) {
+Test(key, bomm_key_plugboard_stringify) {
     char actual_plugboard_string[39];
     char* expected_plugboard_string;
     bomm_key_t key;
@@ -16,7 +16,7 @@ Test(key, bomm_key_serialize_plugboard) {
     // Identity plugboard
     expected_plugboard_string = "";
     memcpy(&key.plugboard, &bomm_key_plugboard_identity, sizeof(bomm_key_plugboard_identity));
-    bomm_key_serialize_plugboard(actual_plugboard_string, 39, &key);
+    bomm_key_plugboard_stringify(actual_plugboard_string, 39, &key);
     cr_assert_str_eq(actual_plugboard_string, expected_plugboard_string);
 
     // Plugboard sample
@@ -27,7 +27,7 @@ Test(key, bomm_key_serialize_plugboard) {
         18, 20, 22, 21,  3,  7, 13
     };
     memcpy(&key.plugboard, &example_plugboard, sizeof(example_plugboard));
-    bomm_key_serialize_plugboard(actual_plugboard_string, 39, &key);
+    bomm_key_plugboard_stringify(actual_plugboard_string, 39, &key);
     cr_assert_str_eq(actual_plugboard_string, expected_plugboard_string);
 }
 

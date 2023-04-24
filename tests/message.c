@@ -21,7 +21,7 @@ Test(message, bomm_message_init) {
     expected_string = BOMM_ALPHABET;
     message = bomm_message_init(expected_string);
     char string[bomm_message_serialize_size(message)];
-    bomm_message_serialize(string, -1, message);
+    bomm_message_stringify(string, -1, message);
     cr_assert_str_eq(string, expected_string);
     cr_assert_eq(message->length, strlen(expected_string));
     free(message);
@@ -33,7 +33,7 @@ Test(message, bomm_message_the_quick_brown_fox) {
     bomm_message_t* message = bomm_message_init(input_string);
     cr_assert_eq(message->length, strlen(expected_string));
     char string[bomm_message_serialize_size(message)];
-    bomm_message_serialize(string, -1, message);
+    bomm_message_stringify(string, -1, message);
     cr_assert_str_eq(string, expected_string);
     free(message);
 }

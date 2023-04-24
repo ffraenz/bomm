@@ -13,33 +13,33 @@ Test(message, bomm_lettermask_t) {
         "The alphabet is expected to fit into a lettermask");
 }
 
-Test(lettermask, bomm_lettermask_extract) {
+Test(lettermask, bomm_lettermask_from_string) {
     bomm_lettermask_t lettermask;
 
-    bomm_lettermask_extract(&lettermask, "");
+    bomm_lettermask_from_string(&lettermask, "");
     cr_assert_eq(lettermask, BOMM_LETTERMASK_NONE);
 
-    bomm_lettermask_extract(&lettermask, "swzfhmq");
+    bomm_lettermask_from_string(&lettermask, "swzfhmq");
     cr_assert_eq(lettermask, 0x024510a0);
 
-    bomm_lettermask_extract(&lettermask, "abcdefghijklmnopqrstuvwxyz");
+    bomm_lettermask_from_string(&lettermask, "abcdefghijklmnopqrstuvwxyz");
     cr_assert_eq(lettermask, BOMM_LETTERMASK_ALL);
 }
 
-Test(lettermask, bomm_lettermask_serialize) {
+Test(lettermask, bomm_lettermask_stringify) {
     bomm_lettermask_t lettermask;
     char actual_string[BOMM_ALPHABET_SIZE + 1];
 
     lettermask = BOMM_LETTERMASK_NONE;
-    bomm_lettermask_serialize(actual_string, sizeof(actual_string), &lettermask);
+    bomm_lettermask_stringify(actual_string, sizeof(actual_string), &lettermask);
     cr_assert_str_eq(actual_string, "");
 
     lettermask = 0x024510a0;
-    bomm_lettermask_serialize(actual_string, sizeof(actual_string), &lettermask);
+    bomm_lettermask_stringify(actual_string, sizeof(actual_string), &lettermask);
     cr_assert_str_eq(actual_string, "fhmqswz");
 
     lettermask = BOMM_LETTERMASK_ALL;
-    bomm_lettermask_serialize(actual_string, sizeof(actual_string), &lettermask);
+    bomm_lettermask_stringify(actual_string, sizeof(actual_string), &lettermask);
     cr_assert_str_eq(actual_string, "abcdefghijklmnopqrstuvwxyz");
 }
 

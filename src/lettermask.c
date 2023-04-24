@@ -7,7 +7,10 @@
 
 #include "lettermask.h"
 
-bomm_lettermask_t* bomm_lettermask_extract(bomm_lettermask_t* lettermask, const char* string) {
+bomm_lettermask_t* bomm_lettermask_from_string(
+    bomm_lettermask_t* lettermask,
+    const char* string
+) {
     // TODO: Implement parser for lettermask notation
     bomm_message_t *message = bomm_message_init(string);
     if (!message) {
@@ -25,7 +28,11 @@ bomm_lettermask_t* bomm_lettermask_extract(bomm_lettermask_t* lettermask, const 
     return lettermask;
 }
 
-void bomm_lettermask_serialize(char* str, size_t size, bomm_lettermask_t* lettermask) {
+void bomm_lettermask_stringify(
+    char* str,
+    size_t size,
+    bomm_lettermask_t* lettermask
+) {
     unsigned int i = 0;
     unsigned int letter = 0;
     while (letter < BOMM_ALPHABET_SIZE && i < size - 1) {

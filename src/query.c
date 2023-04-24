@@ -205,7 +205,7 @@ bomm_query_t* bomm_query_init(int argc, char *argv[]) {
     }
 
     // Prepare hold
-    query->hold = bomm_hold_init(sizeof(bomm_key_t), hold_size);
+    query->hold = bomm_hold_init(NULL, sizeof(bomm_key_t), hold_size);
 
     json_decref(query_json);
     return query;

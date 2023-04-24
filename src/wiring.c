@@ -7,22 +7,30 @@
 
 #include "wiring.h"
 
-bool bomm_wiring_extract(bomm_wiring_t* ptr, const char* string) {
-    bomm_message_t* message = bomm_message_init(string);
-    if (!message) {
-        return false;
+bomm_wiring_t* bomm_wiring_init(bomm_wiring_t* wiring, const char* string) {
+    bomm_message_t* message;
+    if ((message = bomm_message_init(string)) == NULL) {
+        return NULL;
     }
 
-    memset(ptr, BOMM_ALPHABET_SIZE, sizeof(bomm_wiring_t));
+    bool owning = wiring == NULL;
+    if (owning) {
+        if ((wiring = malloc(sizeof(bomm_wiring_t))) == NULL) {
+            free(message);
+            return NULL;
+        }
+    }
+
+    memset(wiring, BOMM_ALPHABET_SIZE, sizeof(bomm_wiring_t));
 
     unsigned char char_index;
     bool error = message->length != BOMM_ALPHABET_SIZE;
     unsigned int position = 0;
     while (!error && position < message->length) {
         char_index = message->letters[position];
-        if (ptr->rev[char_index] == BOMM_ALPHABET_SIZE) {
-            ptr->map[position] = char_index;
-            ptr->rev[char_index] = position;
+        if (wiring->rev[char_index] == BOMM_ALPHABET_SIZE) {
+            wiring->map[position] = char_index;
+            wiring->rev[char_index] = position;
             position++;
         } else {
             error = true;
@@ -38,13 +46,16 @@ bool bomm_wiring_extract(bomm_wiring_t* ptr, const char* string) {
             string,
             position
         );
-        return false;
+        if (owning) {
+            free(wiring);
+        }
+        return NULL;
     }
 
-    return true;
+    return wiring;
 }
 
-void bomm_wiring_serialize(char* str, size_t size, bomm_wiring_t* wiring) {
+void bomm_wiring_stringify(char* str, size_t size, bomm_wiring_t* wiring) {
     unsigned int i = 0;
     while (i < BOMM_ALPHABET_SIZE && i < size - 1) {
         str[i] = wiring->map[i] + 97;

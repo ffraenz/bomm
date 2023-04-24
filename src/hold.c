@@ -8,14 +8,23 @@
 #include "hold.h"
 #include <math.h>
 
-bomm_hold_t* bomm_hold_init(size_t element_size, unsigned int hold_size) {
+bomm_hold_t* bomm_hold_init(
+    bomm_hold_t* hold,
+    size_t element_size,
+    unsigned int hold_size
+) {
     size_t element_mem_size = sizeof(bomm_hold_element_t) + element_size;
     size_t hold_mem_size = sizeof(bomm_hold_t) + element_mem_size * hold_size;
 
-    // Allocate hold
-    bomm_hold_t* hold = (bomm_hold_t*) malloc(hold_mem_size);
-    if (!hold) {
+    if (hold_size == 0) {
         return NULL;
+    }
+
+    // Allocate hold
+    if (hold == NULL) {
+        if ((hold = malloc(hold_mem_size)) == NULL) {
+            return NULL;
+        }
     }
 
     // Initialize hold

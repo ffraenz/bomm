@@ -110,7 +110,7 @@ bomm_key_space_t* bomm_key_space_init_with_json(
             json_t* ring_mask_json = json_object_get(slot_json, "rings");
             if (ring_mask_json != NULL) {
                 if (ring_mask_json->type == JSON_STRING) {
-                    if (bomm_lettermask_extract(
+                    if (bomm_lettermask_from_string(
                         &key_space->ring_masks[slot],
                         json_string_value(ring_mask_json)
                     ) == NULL) {
@@ -125,7 +125,7 @@ bomm_key_space_t* bomm_key_space_init_with_json(
             json_t* position_mask_json = json_object_get(slot_json, "positions");
             if (position_mask_json != NULL) {
                 if (position_mask_json->type == JSON_STRING) {
-                    if (bomm_lettermask_extract(
+                    if (bomm_lettermask_from_string(
                         &key_space->position_masks[slot],
                         json_string_value(position_mask_json)
                     ) == NULL) {
@@ -299,26 +299,26 @@ bomm_key_iterator_t* bomm_key_iterator_init(
     return iterator;
 }
 
-void bomm_key_serialize(char* str, size_t size, bomm_key_t* key) {
+void bomm_key_stringify(char* str, size_t size, bomm_key_t* key) {
     size_t wheel_order_string_size = (key->slot_count * BOMM_WHEEL_NAME_MAX_LENGTH + 1) + 1;
     char wheel_order_string[wheel_order_string_size];
-    bomm_key_serialize_wheel_order(wheel_order_string, wheel_order_string_size, key);
+    bomm_key_wheels_stringify(wheel_order_string, wheel_order_string_size, key);
 
     size_t rings_string_size = key->slot_count + 1;
     char rings_string[rings_string_size];
-    bomm_key_serialize_ring_settings(rings_string, rings_string_size, key);
+    bomm_key_rings_stringify(rings_string, rings_string_size, key);
 
     size_t positions_string_size = key->slot_count + 1;
     char positions_string[positions_string_size];
-    bomm_key_serialize_start_positions(positions_string, positions_string_size, key);
+    bomm_key_positions_stringify(positions_string, positions_string_size, key);
 
     char plugboard_string[39];
-    bomm_key_serialize_plugboard(plugboard_string, 39, key);
+    bomm_key_plugboard_stringify(plugboard_string, 39, key);
 
     snprintf(str, size, "%s %s %s %-39s", wheel_order_string, rings_string, positions_string, plugboard_string);
 }
 
-void bomm_key_serialize_wheel_order(char* str, size_t size, bomm_key_t* key) {
+void bomm_key_wheels_stringify(char* str, size_t size, bomm_key_t* key) {
     str[0] = 0;
     for (unsigned int slot = 0; slot < key->slot_count; slot++) {
         char* name = key->wheels[slot].name;
@@ -326,21 +326,21 @@ void bomm_key_serialize_wheel_order(char* str, size_t size, bomm_key_t* key) {
     }
 }
 
-void bomm_key_serialize_ring_settings(char* str, size_t size, bomm_key_t* key) {
+void bomm_key_rings_stringify(char* str, size_t size, bomm_key_t* key) {
     for (unsigned int slot = 0; slot < key->slot_count && slot < size - 1; slot++) {
         str[slot] = bomm_message_letter_to_ascii(key->rings[slot]);
     }
     str[size - 1] = '\0';
 }
 
-void bomm_key_serialize_start_positions(char* str, size_t size, bomm_key_t* key) {
+void bomm_key_positions_stringify(char* str, size_t size, bomm_key_t* key) {
     for (unsigned int slot = 0; slot < key->slot_count && slot < size - 1; slot++) {
         str[slot] = bomm_message_letter_to_ascii(key->positions[slot]);
     }
     str[size - 1] = '\0';
 }
 
-void bomm_key_serialize_plugboard(char* str, size_t size, bomm_key_t* key) {
+void bomm_key_plugboard_stringify(char* str, size_t size, bomm_key_t* key) {
     unsigned int i = 0;
     unsigned int j = 0;
 
@@ -371,7 +371,7 @@ void bomm_key_hold_print(bomm_hold_t* hold) {
     bomm_hold_element_t* element;
     for (unsigned int i = 0; i < hold->count; i++) {
         element = bomm_hold_at(hold, i);
-        bomm_key_serialize(key_string, 128, (bomm_key_t*) element->data);
+        bomm_key_stringify(key_string, 128, (bomm_key_t*) element->data);
         printf("%2d │ %80s │ %10f │ %30s\n", i + 1, key_string, element->score, element->preview);
     }
 

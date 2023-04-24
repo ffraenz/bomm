@@ -72,11 +72,10 @@ typedef struct _bomm_hold {
 } bomm_hold_t;
 
 /**
- * Allocate and initialize a hold for the given element size and hold size
- * (i.e. the maximum number of elements it should hold).
- * @return Pointer to initialized hold or NULL, if allocation failed.
+ * Initialize a hold for the given element size and hold size (i.e. the maximum
+ * number of elements it should hold).
  */
-bomm_hold_t* bomm_hold_init(size_t element_size, unsigned int hold_size);
+bomm_hold_t* bomm_hold_init(bomm_hold_t* hold, size_t element_size, unsigned int hold_size);
 
 /**
  * Destroy a hold and free its memory.

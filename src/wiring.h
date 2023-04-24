@@ -47,14 +47,14 @@ typedef struct _bomm_scrambler {
 } bomm_scrambler_t;
 
 /**
- * Extract a wiring from the given string
+ * Initialize a wiring from the given string.
  */
-bool bomm_wiring_extract(bomm_wiring_t* ptr, const char* string);
+bomm_wiring_t* bomm_wiring_init(bomm_wiring_t* wiring, const char* string);
 
 /**
  * Export the given enigma wiring to a string
  */
-void bomm_wiring_serialize(char* str, size_t size, bomm_wiring_t* wiring);
+void bomm_wiring_stringify(char* str, size_t size, bomm_wiring_t* wiring);
 
 /**
  * Calculate the scrambler struct size for the given message length.

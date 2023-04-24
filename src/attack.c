@@ -7,10 +7,6 @@
 
 #include "attack.h"
 
-void bomm_attack_destroy(bomm_attack_t* attack) {
-    free(attack);
-}
-
 void* bomm_attack_execute(void* arg) {
     // The argument is assumed to be an attack slice
     bomm_attack_t* attack = (bomm_attack_t*) arg;
@@ -61,7 +57,7 @@ void bomm_attack_key_space(bomm_attack_t* attack) {
         if (score > min_score) {
             // Generate preview
             bomm_scrambler_encrypt(scrambler, key_iterator.key.plugboard, ciphertext, plaintext);
-            bomm_message_serialize(hold_preview, BOMM_HOLD_PREVIEW_SIZE, plaintext);
+            bomm_message_stringify(hold_preview, BOMM_HOLD_PREVIEW_SIZE, plaintext);
 
             // Add to hold
             min_score = bomm_hold_add(hold, score, &key_iterator.key, hold_preview);

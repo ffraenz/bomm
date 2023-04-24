@@ -11,7 +11,7 @@
 
 Test(key, bomm_hold_init) {
     size_t element_size = sizeof(unsigned int);
-    bomm_hold_t* hold = bomm_hold_init(element_size, 5);
+    bomm_hold_t* hold = bomm_hold_init(NULL, element_size, 5);
     cr_assert_eq(hold->element_size, element_size);
     cr_assert_eq(hold->size, 5);
     cr_assert_eq(hold->count, 0);
@@ -24,7 +24,7 @@ Test(key, bomm_hold_add) {
     float score_boundary;
     bomm_hold_element_t* element;
 
-    bomm_hold_t* hold = bomm_hold_init(element_size, 5);
+    bomm_hold_t* hold = bomm_hold_init(NULL, element_size, 5);
 
     data = 1337;
     score_boundary = bomm_hold_add(hold, 3, &data, "L333t Third");

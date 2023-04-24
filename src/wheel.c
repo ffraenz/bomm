@@ -21,10 +21,10 @@ bomm_wheel_t* bomm_wheel_init(
     }
 
     bomm_strncpy(wheel->name, name, BOMM_WHEEL_NAME_MAX_LENGTH);
-    bomm_wiring_extract(&wheel->wiring, wiring_string);
+    bomm_wiring_init(&wheel->wiring, wiring_string);
 
     if (turnovers_string != NULL) {
-        bomm_lettermask_extract(&wheel->turnovers, turnovers_string);
+        bomm_lettermask_from_string(&wheel->turnovers, turnovers_string);
     } else {
         wheel->turnovers = BOMM_LETTERMASK_NONE;
     }

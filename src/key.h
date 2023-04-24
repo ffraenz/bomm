@@ -330,7 +330,8 @@ bomm_key_iterator_t* bomm_key_iterator_init(
  * equivalent to a canonicalized version of itself. Right now, keys equivalent
  * due to the double stepping anomaly are flagged as irrelevant.
  */
-static inline bool bomm_key_relevant(bomm_key_t* key) {
+static inline bool bomm_key_is_relevant(bomm_key_t* key) {
+    // TODO: Make ready for 4 rotor machines like M4
     return (
         key->mechanism != BOMM_MECHANISM_STEPPING ||
         !bomm_lettermask_has(&key->wheels[2].turnovers, key->positions[2])
@@ -353,7 +354,7 @@ static inline bool bomm_key_iterator_next(bomm_key_iterator_t* iterator) {
                 key->rings, iterator->ring_masks, slot_count) &&
             bomm_key_iterator_wheels_next(iterator, true);
         carry_out = carry_out || carry;
-    } while (!bomm_key_relevant(key));
+    } while (!bomm_key_is_relevant(key));
     return carry_out;
 }
 
@@ -371,13 +372,13 @@ static inline unsigned int bomm_key_iterator_count(
 }
 
 /**
- * Serialize the given key to a string.
+ * Export the given key to a string
  */
-void bomm_key_serialize(char* str, size_t size, bomm_key_t* key);
-void bomm_key_serialize_wheel_order(char* str, size_t size, bomm_key_t* key);
-void bomm_key_serialize_ring_settings(char* str, size_t size, bomm_key_t* key);
-void bomm_key_serialize_start_positions(char* str, size_t size, bomm_key_t* key);
-void bomm_key_serialize_plugboard(char* str, size_t size, bomm_key_t* key);
+void bomm_key_stringify(char* str, size_t size, bomm_key_t* key);
+void bomm_key_wheels_stringify(char* str, size_t size, bomm_key_t* key);
+void bomm_key_rings_stringify(char* str, size_t size, bomm_key_t* key);
+void bomm_key_positions_stringify(char* str, size_t size, bomm_key_t* key);
+void bomm_key_plugboard_stringify(char* str, size_t size, bomm_key_t* key);
 
 /**
  * Print the given key hold to the console.

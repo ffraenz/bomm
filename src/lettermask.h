@@ -43,32 +43,48 @@ typedef unsigned long bomm_lettermask_t;
 /**
  * Return true, if the given letter is set to 1 in a lettermask.
  */
-inline static bool bomm_lettermask_has(bomm_lettermask_t* mask, bomm_letter_t letter) {
+inline static bool bomm_lettermask_has(
+    bomm_lettermask_t* mask,
+    bomm_letter_t letter
+) {
     return (*mask >> letter) & 0x1;
 }
 
 /**
  * Add a letter to the given mask.
  */
-inline static void bomm_lettermask_set(bomm_lettermask_t* mask, bomm_letter_t letter) {
+inline static void bomm_lettermask_set(
+    bomm_lettermask_t* mask,
+    bomm_letter_t letter
+) {
     *mask |= (1 << letter);
 }
 
 /**
  * Remove a letter from the given mask.
  */
-inline static void bomm_lettermask_clear(bomm_lettermask_t* mask, bomm_letter_t letter) {
+inline static void bomm_lettermask_clear(
+    bomm_lettermask_t* mask,
+    bomm_letter_t letter
+) {
     *mask &= ~(1 << letter);
 }
 
 /**
  * Load the given lettermask string into memory at the specified pointer
  */
-bomm_lettermask_t* bomm_lettermask_extract(bomm_lettermask_t* ptr, const char* string);
+bomm_lettermask_t* bomm_lettermask_from_string(
+    bomm_lettermask_t* lettermask,
+    const char* string
+);
 
 /**
  * Export the given lettermask to a string
  */
-void bomm_lettermask_serialize(char* str, size_t size, bomm_lettermask_t* lettermask);
+void bomm_lettermask_stringify(
+    char* str,
+    size_t size,
+    bomm_lettermask_t* lettermask
+);
 
 #endif /* lettermask_h */

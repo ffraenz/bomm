@@ -41,7 +41,7 @@ typedef struct _bomm_message {
 /**
  * Allocate a message for the given length.
  */
-bomm_message_t* bomm_message_init_length(unsigned int length);
+bomm_message_t* bomm_message_init_with_length(unsigned int length);
 
 /**
  * Allocate and load a message from the given C-string.
@@ -87,9 +87,13 @@ static inline char bomm_message_letter_to_ascii(unsigned char letter) {
 }
 
 /**
- * Serialize the given message to a string.
+ * Export the given message to a string.
  */
-static inline void bomm_message_serialize(char* str, size_t size, bomm_message_t* message) {
+static inline void bomm_message_stringify(
+    char* str,
+    size_t size,
+    bomm_message_t* message
+) {
     size_t actual_size = message->length < size ? message->length : size - 1;
     for (unsigned int i = 0; i < actual_size; i++) {
         str[i] = bomm_message_letter_to_ascii(message->letters[i]);
