@@ -1,0 +1,79 @@
+{
+  "sources": [
+    "https://cryptocellar.org/bgac/keyofE.html"
+  ],
+  "description": "This message contains some serious garbles in the first 11 groups. Thus, we start at group 12.",
+  "ciphertext": "urhgr suohd fjtre tlfkd mgdxe mwixx intlg edkvl rtjfx rfoie nnirr wfkti bvfve llawr gjnvb yhbzs cjvtz pdbgv pbnna lnakx ouojg wljxo uxhds hxjou hvbvf dolmn lynvc mrgkk ytocp duevn fmipt ggjya ybdes p",
+  "attacks": [
+    {
+      "space": {
+        "slots": [
+          { "wheels": ["UKW-B"] },
+          { "wheels": ["I"], "rings": "a" },
+          { "wheels": ["II", "III", "IV", "V"], "rings": "a" },
+          { "wheels": ["II", "III", "IV", "V"] },
+          { "wheels": ["ETW-ABC"] }
+        ]
+      }
+    },
+    {
+      "space": {
+        "slots": [
+          { "wheels": ["UKW-B"] },
+          { "wheels": ["II"], "rings": "a" },
+          { "wheels": ["I", "III", "IV", "V"], "rings": "a" },
+          { "wheels": ["I", "III", "IV", "V"] },
+          { "wheels": ["ETW-ABC"] }
+        ]
+      }
+    },
+    {
+      "space": {
+        "slots": [
+          { "wheels": ["UKW-B"] },
+          { "wheels": ["III"], "rings": "a" },
+          { "wheels": ["I", "II", "IV", "V"], "rings": "a" },
+          { "wheels": ["I", "II", "IV", "V"] },
+          { "wheels": ["ETW-ABC"] }
+        ]
+      }
+    },
+    {
+      "space": {
+        "slots": [
+          { "wheels": ["UKW-B"] },
+          { "wheels": ["IV"], "rings": "a" },
+          { "wheels": ["I", "II", "III", "V"], "rings": "a" },
+          { "wheels": ["I", "II", "III", "V"] },
+          { "wheels": ["ETW-ABC"] }
+        ]
+      }
+    },
+    {
+      "space": {
+        "slots": [
+          { "wheels": ["UKW-B"] },
+          { "wheels": ["V"], "rings": "a" },
+          { "wheels": ["I", "II", "III", "IV"], "rings": "a" },
+          { "wheels": ["I", "II", "III", "IV"] },
+          { "wheels": ["ETW-ABC"] }
+        ]
+      }
+    }
+  ],
+  "wheels": [
+    { "name": "I",       "wiring": "ekmflgdqvzntowyhxuspaibrcj", "turnovers": "q" },
+    { "name": "II",      "wiring": "ajdksiruxblhwtmcqgznpyfvoe", "turnovers": "e" },
+    { "name": "III",     "wiring": "bdfhjlcprtxvznyeiwgakmusqo", "turnovers": "v" },
+    { "name": "IV",      "wiring": "esovpzjayquirhxlnftgkdcmwb", "turnovers": "j" },
+    { "name": "V",       "wiring": "vzbrgityupsdnhlxawmjqofeck", "turnovers": "z" },
+    { "name": "ETW-ABC", "wiring": "abcdefghijklmnopqrstuvwxyz" },
+    { "name": "UKW-A",   "wiring": "ejmzalyxvbwfcrquontspikhgd" },
+    { "name": "UKW-B",   "wiring": "yruhqsldpxngokmiebfzcwvjat" },
+    { "name": "UKW-C",   "wiring": "fvpjiaoyedrzxwgctkuqsbnmhl" }
+  ],
+  "frequencies": {
+    "bigram": "./data/frequencies/enigma1941-bigram.txt",
+    "trigram": "./data/frequencies/enigma1941-trigram.txt"
+  }
+}

@@ -247,6 +247,9 @@ void bomm_query_print(bomm_query_t* query, unsigned int count) {
     char line_string[240] =
         "────────────────────────────────────────" \
         "────────────────────────────────────────";
+    char double_line_string[240] =
+        "════════════════════════════════════════" \
+        "════════════════════════════════════════";
     char duration_string[16];
     char time_remaining_string[16];
     char message_string[80];
@@ -303,7 +306,9 @@ void bomm_query_print(bomm_query_t* query, unsigned int count) {
             printf("│ %-.76s │\n", space_string);
             printf("│ %-.76s │\n", space_string);
         }
-        printf("├─%1$-.192s─┬─%1$-.27s─┤\n", line_string);
+        if (i < count - 1) {
+            printf("├─%1$-.192s─┬─%1$-.27s─┤\n", line_string);
+        }
     }
 
     // Print footer
@@ -315,6 +320,7 @@ void bomm_query_print(bomm_query_t* query, unsigned int count) {
         "Unchanged ciphertext (%d letters)",
         query->ciphertext->length
     );
+    printf("╞═%1$-.192s═╤═%1$-.27s═╡\n", double_line_string);
     printf(
         "│ \x1b[32m%-64.64s\x1b[37m   %9.9s │\n",
         message_string,
