@@ -138,7 +138,7 @@ bomm_query_t* bomm_query_init(int argc, char *argv[]) {
             return NULL;
         }
         query->ciphertext = bomm_message_init(json_string_value(ciphertext_json));
-        
+
         // TODO: Use the same measure as in the selected attack strategy
         query->ciphertext_score = bomm_measure_message_ngram(3, query->ciphertext);
     }
@@ -175,7 +175,7 @@ bomm_query_t* bomm_query_init(int argc, char *argv[]) {
         attack = &query->attacks[i];
         attack->id = i + 1;
         attack->query = query;
-        attack->thread = NULL;
+        attack->thread = 0;
 
         pthread_mutex_init(&attack->progress_mutex, NULL);
         attack->progress.batch_unit_size = 1;
@@ -233,14 +233,13 @@ void bomm_query_destroy(bomm_query_t* query) {
     free(query);
 }
 
-void bomm_query_report_print(bomm_query_t* query, unsigned int count) {
+void bomm_query_print(bomm_query_t* query, unsigned int count) {
+    bomm_progress_t joint_progress;
+    joint_progress.batch_unit_size = 26;
     bomm_progress_t* attack_progress[query->attack_count];
     for (unsigned int i = 0; i < query->attack_count; i++) {
         attack_progress[i] = &query->attacks[i].progress;
     }
-
-    bomm_progress_t joint_progress;
-    joint_progress.batch_unit_size = 26;
 
     char space_string[80] =
         "                                        " \
@@ -248,10 +247,10 @@ void bomm_query_report_print(bomm_query_t* query, unsigned int count) {
     char line_string[240] =
         "────────────────────────────────────────" \
         "────────────────────────────────────────";
-
     char duration_string[16];
     char time_remaining_string[16];
-    char key_string[80];
+    char message_string[80];
+    char detail_string[80];
     char score_string[10];
 
     // Lock progress updates
@@ -273,6 +272,7 @@ void bomm_query_report_print(bomm_query_t* query, unsigned int count) {
     bomm_duration_stringify(time_remaining_string, 16, time_remaining_sec);
 
     // Lock hold mutex while printing
+    // Also makes sure multiple threads don't print at the same time
     pthread_mutex_lock(&query->hold->mutex);
 
     // Print header
@@ -281,42 +281,46 @@ void bomm_query_report_print(bomm_query_t* query, unsigned int count) {
         "│ Bomm │ Progress \x1b[32m%10.3f %%\x1b[37m │ " \
         "Elapsed \x1b[32m%13.13s\x1b[37m │ " \
         "Remaining \x1b[32m%11.11s\x1b[37m │\n",
-        percentage,
+        percentage * 100,
         duration_string,
         time_remaining_string
     );
     printf("├──────┴─%1$-.171s─┬─%1$-.27s─┤\n", line_string);
 
-    // Print hold entries
+    // Print hold
     for (unsigned int i = 0; i < count; i++) {
         if (i < query->hold->count) {
             bomm_hold_element_t* element = bomm_hold_at(query->hold, i);
-            bomm_key_stringify(key_string, sizeof(key_string), (bomm_key_t*) element->data);
+            bomm_key_stringify(detail_string, sizeof(detail_string), (bomm_key_t*) element->data);
             snprintf(score_string, sizeof(score_string), "%+10.10f", element->score);
             printf(
                 "│ \x1b[32m%-64.64s\x1b[37m   %9.9s │\n",
                 element->preview,
                 score_string
             );
-            printf("│ %-76.76s │\n", key_string);
+            printf("│ %-76.76s │\n", detail_string);
         } else {
-            printf("│ N/A %-.72s │\n", space_string);
+            printf("│ %-.76s │\n", space_string);
             printf("│ %-.76s │\n", space_string);
         }
         printf("├─%1$-.192s─┬─%1$-.27s─┤\n", line_string);
     }
-    
-    char ciphertext_string[77];
-    bomm_message_stringify(ciphertext_string, sizeof(ciphertext_string), query->ciphertext);
+
+    // Print footer
+    bomm_message_stringify(message_string, sizeof(message_string), query->ciphertext);
     snprintf(score_string, sizeof(score_string), "%+10.10f", query->ciphertext_score);
-    snprintf(key_string, sizeof(key_string), "Unchanged ciphertext (%d letters)", query->ciphertext->length);
-    
+    snprintf(
+        detail_string,
+        sizeof(detail_string),
+        "Unchanged ciphertext (%d letters)",
+        query->ciphertext->length
+    );
     printf(
         "│ \x1b[32m%-64.64s\x1b[37m   %9.9s │\n",
-        ciphertext_string,
+        message_string,
         score_string
     );
-    printf("│ %-76.76s │\n", key_string);
+    printf("│ %-76.76s │\n", detail_string);
     printf("└─%1$-.228s─┘\n", line_string);
 
     // Unlock hold mutex

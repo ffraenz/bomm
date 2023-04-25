@@ -381,9 +381,4 @@ void bomm_key_rings_stringify(char* str, size_t size, bomm_key_t* key);
 void bomm_key_positions_stringify(char* str, size_t size, bomm_key_t* key);
 void bomm_key_plugboard_stringify(char* str, size_t size, bomm_key_t* key);
 
-/**
- * Print the given key hold to the console.
- */
-void bomm_key_hold_print(bomm_hold_t* hold);
-
 #endif /* key_h */

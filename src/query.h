@@ -73,7 +73,7 @@ typedef struct _bomm_query {
      * Default ciphertext
      */
     bomm_message_t* ciphertext;
-    
+
     /**
      * Ciphertext score
      */
@@ -121,8 +121,9 @@ bomm_query_t* bomm_query_init(int argc, char *argv[]);
 void bomm_query_destroy(bomm_query_t* query);
 
 /**
- * Print the report screen.
+ * Print the status quo of the given query.
+ * @param count The number of hold entries to be included
  */
-void bomm_query_report_print(bomm_query_t* query, unsigned int count);
+void bomm_query_print(bomm_query_t* query, unsigned int count);
 
 #endif /* query_h */

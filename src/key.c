@@ -359,23 +359,3 @@ void bomm_key_plugboard_stringify(char* str, size_t size, bomm_key_t* key) {
 
     str[j > 0 ? j - 1 : 0] = '\0';
 }
-
-void bomm_key_hold_print(bomm_hold_t* hold) {
-    // Lock hold while printing
-    pthread_mutex_lock(&hold->mutex);
-
-    if (hold->count == 0) {
-        printf("Empty key hold\n");
-        return;
-    }
-    char key_string[128];
-    bomm_hold_element_t* element;
-    for (unsigned int i = 0; i < hold->count; i++) {
-        element = bomm_hold_at(hold, i);
-        bomm_key_stringify(key_string, 128, (bomm_key_t*) element->data);
-        printf("%2d │ %80s │ %10f │ %30s\n", i + 1, key_string, element->score, element->preview);
-    }
-
-    // Unlock hold
-    pthread_mutex_unlock(&hold->mutex);
-}
