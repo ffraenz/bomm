@@ -30,6 +30,9 @@ void bomm_signal_handler(int signal) {
  * Command line program entry point
  */
 int main(int argc, char *argv[]) {
+    // Seed PRNG
+    srand((unsigned int) time(NULL));
+
     // Initialize query from command line arguments
     bomm_query_main = bomm_query_init(argc, argv);
     if (bomm_query_main == NULL) {

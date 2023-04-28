@@ -7,6 +7,15 @@
 
 #include "attack.h"
 
+// During the hillclimb we exhaust the following plugs in order
+// The I-Stecker strategy starts with E, N, R, X, S, I
+// TODO: Make dependent on monogram frequencies
+unsigned int _plug_order[] = {
+     4, 13, 17, 23, 18,  8,  0,  1,  2,  3,
+     5,  6,  7,  9, 10, 11, 12, 14, 15, 16,
+    19, 20, 21, 22, 24, 25
+};
+
 void* bomm_attack_thread(void* arg) {
     // The argument is assumed to be an attack slice
     bomm_attack_t* attack = (bomm_attack_t*) arg;
@@ -36,6 +45,11 @@ void bomm_attack_key_space(bomm_attack_t* attack) {
     char scrambler_store[bomm_scrambler_size(ciphertext->length)];
     bomm_scrambler_t *scrambler = (bomm_scrambler_t*) &scrambler_store;
     scrambler->length = ciphertext->length;
+
+    // Randomize plug order, keeping the order of the first 6 letters intact
+    unsigned int plug_order[BOMM_ALPHABET_SIZE];
+    memcpy(plug_order, _plug_order, sizeof(plug_order));
+    bomm_array_shuffle(&plug_order[6], BOMM_ALPHABET_SIZE - 6);
 
     bomm_key_iterator_t key_iterator;
     if (bomm_key_iterator_init(&key_iterator, &attack->key_space) == NULL) {
@@ -67,7 +81,7 @@ void bomm_attack_key_space(bomm_attack_t* attack) {
 
         // Attack ciphertext
         score = bomm_attack_plugboard_enigma_suite(
-            key_iterator.key.plugboard, scrambler, ciphertext);
+            key_iterator.key.plugboard, plug_order, scrambler, ciphertext);
 
         // Reswapping
         score = bomm_attack_plugboard_enigma_suite_reswapping(
@@ -108,17 +122,9 @@ void bomm_attack_key_space(bomm_attack_t* attack) {
     pthread_mutex_unlock(&attack->mutex);
 }
 
-// During the hillclimb we exhaust the following plugs in order
-// The I-Stecker strategy starts with E, N, R, X, S, I
-// TODO: Make dependent on monogram frequencies
-const unsigned int _plug_order[] = {
-     4, 13, 17, 23, 18,  8,  0,  1,  2,  3,
-     5,  6,  7,  9, 10, 11, 12, 14, 15, 16,
-    19, 20, 21, 22, 24, 25
-};
-
 float bomm_attack_plugboard(
     unsigned int* plugboard,
+    const unsigned int* plug_order,
     bomm_scrambler_t* scrambler,
     bomm_message_t* ciphertext
 ) {
@@ -133,7 +139,7 @@ float bomm_attack_plugboard(
 
     // Enumerate over the first plug
     for (i = 0; i < BOMM_ALPHABET_SIZE; i++) {
-        a = _plug_order[i];
+        a = plug_order[i];
 
         // Skip if plug is already in use
         if (plugboard[a] != a) {
@@ -146,7 +152,7 @@ float bomm_attack_plugboard(
 
         // Enumerate over the second plug
         for (j = i; j < BOMM_ALPHABET_SIZE; j++) {
-            b = _plug_order[j];
+            b = plug_order[j];
 
             // Skip if plug is already in use
             if (plugboard[b] != b) {
@@ -179,6 +185,7 @@ float bomm_attack_plugboard(
 
 float bomm_attack_plugboard_enigma_suite(
     unsigned int* plugboard,
+    const unsigned int* plug_order,
     bomm_scrambler_t* scrambler,
     bomm_message_t* ciphertext
 ) {
@@ -263,10 +270,10 @@ float bomm_attack_plugboard_enigma_suite(
             for (unsigned int k = i + 1; k < BOMM_ALPHABET_SIZE; k++) {
                 // Selected plugs 4-tuple (`i` partner, `i`, `k`, `k` partner)
                 unsigned int* plugs[4];
-                plugs[0] = &plugboard[plugboard[_plug_order[i]]]; // x
-                plugs[1] = &plugboard[_plug_order[i]]; // i
-                plugs[2] = &plugboard[_plug_order[k]]; // k
-                plugs[3] = &plugboard[plugboard[_plug_order[k]]]; // z
+                plugs[0] = &plugboard[plugboard[plug_order[i]]]; // x
+                plugs[1] = &plugboard[plug_order[i]]; // i
+                plugs[2] = &plugboard[plug_order[k]]; // k
+                plugs[3] = &plugboard[plugboard[plug_order[k]]]; // z
 
                 // Determine what case we are in
                 if (

@@ -84,6 +84,11 @@ inline static void* bomm_lookup_string(
 }
 
 /**
+ * Shuffle the given array following the Fisher–Yates algorithm.
+ */
+void bomm_array_shuffle(unsigned int* array, size_t size);
+
+/**
  * Return the wall clock time as a Unix timestamp (seconds).
  */
 inline static double bomm_timestamp_sec(void) {

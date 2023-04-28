@@ -36,6 +36,7 @@ void bomm_attack_key_space(bomm_attack_t* attack);
  */
 float bomm_attack_plugboard(
     unsigned int* plugboard,
+    const unsigned int* plug_order,
     bomm_scrambler_t* scrambler,
     bomm_message_t* ciphertext
 );
@@ -46,6 +47,7 @@ float bomm_attack_plugboard(
  */
 float bomm_attack_plugboard_enigma_suite(
     unsigned int* plugboard,
+    const unsigned int* plug_order,
     bomm_scrambler_t* scrambler,
     bomm_message_t* ciphertext
 );
