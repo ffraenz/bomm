@@ -13,45 +13,24 @@
 #include "query.h"
 
 /**
- * Global query instance
+ * Main query instance
  */
 bomm_query_t* bomm_query_main;
 
 /**
- * Handle signals SIGINT and SIGTERM
+ * Handle SIGINT and SIGTERM signals to safely cancel query.
  */
 void bomm_signal_handler(int signal) {
-    printf("\nSignal received. Terminating.\n");
-    bomm_query_print(bomm_query_main, bomm_query_main->hold->size);
-    exit(signal);
-}
-
-/**
- * View thread updating the view
- */
-void* bomm_view_thread(void* omitted) {
-    (void) omitted;
-    bool initial_draw = true;
-    while (true) {
-        if (initial_draw) {
-            initial_draw = false;
-        } else {
-            printf("\x1b[%dA", 24);
-        }
-        bomm_query_print(bomm_query_main, 6);
-        sleep(3);
-    }
-    return NULL;
+    (void) signal;
+    printf("\nSignal received. Cancelling query.\n");
+    bomm_query_cancel(bomm_query_main);
 }
 
 /**
  * Command line program entry point
  */
 int main(int argc, char *argv[]) {
-    bool error = false;
-    bomm_attack_t* attack;
-
-    // Initialize query from input
+    // Initialize query from command line arguments
     bomm_query_main = bomm_query_init(argc, argv);
     if (bomm_query_main == NULL) {
         return 1;
@@ -61,51 +40,40 @@ int main(int argc, char *argv[]) {
     signal(SIGINT, bomm_signal_handler);
     signal(SIGTERM, bomm_signal_handler);
 
-    // Create attack threads that work in parallel
-    for (unsigned int i = 0; i < bomm_query_main->attack_count; i++) {
-        attack = &bomm_query_main->attacks[i];
-        if (pthread_create(&attack->thread, NULL, bomm_attack_thread, attack)) {
-            error = true;
-        }
-    }
-
-    // Start view thread
-    pthread_t view_thread = 0;
-    if (pthread_create(&view_thread, NULL, bomm_view_thread, NULL)) {
-        error = true;
-    }
-
-    if (error) {
-        fprintf(stderr, "Error while creating threads\n");
-        for (unsigned int i = 0; i < bomm_query_main->attack_count; i++) {
-            attack = &bomm_query_main->attacks[i];
-            if (attack->thread != 0) {
-                pthread_kill(attack->thread, SIGINT);
-            }
-        }
-        if (view_thread != 0) {
-            pthread_kill(view_thread, SIGINT);
-        }
+    // Start query threads
+    if (bomm_query_start(bomm_query_main)) {
+        fprintf(stderr, "Error while creating query threads\n");
         bomm_query_destroy(bomm_query_main);
         return 1;
     }
 
-    // Wait for attack threads to complete
-    for (unsigned int i = 0; i < bomm_query_main->attack_count; i++) {
-        attack = &bomm_query_main->attacks[i];
-        pthread_join(attack->thread, NULL);
-        attack->thread = 0;
-    }
+    // Start view loop
+    bool initial_view = true;
+    do {
+        if (!initial_view) {
+            // Move up the print cursor 24 lines to redraw
+            printf("\x1b[%dA", 24);
+        }
+        bomm_query_print(bomm_query_main, 6);
+
+        if (initial_view) {
+            initial_view = false;
+        } else {
+            sleep(2);
+        }
+    } while (bomm_query_is_pending(bomm_query_main));
+
+    // Wait for the threads to finish
+    printf("Waiting for query threads to terminate.\n");
+    bomm_query_join(bomm_query_main);
 
     // Print final view
-    printf("\x1b[%dA", 24);
+    printf("Final query results:\n");
     bomm_query_print(bomm_query_main, bomm_query_main->hold->size);
-
-    // Kill view thread
-    pthread_kill(view_thread, SIGINT);
-    view_thread = 0;
 
     // Clean up
     bomm_query_destroy(bomm_query_main);
+    bomm_query_main = NULL;
+
     return 0;
 }

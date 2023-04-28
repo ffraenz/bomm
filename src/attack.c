@@ -15,6 +15,7 @@ void* bomm_attack_thread(void* arg) {
 }
 
 void bomm_attack_key_space(bomm_attack_t* attack) {
+    bool cancelling = false;
     float score;
     float min_score = -INFINITY;
 
@@ -51,13 +52,13 @@ void bomm_attack_key_space(bomm_attack_t* attack) {
     unsigned int batch_size = 26 * 26;
 
     // Initial progress update
-    pthread_mutex_lock(&attack->progress_mutex);
+    pthread_mutex_lock(&attack->mutex);
     attack->progress.batch_unit_size = batch_size;
     attack->progress.unit_count = key_space_size;
     attack->progress.completed_unit_count = 0;
     attack->progress.batch_duration_sec = 0;
     attack->progress.duration_sec = 0;
-    pthread_mutex_unlock(&attack->progress_mutex);
+    pthread_mutex_unlock(&attack->mutex);
 
     // Iterate over keys in the key space
     do {
@@ -88,21 +89,23 @@ void bomm_attack_key_space(bomm_attack_t* attack) {
             batch_duration_sec = batch_start_timestamp - batch_duration_sec;
 
             // Intermediate progress update
-            pthread_mutex_lock(&attack->progress_mutex);
+            pthread_mutex_lock(&attack->mutex);
             attack->progress.completed_unit_count += batch_count;
             attack->progress.duration_sec = batch_start_timestamp - start_timestamp;
             attack->progress.batch_duration_sec = batch_duration_sec;
-            pthread_mutex_unlock(&attack->progress_mutex);
+            cancelling = attack->state == BOMM_ATTACK_STATE_CANCELLING;
+            pthread_mutex_unlock(&attack->mutex);
 
             // Reset batch count
             batch_count = 0;
         }
-    } while (!bomm_key_iterator_next(&key_iterator));
+    } while (!cancelling && !bomm_key_iterator_next(&key_iterator));
 
     // Final progress update
-    pthread_mutex_lock(&attack->progress_mutex);
-    attack->progress.completed_unit_count = attack->progress.unit_count;
-    pthread_mutex_unlock(&attack->progress_mutex);
+    pthread_mutex_lock(&attack->mutex);
+    attack->progress.completed_unit_count += batch_count;
+    attack->state = cancelling ? BOMM_ATTACK_STATE_CANCELLED : BOMM_ATTACK_STATE_COMPLETED;
+    pthread_mutex_unlock(&attack->mutex);
 }
 
 // During the hillclimb we exhaust the following plugs in order

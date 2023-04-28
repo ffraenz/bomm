@@ -176,8 +176,9 @@ bomm_query_t* bomm_query_init(int argc, char *argv[]) {
         attack->id = i + 1;
         attack->query = query;
         attack->thread = 0;
+        attack->state = BOMM_ATTACK_STATE_IDLE;
 
-        pthread_mutex_init(&attack->progress_mutex, NULL);
+        pthread_mutex_init(&attack->mutex, NULL);
         attack->progress.batch_unit_size = 1;
         attack->progress.completed_unit_count = 0;
         attack->progress.unit_count = 0;
@@ -228,9 +229,69 @@ void bomm_query_destroy(bomm_query_t* query) {
             free(query->attacks[i].ciphertext);
         }
     }
+
     free(query->ciphertext);
     free(query->hold);
     free(query);
+}
+
+bool bomm_query_start(bomm_query_t* query) {
+    // Create attack threads that work in parallel
+    bool error = false;
+    for (unsigned int i = 0; i < query->attack_count; i++) {
+        bomm_attack_t* attack = &query->attacks[i];
+        pthread_mutex_lock(&attack->mutex);
+        if (attack->state == BOMM_ATTACK_STATE_IDLE || attack->state == BOMM_ATTACK_STATE_CANCELLED) {
+            attack->state = BOMM_ATTACK_STATE_PENDING;
+            if (pthread_create(&attack->thread, NULL, bomm_attack_thread, attack)) {
+                error = true;
+                attack->thread = 0;
+            }
+        }
+        pthread_mutex_unlock(&attack->mutex);
+    }
+
+    if (error) {
+        bomm_query_cancel(query);
+        bomm_query_join(query);
+        return true;
+    }
+
+    return false;
+}
+
+bool bomm_query_is_pending(bomm_query_t* query) {
+    bool pending = false;
+    unsigned int i = 0;
+    while (!pending && i < query->attack_count) {
+        bomm_attack_t* attack = &query->attacks[i];
+        pthread_mutex_lock(&attack->mutex);
+        pending = pending || attack->state == BOMM_ATTACK_STATE_PENDING;
+        pthread_mutex_unlock(&attack->mutex);
+        i++;
+    }
+    return pending;
+}
+
+void bomm_query_cancel(bomm_query_t* query) {
+    // Send cancellation request to query threads
+    for (unsigned int i = 0; i < query->attack_count; i++) {
+        bomm_attack_t* attack = &query->attacks[i];
+        pthread_mutex_lock(&attack->mutex);
+        if (attack->state == BOMM_ATTACK_STATE_PENDING) {
+            attack->state = BOMM_ATTACK_STATE_CANCELLING;
+        }
+        pthread_mutex_unlock(&attack->mutex);
+    }
+}
+
+void bomm_query_join(bomm_query_t* query) {
+    for (unsigned int i = 0; i < query->attack_count; i++) {
+        if (query->attacks[i].thread != 0) {
+            pthread_join(query->attacks[i].thread, NULL);
+            query->attacks[i].thread = 0;
+        }
+    }
 }
 
 void bomm_query_print(bomm_query_t* query, unsigned int count) {
@@ -258,7 +319,7 @@ void bomm_query_print(bomm_query_t* query, unsigned int count) {
 
     // Lock progress updates
     for (unsigned int i = 0; i < query->attack_count; i++) {
-        pthread_mutex_lock(&query->attacks[i].progress_mutex);
+        pthread_mutex_lock(&query->attacks[i].mutex);
     }
 
     // Calculate joint progress
@@ -266,7 +327,7 @@ void bomm_query_print(bomm_query_t* query, unsigned int count) {
 
     // Unlock progress updates
     for (unsigned int i = 0; i < query->attack_count; i++) {
-        pthread_mutex_unlock(&query->attacks[i].progress_mutex);
+        pthread_mutex_unlock(&query->attacks[i].mutex);
     }
 
     double percentage = bomm_progress_percentage(&joint_progress);
