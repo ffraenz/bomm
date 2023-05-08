@@ -41,11 +41,17 @@ float bomm_attack_plugboard(
     bomm_message_t* ciphertext
 );
 
+typedef enum {
+    BOMM_ATTACK_PLUGBOARD_FIRST_IMPROVEMENT,
+    BOMM_ATTACK_PLUGBOARD_ENIGMA_SUITE,
+    BOMM_ATTACK_PLUGBOARD_BEST_IMPROVEMENT
+} bomm_attack_plugboard_strategy_t;
+
 /**
- * Attack the plugboard following a technique similar to the one used in
- * the Enigma Suite software.
+ * Attack the plugboard using the hill climb strategy.
  */
-float bomm_attack_plugboard_enigma_suite(
+float bomm_attack_plugboard_hill_climb(
+    bomm_attack_plugboard_strategy_t strategy,
     unsigned int* plugboard,
     const unsigned int* plug_order,
     bomm_scrambler_t* scrambler,

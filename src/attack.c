@@ -80,8 +80,13 @@ void bomm_attack_key_space(bomm_attack_t* attack) {
         bomm_enigma_generate_scrambler(scrambler, &key_iterator.key);
 
         // Attack ciphertext
-        score = bomm_attack_plugboard_enigma_suite(
-            key_iterator.key.plugboard, plug_order, scrambler, ciphertext);
+        score = bomm_attack_plugboard_hill_climb(
+            BOMM_ATTACK_PLUGBOARD_BEST_IMPROVEMENT,
+            key_iterator.key.plugboard,
+            plug_order,
+            scrambler,
+            ciphertext
+        );
 
         // Reswapping
         score = bomm_attack_plugboard_enigma_suite_reswapping(
@@ -183,81 +188,107 @@ float bomm_attack_plugboard(
     return best_score;
 }
 
-float bomm_attack_plugboard_enigma_suite(
+float bomm_attack_plugboard_hill_climb(
+    bomm_attack_plugboard_strategy_t strategy,
     unsigned int* plugboard,
     const unsigned int* plug_order,
     bomm_scrambler_t* scrambler,
     bomm_message_t* ciphertext
 ) {
-    // Action encoding: The most significant hex digit signifies whether a
-    // measurement should be taken after the swap (non-zero value) or not
-    // (zero value). The remaining, least significant hex digit describes the
-    // two plugs in the `plugs` 4-tuple to be swapped like so:
+    // Action values encode swap operations that can be applied to a set of
+    // 4 plugs. The special value `0xf` marks when to take a measurement.
+    // Finally, 0x0 marks the end of the array.
     //
-    // Swap | Swap bin | 0123
-    // ---- | -------- | ----
-    //  0xb |    10 11 | __23
-    //  0x7 |    01 11 | _1_3
-    //  0x6 |    01 10 | _12_
-    //  0x3 |    00 11 | 0__3
-    //  0x2 |    00 10 | 0_2_
-    //  0x1 |    00 01 | 01__
+    // Act | Description
+    // --- | -----------
+    // 0x0 | End of array
+    // 0xb | Swap __23
+    // 0x7 | Swap _1_3
+    // 0x6 | Swap _12_
+    // 0x3 | Swap 0__3
+    // 0x2 | Swap 0_2_
+    // 0x1 | Swap 01__
+    // 0xf | Evaluate improvement
 
     // Case 1: Both plugs are either self-steckered or form a steckered pair
     //
     // Legend: / not relevant, * self-steckered, AA steckered with each other
     //
-    // N | Action | 0123 | 0123 | Measure
-    // - | ------ | ---- | ---- | -------
-    // / |      / | /**/ | /AA/ | /
-    // 0 |   0x16 | /AA/ | /**/ | Yes
-    const unsigned char case_1_actions[] =
-        { 0x16, 0 };
+    // N | Act | Description
+    // - | --- | -----------
+    // 0 | 0x6 | Swap /AA/ -> /**/ or /**/ -> /AA/
+    // 1 | 0xf | Evaluate improvement
+    // 2 | 0x6 | Swap /**/ -> /AA/ or /AA/ -> /**/
+    // 3 | 0x0 | End of array (original plugboard restored)
+    const unsigned char case_1_actions[] = {
+        0x6, 0xf, 0x6, 0x0
+    };
 
     // Case 2: The first plug is self-steckered and the second one is steckered
     //
-    // N | Action | 0123 | Measure
-    // - | ------ | ---- | -------
-    // / |      / | /*AA | /
-    // 0 |   0x0b | /*** | No
-    // 1 |   0x16 | /AA* | Yes (KZ_IK)
-    // 2 |   0x06 | /*** | No
-    // 3 |   0x17 | /A*A | Yes (KZ_IZ)
-    const unsigned char case_2_actions[] =
-        { 0x0b, 0x16, 0x06, 0x17, 0 };
+    // N | Act | Description
+    // - | --- | -----------
+    // 0 | 0xb | Swap /*AA -> /***
+    // 1 | 0x6 | Swap /*** -> /AA*
+    // 2 | 0xf | Evaluate improvement (KZ_IK)
+    // 2 | 0x6 | Swap /AA* -> /***
+    // 3 | 0x7 | Swap /*** -> /A*A
+    // 4 | 0xf | Evaluate improvement (KZ_IZ)
+    // 5 | 0x7 | Swap /A*A -> /***
+    // 6 | 0xb | Swap /*** -> /*AA
+    // 7 | 0x0 | End of array (original plugboard restored)
+    const unsigned char case_2_actions[] = {
+        0xb, 0x6, 0xf, 0x6, 0x7, 0xf, 0x7, 0xb, 0x0
+    };
 
     // Case 3: Both plugs are steckered separately
     //
-    // N | Action | 0123 | Measure
-    // - | ------ | ---- | -------
-    // / |      / | AABB | /
-    // 0 |   0x01 | ABCC | No
-    // 1 |   0x0b | **** | No
-    // 2 |   0x16 | *AA* | Yes (IXKZ_IK)
-    // 3 |   0x13 | BAAB | Yes (IXKZ_IKXZ)
-    // 4 |   0x06 | B**B | No
-    // 5 |   0x03 | **** | No
-    // 6 |   0x17 | *A*A | Yes (IXKZ_IZ)
-    // 7 |   0x12 | BABA | Yes (IXKZ_IZXK)
-    const unsigned char case_3_actions[] =
-        { 0x01, 0x0b, 0x16, 0x13, 0x06, 0x03, 0x17, 0x12, 0 };
+    //  N | Act | Description
+    // -- | --- | -----------
+    //  0 | 0x1 | Swap AABB -> **AA
+    //  1 | 0xb | Swap **AA -> ****
+    //  2 | 0x6 | Swap **** -> *AA*
+    //  3 | 0xf | Evaluate improvement (IXKZ_IK)
+    //  4 | 0x3 | Swap *AA* -> BAAB
+    //  5 | 0xf | Evaluate improvement (IXKZ_IKXZ)
+    //  6 | 0x3 | Swap BAAB -> *AA*
+    //  7 | 0x6 | Swap *AA* -> ****
+    //  8 | 0x7 | Swap **** -> *A*A
+    //  9 | 0xf | Evaluate improvement (IXKZ_IZ)
+    // 10 | 0x2 | Swap *A*A -> BABA
+    // 11 | 0xf | Evaluate improvement (IXKZ_IZXK)
+    // 12 | 0x2 | Swap BABA -> *A*A
+    // 13 | 0x7 | Swap *A*A -> ****
+    // 14 | 0xb | Swap **** -> **AA
+    // 15 | 0x1 | Swap **AA -> AABB
+    // 16 | 0x0 | End of array (original plugboard restored)
+    const unsigned char case_3_actions[] = {
+        0x1, 0xb, 0x6, 0xf, 0x3, 0xf, 0x6, 0x3, 0x7, 0xf,
+        0x2, 0xf, 0x2, 0x7, 0xb, 0x1, 0x0
+    };
 
     float best_score = 0;
     float score;
 
     const unsigned char* action;
-    const unsigned char* best_action;
-    const unsigned char* actions;
+    const unsigned char* actions_begin;
+
+    // Set of plugs and set of actions needed to recreate the best result
+    unsigned int* best_plugs[4];
+    const unsigned char* best_actions_begin;
+    const unsigned char* best_actions_end;
 
     // Reset plugboard
     memcpy(plugboard, &bomm_key_plugboard_identity, sizeof(bomm_key_plugboard_identity));
 
     // Enumerate measurements
+    bool found_improvement;
     unsigned int measure = 0;
     unsigned int last_measure = -1;
-    bool new_best_score = true;
     while (measure < 3) {
-        new_best_score = false;
+        best_actions_begin = NULL;
+        best_actions_end = NULL;
+        found_improvement = false;
 
         // Take an initial measurement when switching the measure
         if (measure != last_measure) {
@@ -265,71 +296,91 @@ float bomm_attack_plugboard_enigma_suite(
             best_score = bomm_scrambler_measure(measure, scrambler, plugboard, ciphertext);
         }
 
-        // Enumerate all possible plugboard pairs exactly once
+        // Enumerate all possible plugboard pairs
         for (unsigned int i = 0; i < BOMM_ALPHABET_SIZE; i++) {
             for (unsigned int k = i + 1; k < BOMM_ALPHABET_SIZE; k++) {
                 // Selected plugs 4-tuple (`i` partner, `i`, `k`, `k` partner)
-                unsigned int* plugs[4];
-                plugs[0] = &plugboard[plugboard[plug_order[i]]]; // x
-                plugs[1] = &plugboard[plug_order[i]]; // i
-                plugs[2] = &plugboard[plug_order[k]]; // k
-                plugs[3] = &plugboard[plugboard[plug_order[k]]]; // z
+                unsigned int* plugs[4] = {
+                    &plugboard[plugboard[plug_order[i]]],
+                    &plugboard[plug_order[i]],
+                    &plugboard[plug_order[k]],
+                    &plugboard[plugboard[plug_order[k]]]
+                };
 
-                // Determine what case we are in
-                if (
-                    (plugs[1] == plugs[0] && plugs[2] == plugs[3]) ||
-                    plugs[2] == plugs[0]
-                ) {
-                    actions = case_1_actions;
-                } else if (
-                    (plugs[1] == plugs[0] && plugs[2] != plugs[3]) ||
-                    (plugs[2] == plugs[3] && plugs[1] != plugs[0])
-                ) {
+                // Determine the set of actions available to the selected plugs
+                actions_begin = case_3_actions;
+                if ((plugs[0] == plugs[1] && plugs[2] == plugs[3]) || plugs[0] == plugs[2]) {
+                    actions_begin = case_1_actions;
+                } else if (plugs[0] == plugs[1] && plugs[2] != plugs[3]) {
+                    actions_begin = case_2_actions;
+                } else if (plugs[0] != plugs[1] && plugs[2] == plugs[3]) {
+                    actions_begin = case_2_actions;
+
                     // Swap such that `i` becomes self-steckered
-                    if (plugs[2] == plugs[3]) {
-                        bomm_swap_pointer((void**) &plugs[1], (void**) &plugs[2]);
-                        bomm_swap_pointer((void**) &plugs[0], (void**) &plugs[3]);
-                    }
-                    actions = case_2_actions;
-                } else {
-                    actions = case_3_actions;
+                    bomm_swap_pointer((void**) &plugs[1], (void**) &plugs[2]);
+                    bomm_swap_pointer((void**) &plugs[0], (void**) &plugs[3]);
                 }
 
-                // Set initial action pointer
-                action = actions;
-                best_action = actions - 1;
-
-                while (*action != 0) {
-                    // The two least significant bits signify the first plug and
-                    // the next two bits the second plug to be swapped
-                    bomm_swap(plugs[*action & 0x03], plugs[(*action >> 2) & 0x03]);
-
-                    if ((*action >> 4) != 0) {
+                // Enumerate the set of actions
+                for (action = actions_begin; *action != 0x0; action++) {
+                    if (*action < 0xf) {
+                        // The two least significant bits signify the first plug
+                        // and the next two bits the second plug to be swapped
+                        bomm_swap(plugs[*action & 0x03], plugs[*action >> 2]);
+                    } else {
                         // Take a measurement and compare it
-                        score = bomm_scrambler_measure(measure, scrambler, plugboard, ciphertext);
+                        score = bomm_scrambler_measure(
+                            measure,
+                            scrambler,
+                            plugboard,
+                            ciphertext
+                        );
+
                         if (score > best_score) {
                             best_score = score;
-                            best_action = action;
-                            new_best_score = true;
+                            found_improvement = true;
+
+                            // Choose first improvement and immediately restart
+                            // the plugboard pair enumeration
+                            if (strategy == BOMM_ATTACK_PLUGBOARD_FIRST_IMPROVEMENT) {
+                                // Using goto to facilitate `break 3`
+                                goto end_outer_loop;
+                            }
+
+                            // Record info necessary to reproduce best result
+                            memcpy(best_plugs, plugs, sizeof(best_plugs));
+                            best_actions_begin = actions_begin;
+                            best_actions_end = action;
                         }
                     }
-
-                    action++;
                 }
 
-                // Rollback actions up to the one that scored best
-                while (--action != best_action) {
-                    bomm_swap(plugs[*action & 0x03], plugs[(*action >> 2) & 0x03]);
-                }
-
-                // When removing a plug, skip tests for reinsertion
-                if (best_action == &case_1_actions[0]) {
-                    continue;
+                if (best_actions_end != NULL && strategy == BOMM_ATTACK_PLUGBOARD_ENIGMA_SUITE) {
+                    // Choose the best performing result for a single pair
+                    for (action = best_actions_begin; action < best_actions_end; action++) {
+                        if (*action < 0xf) {
+                            bomm_swap(best_plugs[*action & 0x03], best_plugs[*action >> 2]);
+                        }
+                    }
+                    best_actions_begin = NULL;
+                    best_actions_end = NULL;
                 }
             }
+        } // End: Enumerate all possible plugboard pairs
+
+        if (best_actions_end != NULL && strategy == BOMM_ATTACK_PLUGBOARD_BEST_IMPROVEMENT) {
+            // Choose the best performing result for all pairs
+            for (action = best_actions_begin; action < best_actions_end; action++) {
+                if (*action < 0xf) {
+                    bomm_swap(best_plugs[*action & 0x03], best_plugs[*action >> 2]);
+                }
+            }
+            best_actions_begin = NULL;
+            best_actions_end = NULL;
         }
 
-        if (!new_best_score) {
+end_outer_loop:
+        if (!found_improvement) {
             measure++;
         }
     }
