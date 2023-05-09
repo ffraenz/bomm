@@ -263,7 +263,7 @@ float bomm_attack_plugboard_hill_climb(
     // 15 | 0x1 | Swap **AA -> AABB
     // 16 | 0x0 | End of array (original plugboard restored)
     const unsigned char case_3_actions[] = {
-        0x1, 0xb, 0x6, 0xf, 0x3, 0xf, 0x6, 0x3, 0x7, 0xf,
+        0x1, 0xb, 0x6, 0xf, 0x3, 0xf, 0x3, 0x6, 0x7, 0xf,
         0x2, 0xf, 0x2, 0x7, 0xb, 0x1, 0x0
     };
 
@@ -308,8 +308,9 @@ float bomm_attack_plugboard_hill_climb(
                 };
 
                 // Determine the set of actions available to the selected plugs
-                actions_begin = case_3_actions;
-                if ((plugs[0] == plugs[1] && plugs[2] == plugs[3]) || plugs[0] == plugs[2]) {
+                if (plugs[0] == plugs[1] && plugs[2] == plugs[3]) {
+                    actions_begin = case_1_actions;
+                } else if (plugs[0] == plugs[2] && plugs[1] == plugs[3]) {
                     actions_begin = case_1_actions;
                 } else if (plugs[0] == plugs[1] && plugs[2] != plugs[3]) {
                     actions_begin = case_2_actions;
@@ -319,6 +320,8 @@ float bomm_attack_plugboard_hill_climb(
                     // Swap such that `i` becomes self-steckered
                     bomm_swap_pointer((void**) &plugs[1], (void**) &plugs[2]);
                     bomm_swap_pointer((void**) &plugs[0], (void**) &plugs[3]);
+                } else {
+                    actions_begin = case_3_actions;
                 }
 
                 // Enumerate the set of actions
@@ -340,14 +343,14 @@ float bomm_attack_plugboard_hill_climb(
                             best_score = score;
                             found_improvement = true;
 
-                            // Choose first improvement and immediately restart
-                            // the plugboard pair enumeration
                             if (strategy == BOMM_ATTACK_PLUGBOARD_FIRST_IMPROVEMENT) {
+                                // Choose first improvement and immediately
+                                // restart the plugboard pair enumeration
                                 // Using goto to facilitate `break 3`
                                 goto end_outer_loop;
                             }
 
-                            // Record info necessary to reproduce best result
+                            // Store info necessary to reproduce best result
                             memcpy(best_plugs, plugs, sizeof(best_plugs));
                             best_actions_begin = actions_begin;
                             best_actions_end = action;

@@ -12,6 +12,8 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include "message.h"
+#include "lettermask.h"
+#include "wiring.h"
 
 #define BOMM_WIRING_IDENTITY BOMM_ALPHABET
 
@@ -79,6 +81,25 @@ static inline void bomm_scrambler_encrypt(
         result->letters[i] =
             plugboard[scrambler->map[i][plugboard[message->letters[i]]]];
     }
+}
+
+/**
+ * Validate the given plugboard wiring.
+ *
+ * Assumptions:
+ * - The map is bijective
+ * - The map is an involution
+ */
+static inline bool bomm_wiring_plugboard_validate(unsigned int* plugboard) {
+    bomm_lettermask_t image_letters = BOMM_LETTERMASK_NONE;
+    bool is_involution = true;
+    unsigned int i = 0;
+    while (is_involution && i < BOMM_ALPHABET_SIZE) {
+        bomm_lettermask_set(&image_letters, plugboard[i]);
+        is_involution = is_involution && i == plugboard[plugboard[i]];
+        i++;
+    }
+    return is_involution && image_letters == BOMM_LETTERMASK_ALL;
 }
 
 #endif /* wiring_h */

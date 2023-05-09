@@ -11,6 +11,7 @@
 #include <jansson.h>
 #include "lettermask.h"
 #include "utility.h"
+#include "wiring.h"
 
 #define BOMM_WHEEL_NAME_MAX_LENGTH 16
 

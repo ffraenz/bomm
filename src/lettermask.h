@@ -11,7 +11,6 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include "message.h"
-#include "wiring.h"
 
 /**
  * Mask with all letters selected
