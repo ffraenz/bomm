@@ -140,7 +140,7 @@ bomm_query_t* bomm_query_init(int argc, char *argv[]) {
         query->ciphertext = bomm_message_init(json_string_value(ciphertext_json));
 
         // TODO: Use the same measure as in the selected attack strategy
-        query->ciphertext_score = bomm_measure_message_ngram(3, query->ciphertext);
+        query->ciphertext_score = bomm_measure_message_sinkov(3, query->ciphertext);
     }
 
     // Read wheels

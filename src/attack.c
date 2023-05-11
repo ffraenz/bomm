@@ -57,6 +57,13 @@ void bomm_attack_key_space(bomm_attack_t* attack) {
         return;
     }
 
+    const bomm_measure_t measures[] = {
+        BOMM_MEASURE_IC,
+        BOMM_MEASURE_SINKOV_BIGRAM,
+        BOMM_MEASURE_SINKOV_TRIGRAM,
+        0
+    };
+
     double start_timestamp = bomm_timestamp_sec();
     double batch_start_timestamp = start_timestamp;
     double batch_duration_sec;
@@ -79,9 +86,15 @@ void bomm_attack_key_space(bomm_attack_t* attack) {
         // Generate scrambler
         bomm_enigma_generate_scrambler(scrambler, &key_iterator.key);
 
+        // Reset plugboard
+        memcpy(key_iterator.key.plugboard, &bomm_key_plugboard_identity, sizeof(bomm_key_plugboard_identity));
+
+        // TODO: Iterate over initial plugboard configurations (e.g. I-Stecker)
+
         // Attack ciphertext
         score = bomm_attack_plugboard_hill_climb(
             BOMM_ATTACK_PLUGBOARD_BEST_IMPROVEMENT,
+            measures,
             key_iterator.key.plugboard,
             plug_order,
             scrambler,
@@ -136,11 +149,8 @@ float bomm_attack_plugboard(
     unsigned int i, j, a, b, best_b;
     float score, best_score;
 
-    // Reset plugboard
-    memcpy(plugboard, &bomm_key_plugboard_identity, sizeof(bomm_key_plugboard_identity));
-
     // Score empty plugboard
-    best_score = bomm_measure_scrambler_ngram(3, scrambler, plugboard, ciphertext);
+    best_score = bomm_measure_scrambler_sinkov(3, scrambler, plugboard, ciphertext);
 
     // Enumerate over the first plug
     for (i = 0; i < BOMM_ALPHABET_SIZE; i++) {
@@ -169,7 +179,7 @@ float bomm_attack_plugboard(
             plugboard[b] = a;
 
             // Measure score and compare it to the previous best score
-            score = bomm_measure_scrambler_ngram(3, scrambler, plugboard, ciphertext);
+            score = bomm_measure_scrambler_sinkov(3, scrambler, plugboard, ciphertext);
             if (score > best_score) {
                 best_score = score;
                 best_b = b;
@@ -190,6 +200,7 @@ float bomm_attack_plugboard(
 
 float bomm_attack_plugboard_hill_climb(
     bomm_attack_plugboard_strategy_t strategy,
+    const bomm_measure_t* measures,
     unsigned int* plugboard,
     const unsigned int* plug_order,
     bomm_scrambler_t* scrambler,
@@ -267,9 +278,6 @@ float bomm_attack_plugboard_hill_climb(
         0x2, 0xf, 0x2, 0x7, 0xb, 0x1, 0x0
     };
 
-    float best_score = 0;
-    float score;
-
     const unsigned char* action;
     const unsigned char* actions_begin;
 
@@ -278,22 +286,26 @@ float bomm_attack_plugboard_hill_climb(
     const unsigned char* best_actions_begin;
     const unsigned char* best_actions_end;
 
-    // Reset plugboard
-    memcpy(plugboard, &bomm_key_plugboard_identity, sizeof(bomm_key_plugboard_identity));
+    float best_score = 0;
+    float score;
 
-    // Enumerate measurements
-    bool found_improvement;
-    unsigned int measure = 0;
-    unsigned int last_measure = -1;
-    while (measure < 3) {
+    // Enumerate measures
+    const bomm_measure_t* measure = measures;
+    const bomm_measure_t* last_measure = NULL;
+    while (*measure != 0) {
         best_actions_begin = NULL;
         best_actions_end = NULL;
-        found_improvement = false;
+        bool found_improvement = false;
 
         // Take an initial measurement when switching the measure
         if (measure != last_measure) {
             last_measure = measure;
-            best_score = bomm_scrambler_measure(measure, scrambler, plugboard, ciphertext);
+            best_score = bomm_measure_scrambler(
+                *measure,
+                scrambler,
+                plugboard,
+                ciphertext
+            );
         }
 
         // Enumerate all possible plugboard pairs
@@ -332,8 +344,8 @@ float bomm_attack_plugboard_hill_climb(
                         bomm_swap(plugs[*action & 0x03], plugs[*action >> 2]);
                     } else {
                         // Take a measurement and compare it
-                        score = bomm_scrambler_measure(
-                            measure,
+                        score = bomm_measure_scrambler(
+                            *measure,
                             scrambler,
                             plugboard,
                             ciphertext
@@ -396,7 +408,7 @@ float bomm_attack_plugboard_enigma_suite_reswapping(
     bomm_scrambler_t* scrambler,
     bomm_message_t* ciphertext
 ) {
-    float best_score = bomm_measure_scrambler_ngram(3, scrambler, plugboard, ciphertext);
+    float best_score = bomm_measure_scrambler_sinkov(3, scrambler, plugboard, ciphertext);
     float score;
 
     unsigned int i, k, x;
@@ -419,7 +431,7 @@ float bomm_attack_plugboard_enigma_suite_reswapping(
                     if (plugboard[x] == x) {
                         // Measure stecker i, x
                         bomm_swap(&plugboard[i], &plugboard[x]);
-                        score = bomm_measure_scrambler_ngram(3, scrambler, plugboard, ciphertext);
+                        score = bomm_measure_scrambler_sinkov(3, scrambler, plugboard, ciphertext);
                         if (score > best_score) {
                             best_score = score;
                             best_reswap[0] = i;
@@ -432,7 +444,7 @@ float bomm_attack_plugboard_enigma_suite_reswapping(
 
                         // Measure stecker k, x
                         bomm_swap(&plugboard[k], &plugboard[x]);
-                        score = bomm_measure_scrambler_ngram(3, scrambler, plugboard, ciphertext);
+                        score = bomm_measure_scrambler_sinkov(3, scrambler, plugboard, ciphertext);
                         if (score > best_score) {
                             best_score = score;
                             best_reswap[0] = i;

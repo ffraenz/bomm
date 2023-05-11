@@ -52,6 +52,7 @@ typedef enum {
  */
 float bomm_attack_plugboard_hill_climb(
     bomm_attack_plugboard_strategy_t strategy,
+    const bomm_measure_t* measures,
     unsigned int* plugboard,
     const unsigned int* plug_order,
     bomm_scrambler_t* scrambler,

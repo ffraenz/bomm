@@ -47,7 +47,7 @@ bomm_ngram_map_t* bomm_measure_ngram_map_init(unsigned char n, const char* filen
  * scrabler and plugboard.
  * @param n The n in n-gram
  */
-static inline float bomm_measure_scrambler_ngram(
+static inline float bomm_measure_scrambler_sinkov(
     unsigned int n,
     bomm_scrambler_t* scrambler,
     unsigned int* plugboard,
@@ -80,7 +80,7 @@ static inline float bomm_measure_scrambler_ngram(
  * Measure the n-gram score of the given message.
  * @param n The n in n-gram
  */
-static inline float bomm_measure_message_ngram(
+static inline float bomm_measure_message_sinkov(
     unsigned int n,
     bomm_message_t* message
 ) {
@@ -213,24 +213,68 @@ static inline float bomm_measure_frequency_entropy(
 }
 
 /**
- * Measure a message put through the given scrabler and plugboard using an
- * indexed measure.
- * @param indexed_measure Index between 0 and `BOMM_MAX_INDEXED_MEASURE`
+ * Enum identifying a measure for scoring plaintext candidates.
  */
-static inline float bomm_scrambler_measure(
-    unsigned int indexed_measure,
+typedef enum {
+    BOMM_MEASURE_SINKOV           = 0x01,
+    BOMM_MEASURE_SINKOV_BIGRAM    = 0x02,
+    BOMM_MEASURE_SINKOV_TRIGRAM   = 0x03,
+    BOMM_MEASURE_SINKOV_QUADGRAM  = 0x04,
+    BOMM_MEASURE_SINKOV_PENTAGRAM = 0x05,
+    BOMM_MEASURE_SINKOV_HEXAGRAM  = 0x06,
+    BOMM_MEASURE_SINKOV_HEPTAGRAM = 0x07,
+    BOMM_MEASURE_SINKOV_OCTAGRAM  = 0x08,
+
+    BOMM_MEASURE_IC           = 0x11,
+    BOMM_MEASURE_IC_BIGRAM    = 0x12,
+    BOMM_MEASURE_IC_TRIGRAM   = 0x13,
+    BOMM_MEASURE_IC_QUADGRAM  = 0x14,
+    BOMM_MEASURE_IC_PENTAGRAM = 0x15,
+    BOMM_MEASURE_IC_HEXAGRAM  = 0x16,
+    BOMM_MEASURE_IC_HEPTAGRAM = 0x17,
+    BOMM_MEASURE_IC_OCTAGRAM  = 0x18
+} bomm_measure_t;
+
+/**
+ * Measure a message
+ */
+static inline float bomm_measure_message(
+    bomm_measure_t measure,
+    bomm_message_t* message
+) {
+    if (measure < 0x10) {
+        unsigned int n = measure;
+        return bomm_measure_message_sinkov(n, message);
+    } else if (measure < 0x20) {
+        unsigned int n = measure - 0x10;
+        unsigned int frequencies[(unsigned int) pow(BOMM_ALPHABET_SIZE, n)];
+        bomm_measure_message_frequency(n, frequencies, message);
+        return bomm_measure_frequency_ic(n, frequencies);
+    } else {
+        return 0;
+    }
+}
+
+/**
+ * Measure a message put through the given scrabler and plugboard
+ */
+static inline float bomm_measure_scrambler(
+    bomm_measure_t measure,
     bomm_scrambler_t* scrambler,
     unsigned int* plugboard,
     bomm_message_t* message
 ) {
-    unsigned int n = indexed_measure + 1;
-    if (bomm_ngram_map[n] != NULL) {
-        return bomm_measure_scrambler_ngram(n, scrambler, plugboard, message);
+    if (measure < 0x10) {
+        unsigned int n = measure;
+        return bomm_measure_scrambler_sinkov(n, scrambler, plugboard, message);
+    } else if (measure < 0x20) {
+        unsigned int n = measure - 0x10;
+        unsigned int frequencies[(unsigned int) pow(BOMM_ALPHABET_SIZE, n)];
+        bomm_measure_scrambler_frequency(n, frequencies, scrambler, plugboard, message);
+        return bomm_measure_frequency_ic(n, frequencies);
+    } else {
+        return 0;
     }
-
-    unsigned int frequencies[(unsigned int) pow(BOMM_ALPHABET_SIZE, n)];
-    bomm_measure_scrambler_frequency(n, frequencies, scrambler, plugboard, message);
-    return bomm_measure_frequency_ic(n, frequencies);
 }
 
 #endif /* measure_h */
