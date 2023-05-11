@@ -7,8 +7,18 @@
 
 #include "measure.h"
 
-const bomm_ngram_map_t* bomm_ngram_map[BOMM_MAX_INDEXED_MEASURE] = {
-    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL
+const bomm_ngram_map_t* bomm_ngram_map[7] = {
+    NULL, NULL, NULL, NULL, NULL, NULL, NULL
+};
+
+const unsigned int bomm_pow_map[7] = {
+    1,
+    BOMM_ALPHABET_SIZE,
+    BOMM_ALPHABET_SIZE * BOMM_ALPHABET_SIZE,
+    BOMM_ALPHABET_SIZE * BOMM_ALPHABET_SIZE * BOMM_ALPHABET_SIZE,
+    BOMM_ALPHABET_SIZE * BOMM_ALPHABET_SIZE * BOMM_ALPHABET_SIZE * BOMM_ALPHABET_SIZE,
+    BOMM_ALPHABET_SIZE * BOMM_ALPHABET_SIZE * BOMM_ALPHABET_SIZE * BOMM_ALPHABET_SIZE * BOMM_ALPHABET_SIZE,
+    BOMM_ALPHABET_SIZE * BOMM_ALPHABET_SIZE * BOMM_ALPHABET_SIZE * BOMM_ALPHABET_SIZE * BOMM_ALPHABET_SIZE * BOMM_ALPHABET_SIZE
 };
 
 bomm_ngram_map_t* bomm_measure_ngram_map_init(unsigned char n, const char* filename) {
@@ -20,7 +30,7 @@ bomm_ngram_map_t* bomm_measure_ngram_map_init(unsigned char n, const char* filen
     }
 
     // Allocate map
-    unsigned int map_size = pow(BOMM_ALPHABET_SIZE, n);
+    unsigned int map_size = bomm_pow_map[n];
     size_t ngram_map_size = sizeof(bomm_ngram_map_t) + map_size * sizeof(bomm_ngram_map_entry);
     bomm_ngram_map_t* ngram_map = malloc(ngram_map_size);
     if (!ngram_map) {

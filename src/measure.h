@@ -13,8 +13,6 @@
 #include "message.h"
 #include "wiring.h"
 
-#define BOMM_MAX_INDEXED_MEASURE 9
-
 typedef float bomm_ngram_map_entry;
 
 typedef struct _bomm_ngram_map_t {
@@ -33,7 +31,13 @@ typedef struct _bomm_ngram_map_t {
  * Global variable storing pointers to n-gram maps that have been initialized
  * previously. The array index specifies the n in n-gram.
  */
-extern const bomm_ngram_map_t* bomm_ngram_map[9];
+extern const bomm_ngram_map_t* bomm_ngram_map[7];
+
+/**
+ * Global variable storing pre-calculated `pow(BOMM_ALPHABET_SIZE, index)` for
+ * each index to reuse these values.
+ */
+extern const unsigned int bomm_pow_map[7];
 
 /**
  * Allocate an n-gram frequency map in memory and fill it with the contents
@@ -53,7 +57,7 @@ static inline float bomm_measure_scrambler_sinkov(
     unsigned int* plugboard,
     bomm_message_t* message
 ) {
-    unsigned int map_size = pow(BOMM_ALPHABET_SIZE, n);
+    unsigned int map_size = bomm_pow_map[n];
     const bomm_ngram_map_t* map = bomm_ngram_map[n];
     unsigned int index, letter;
 
@@ -84,7 +88,7 @@ static inline float bomm_measure_message_sinkov(
     unsigned int n,
     bomm_message_t* message
 ) {
-    unsigned int map_size = pow(BOMM_ALPHABET_SIZE, n);
+    unsigned int map_size = bomm_pow_map[n];
     const bomm_ngram_map_t* map = bomm_ngram_map[n];
     unsigned int index, letter;
 
@@ -115,7 +119,7 @@ static inline void bomm_measure_scrambler_frequency(
     unsigned int* plugboard,
     bomm_message_t* message
 ) {
-    unsigned int count = pow(BOMM_ALPHABET_SIZE, n);
+    unsigned int count = bomm_pow_map[n];
     memset(frequencies, 0, count * sizeof(unsigned int));
 
     unsigned int letter;
@@ -144,7 +148,7 @@ static inline void bomm_measure_message_frequency(
     unsigned int* frequencies,
     bomm_message_t* message
 ) {
-    unsigned int count = pow(BOMM_ALPHABET_SIZE, n);
+    unsigned int count = bomm_pow_map[n];
     memset(frequencies, 0, count * sizeof(unsigned int));
 
     unsigned int letter;
@@ -172,7 +176,7 @@ static inline float bomm_measure_frequency_ic(
     unsigned int n,
     unsigned int* frequencies
 ) {
-    unsigned int count = pow(BOMM_ALPHABET_SIZE, n);
+    unsigned int count = bomm_pow_map[n];
     unsigned int coincidence = 0;
     unsigned int sum = 0;
     unsigned int frequency;
@@ -193,7 +197,7 @@ static inline float bomm_measure_frequency_entropy(
     unsigned int n,
     unsigned int* frequencies
 ) {
-    unsigned int count = pow(BOMM_ALPHABET_SIZE, n);
+    unsigned int count = bomm_pow_map[n];
 
     unsigned int sum = 0;
     unsigned int index;
@@ -247,7 +251,7 @@ static inline float bomm_measure_message(
         return bomm_measure_message_sinkov(n, message);
     } else if (measure < 0x20) {
         unsigned int n = measure - 0x10;
-        unsigned int frequencies[(unsigned int) pow(BOMM_ALPHABET_SIZE, n)];
+        unsigned int frequencies[bomm_pow_map[n]];
         bomm_measure_message_frequency(n, frequencies, message);
         return bomm_measure_frequency_ic(n, frequencies);
     } else {
@@ -269,7 +273,7 @@ static inline float bomm_measure_scrambler(
         return bomm_measure_scrambler_sinkov(n, scrambler, plugboard, message);
     } else if (measure < 0x20) {
         unsigned int n = measure - 0x10;
-        unsigned int frequencies[(unsigned int) pow(BOMM_ALPHABET_SIZE, n)];
+        unsigned int frequencies[bomm_pow_map[n]];
         bomm_measure_scrambler_frequency(n, frequencies, scrambler, plugboard, message);
         return bomm_measure_frequency_ic(n, frequencies);
     } else {

@@ -22,9 +22,7 @@ static char* _frequencies_keys[8] = {
     "trigram",
     "quadgram",
     "pentagram",
-    "hexagram",
-    "heptagram",
-    "octagram"
+    "hexagram"
 };
 
 bomm_query_t* bomm_query_init(int argc, char *argv[]) {
