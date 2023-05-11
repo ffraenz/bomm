@@ -79,6 +79,12 @@ typedef struct _bomm_key_space {
      * Must not be empty (equal to 0).
      */
     bomm_lettermask_t position_masks[BOMM_MAX_SLOT_COUNT];
+
+    /**
+     * Mask containing plugs to be exhausted.
+     * Example: The I-Stecker with letters E, N, R, X, S, or I: `0x862110`
+     */
+    bomm_lettermask_t plug_mask;
 } bomm_key_space_t;
 
 /**
@@ -138,6 +144,13 @@ typedef struct _bomm_key_iterator {
     bomm_key_t key;
 
     /**
+     * Whether the scrambler portion of the key has changed during the last
+     * `bomm_key_iterator_next` call (wheel indices, rings, positions).
+     * Initially set to `true`.
+     */
+    bool scrambler_changed;
+
+    /**
      * Wheel set index per slot
      */
     unsigned int wheel_indices[BOMM_MAX_SLOT_COUNT];
@@ -151,6 +164,11 @@ typedef struct _bomm_key_iterator {
      * Shifting position mask per slot
      */
     bomm_lettermask_t position_masks[BOMM_MAX_SLOT_COUNT];
+
+    /**
+     * Solo plug counter
+     */
+    unsigned int solo_plug[2];
 } bomm_key_iterator_t;
 
 /**
@@ -203,6 +221,52 @@ void bomm_key_space_destroy(bomm_key_space_t* key_space);
  * should be allocated and returned.
  */
 bomm_key_t* bomm_key_init(bomm_key_t* key, bomm_key_space_t* key_space);
+
+/**
+ * Iterate to the 'next' plugboard configuration in the key space.
+ */
+static inline bool bomm_key_iterator_plugboard_next(
+    bomm_key_iterator_t* iterator
+) {
+    bomm_lettermask_t mask = iterator->key_space->plug_mask;
+    if (mask == BOMM_LETTERMASK_NONE) {
+        return true;
+    }
+
+    bool carry = false;
+
+    // Unplug previous solo
+    bomm_swap(
+        &iterator->key.plugboard[iterator->solo_plug[0]],
+        &iterator->key.plugboard[iterator->solo_plug[1]]
+    );
+
+    // Iterate to next relevant solo
+    do {
+        if (++iterator->solo_plug[1] == BOMM_ALPHABET_SIZE) {
+            if (++iterator->solo_plug[0] == BOMM_ALPHABET_SIZE - 1) {
+                carry = true;
+                // Reset to initial self-steckered pair
+                iterator->solo_plug[0] = 0;
+                iterator->solo_plug[1] = 0;
+            } else {
+                iterator->solo_plug[1] = iterator->solo_plug[0] + 1;
+            }
+        }
+    } while (
+        !bomm_lettermask_has(&mask, iterator->solo_plug[0]) &&
+        !bomm_lettermask_has(&mask, iterator->solo_plug[1]) &&
+        !carry
+    );
+
+    // Plug new solo
+    bomm_swap(
+        &iterator->key.plugboard[iterator->solo_plug[0]],
+        &iterator->key.plugboard[iterator->solo_plug[1]]
+    );
+
+    return carry;
+}
 
 /**
  * Apply initial values to a set of positions using the given shifting masks.
@@ -346,15 +410,21 @@ static inline bool bomm_key_iterator_next(bomm_key_iterator_t* iterator) {
     bomm_key_t* key = &iterator->key;
     unsigned int slot_count = key->slot_count;
     bool carry_out = false;
+    bool scrambler_changed = false;
     do {
+        bool plugboard_carry = bomm_key_iterator_plugboard_next(iterator);
         bool carry =
+            plugboard_carry &&
             bomm_key_iterator_positions_next(
                 key->positions, iterator->position_masks, slot_count) &&
             bomm_key_iterator_positions_next(
                 key->rings, iterator->ring_masks, slot_count) &&
-            bomm_key_iterator_wheels_next(iterator, true);
+            bomm_key_iterator_wheels_next(
+                iterator, true);
+        scrambler_changed = scrambler_changed || plugboard_carry;
         carry_out = carry_out || carry;
     } while (!bomm_key_is_relevant(key));
+    iterator->scrambler_changed = scrambler_changed;
     return carry_out;
 }
 

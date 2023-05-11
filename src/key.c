@@ -160,6 +160,9 @@ bomm_key_space_t* bomm_key_space_init_with_json(
         return NULL;
     }
 
+    // I-Stecker strategy
+    key_space->plug_mask = 0x862110;
+
     return key_space;
 }
 
@@ -207,6 +210,9 @@ bomm_key_space_t* bomm_key_space_init_enigma_i(void) {
     // as they can be neglected
     key_space->ring_masks[1] = BOMM_LETTERMASK_FIRST;
     key_space->ring_masks[2] = BOMM_LETTERMASK_FIRST;
+
+    // No plugboard iteration
+    key_space->plug_mask = 0x0;
 
     return key_space;
 }
@@ -272,12 +278,14 @@ bomm_key_iterator_t* bomm_key_iterator_init(
 
     // Init key
     bomm_key_init(&iterator->key, key_space);
+    iterator->scrambler_changed = true;
 
     // Reset wheels, ring masks, and position masks
     size_t masks_size = sizeof(bomm_lettermask_t) * slot_count;
     memset(&iterator->wheel_indices, 0, sizeof(unsigned int) * slot_count);
     memcpy(&iterator->ring_masks, key_space->ring_masks, masks_size);
     memcpy(&iterator->position_masks, key_space->position_masks, masks_size);
+    memset(&iterator->solo_plug, 0, sizeof(unsigned int) * 2);
 
     // Find initial sets of wheels, rings, and positions
     empty = (

@@ -27,6 +27,7 @@ void bomm_attack_key_space(bomm_attack_t* attack) {
     bool cancelling = false;
     float score;
     float min_score = -INFINITY;
+    unsigned int working_plugboard[BOMM_ALPHABET_SIZE];
 
     // Prepare working key instance
     bomm_hold_t* hold = attack->query->hold;
@@ -58,8 +59,6 @@ void bomm_attack_key_space(bomm_attack_t* attack) {
     }
 
     const bomm_measure_t measures[] = {
-        BOMM_MEASURE_IC,
-        BOMM_MEASURE_SINKOV_BIGRAM,
         BOMM_MEASURE_SINKOV_TRIGRAM,
         0
     };
@@ -70,7 +69,7 @@ void bomm_attack_key_space(bomm_attack_t* attack) {
 
     unsigned long key_space_size = bomm_key_iterator_count(&key_iterator);
     unsigned int batch_count = 0;
-    unsigned int batch_size = 26 * 26;
+    unsigned int batch_size = 26 * 26 * 8;
 
     // Initial progress update
     pthread_mutex_lock(&attack->mutex);
@@ -83,37 +82,35 @@ void bomm_attack_key_space(bomm_attack_t* attack) {
 
     // Iterate over keys in the key space
     do {
-        // Generate scrambler
-        bomm_enigma_generate_scrambler(scrambler, &key_iterator.key);
+        if (key_iterator.scrambler_changed) {
+            bomm_enigma_generate_scrambler(scrambler, &key_iterator.key);
+        }
 
-        // Reset plugboard
-        memcpy(key_iterator.key.plugboard, &bomm_key_plugboard_identity, sizeof(bomm_key_plugboard_identity));
-
-        // TODO: Iterate over initial plugboard configurations (e.g. I-Stecker)
+        // Make a working copy of the plugboard
+        memcpy(working_plugboard, key_iterator.key.plugboard, sizeof(working_plugboard));
 
         // Attack ciphertext
         score = bomm_attack_plugboard_hill_climb(
             BOMM_ATTACK_PLUGBOARD_BEST_IMPROVEMENT,
             measures,
-            key_iterator.key.plugboard,
+            working_plugboard,
             plug_order,
             scrambler,
             ciphertext
         );
 
-        // Reswapping
-        score = bomm_attack_plugboard_enigma_suite_reswapping(
-            key_iterator.key.plugboard, scrambler, ciphertext);
-
+        // Add key and plugboard to the hold, if it scores good enough
         if (score > min_score) {
-            // Generate preview
-            bomm_scrambler_encrypt(scrambler, key_iterator.key.plugboard, ciphertext, plaintext);
+            bomm_scrambler_encrypt(scrambler, working_plugboard, ciphertext, plaintext);
             bomm_message_stringify(hold_preview, BOMM_HOLD_PREVIEW_SIZE, plaintext);
 
-            // Add to hold
-            min_score = bomm_hold_add(hold, score, &key_iterator.key, hold_preview);
+            bomm_key_t key;
+            memcpy(&key, &key_iterator.key, sizeof(key));
+            memcpy(key.plugboard, working_plugboard, sizeof(working_plugboard));
+            min_score = bomm_hold_add(hold, score, &key, hold_preview);
         }
 
+        // Report the progress every time a batch has been finalized
         if (++batch_count >= batch_size) {
             // Measure time
             batch_duration_sec = batch_start_timestamp;
