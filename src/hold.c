@@ -56,12 +56,22 @@ float bomm_hold_add(bomm_hold_t* hold, float score, void* data, char* preview) {
         element_ptr -= element_mem_size;
     }
 
+    // Check if the element beating the score is a duplicate
+    bool duplicate =
+        index != -1 &&
+        (unsigned int) index < hold->count &&
+        memcmp(
+           ((bomm_hold_element_t*) element_ptr)->data,
+           data,
+           hold->element_size
+        ) == 0;
+
     // Move below this element
     index++;
     element_ptr += element_mem_size;
 
-    // Check bounds
-    if ((unsigned int) index < hold->size) {
+    // Decide whether to accept the new element
+    if ((unsigned int) index < hold->size && !duplicate) {
         // If hold is not full, yet, append one row
         if (hold->count < hold->size) {
             hold->count++;
@@ -69,7 +79,11 @@ float bomm_hold_add(bomm_hold_t* hold, float score, void* data, char* preview) {
 
         // Move elements down one row to make space for the new element
         if ((unsigned int) index < hold->count - 1) {
-            memmove(element_ptr + element_mem_size, element_ptr, (hold->count - 1 - index) * element_mem_size);
+            memmove(
+                element_ptr + element_mem_size,
+                element_ptr,
+                (hold->count - 1 - index) * element_mem_size
+            );
         }
 
         // Insert element

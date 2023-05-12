@@ -36,6 +36,12 @@ Test(key, bomm_hold_add) {
     cr_assert_eq(score_boundary, -INFINITY);
     cr_assert_eq(hold->count, 2);
 
+    // Duplicate entry to be ignored
+    data = 8888;
+    score_boundary = bomm_hold_add(hold, -10, &data, "8888 Out");
+    cr_assert_eq(score_boundary, -INFINITY);
+    cr_assert_eq(hold->count, 2);
+
     data = 1234;
     score_boundary = bomm_hold_add(hold, 2, &data, "1234 Fifth");
     cr_assert_eq(score_boundary, -INFINITY);
@@ -53,6 +59,12 @@ Test(key, bomm_hold_add) {
 
     data = 133337;
     score_boundary = bomm_hold_add(hold, 3, &data, "L3333t Fourth");
+    cr_assert_eq(score_boundary, 2);
+    cr_assert_eq(hold->count, 5);
+
+    // Duplicate entry to be ignored
+    data = 7777;
+    score_boundary = bomm_hold_add(hold, 7, &data, "<7 First");
     cr_assert_eq(score_boundary, 2);
     cr_assert_eq(hold->count, 5);
 
