@@ -28,35 +28,23 @@ void bomm_attack_key_space(bomm_attack_t* attack) {
     float score;
     float min_score = -INFINITY;
     unsigned int working_plugboard[BOMM_ALPHABET_SIZE];
-
-    // Prepare working key instance
-    bomm_hold_t* hold = attack->query->hold;
-
-    // Copy ciphertext to the stack
-    char ciphertext_store[bomm_message_size_for_length(attack->ciphertext->length)];
-    memcpy(&ciphertext_store, attack->ciphertext, sizeof(ciphertext_store));
-    bomm_message_t *ciphertext = (bomm_message_t*) &ciphertext_store;
-
-    // Reserve space for plaintext on the stack
-    char plaintext_store[bomm_message_size_for_length(ciphertext->length)];
-    bomm_message_t *plaintext = (bomm_message_t*) &plaintext_store;
     char hold_preview[BOMM_HOLD_PREVIEW_SIZE];
 
-    // Prepare scrambler
-    char scrambler_store[bomm_scrambler_size(ciphertext->length)];
-    bomm_scrambler_t *scrambler = (bomm_scrambler_t*) &scrambler_store;
+    // Allocate messages on the stack
+    size_t message_size = bomm_message_size_for_length(attack->ciphertext->length);
+    bomm_message_t *plaintext = alloca(message_size);
+    bomm_message_t *ciphertext = alloca(message_size);
+    memcpy(ciphertext, attack->ciphertext, message_size);
+
+    // Allocate scrambler on the stack
+    bomm_scrambler_t *scrambler = alloca(bomm_scrambler_size(ciphertext->length));
     scrambler->length = ciphertext->length;
 
     // Randomize plug order, keeping the order of the first 6 letters intact
+    // TODO: To be removed when using best improvement
     unsigned int plug_order[BOMM_ALPHABET_SIZE];
     memcpy(plug_order, _plug_order, sizeof(plug_order));
     bomm_array_shuffle(&plug_order[6], BOMM_ALPHABET_SIZE - 6);
-
-    bomm_key_iterator_t key_iterator;
-    if (bomm_key_iterator_init(&key_iterator, &attack->key_space) == NULL) {
-        // Key space is empty
-        return;
-    }
 
     const bomm_measure_t measures[] = {
         BOMM_MEASURE_SINKOV_TRIGRAM,
@@ -67,9 +55,15 @@ void bomm_attack_key_space(bomm_attack_t* attack) {
     double batch_start_timestamp = start_timestamp;
     double batch_duration_sec;
 
-    unsigned long key_space_size = bomm_key_iterator_count(&key_iterator);
+    unsigned long key_space_size = bomm_key_space_count(&attack->key_space);
     unsigned int batch_count = 0;
     unsigned int batch_size = 26 * 26 * 8;
+
+    bomm_key_iterator_t key_iterator;
+    if (bomm_key_iterator_init(&key_iterator, &attack->key_space) == NULL) {
+        // Key space is empty
+        return;
+    }
 
     // Initial progress update
     pthread_mutex_lock(&attack->mutex);
@@ -107,7 +101,7 @@ void bomm_attack_key_space(bomm_attack_t* attack) {
             bomm_key_t key;
             memcpy(&key, &key_iterator.key, sizeof(key));
             memcpy(key.plugboard, working_plugboard, sizeof(working_plugboard));
-            min_score = bomm_hold_add(hold, score, &key, hold_preview);
+            min_score = bomm_hold_add(attack->query->hold, score, &key, hold_preview);
         }
 
         // Report the progress every time a batch has been finalized

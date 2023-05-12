@@ -70,6 +70,21 @@ inline static void bomm_lettermask_clear(
 }
 
 /**
+ * Count the number of letters contained in the given mask.
+ */
+inline static unsigned int bomm_lettermask_count(
+    const bomm_lettermask_t* mask
+) {
+    bomm_lettermask_t shifting_mask = *mask;
+    unsigned int count = 0;
+    while (shifting_mask != BOMM_LETTERMASK_NONE) {
+        count += shifting_mask & 0x1;
+        shifting_mask = shifting_mask >> 1;
+    }
+    return count;
+}
+
+/**
  * Load the given lettermask string into memory at the specified pointer
  */
 bomm_lettermask_t* bomm_lettermask_from_string(

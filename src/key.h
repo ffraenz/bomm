@@ -215,6 +215,25 @@ bomm_key_space_t* bomm_key_space_init_enigma_i(void);
 void bomm_key_space_destroy(bomm_key_space_t* key_space);
 
 /**
+ * Count the number of plugboard configurations in the given key space.
+ */
+static inline unsigned int bomm_key_space_plugboard_count(
+    const bomm_key_space_t* key_space
+) {
+    unsigned int count = bomm_lettermask_count(&key_space->plug_mask);
+    return
+        (BOMM_ALPHABET_SIZE - 1) * BOMM_ALPHABET_SIZE / 2 -
+        (BOMM_ALPHABET_SIZE - 1 - count) * (BOMM_ALPHABET_SIZE - count) / 2 + 1;
+}
+
+/**
+ * Count the number of elements in the given key space.
+ */
+unsigned long bomm_key_space_count(
+    const bomm_key_space_t* key_space
+);
+
+/**
  * Initialize a key from the given key space. Wheels are initialized to the
  * first wheel in each wheel set (might not be valid for duplicate wheels).
  * @param key Pointer to an existing key in memory or null, if a new key
@@ -406,7 +425,9 @@ static inline bool bomm_key_is_relevant(bomm_key_t* key) {
  * Increment the given key iterator, ignoring the plugboard setting.
  * @return Whether a full revolution was completed (carry)
  */
-static inline bool bomm_key_iterator_next(bomm_key_iterator_t* iterator) {
+static inline __attribute__((always_inline)) bool bomm_key_iterator_next(
+    bomm_key_iterator_t* iterator
+) {
     bomm_key_t* key = &iterator->key;
     unsigned int slot_count = key->slot_count;
     bool carry_out = false;
@@ -426,20 +447,6 @@ static inline bool bomm_key_iterator_next(bomm_key_iterator_t* iterator) {
     } while (!bomm_key_is_relevant(key));
     iterator->scrambler_changed = scrambler_changed;
     return carry_out;
-}
-
-/**
- * Count the number of elements for the given iterator (needs to be reset).
- * The plugboard is ignored, here. The iterator is reset after the call.
- */
-static inline unsigned int bomm_key_iterator_count(
-    bomm_key_iterator_t* iterator
-) {
-    unsigned int count = 1;
-    while (!bomm_key_iterator_next(iterator)) {
-        count++;
-    }
-    return count;
 }
 
 /**

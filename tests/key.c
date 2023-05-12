@@ -66,13 +66,111 @@ Test(key, bomm_key_iterator_init_empty_position_mask) {
     free(key_space);
 }
 
-Test(key, bomm_key_iterator_count) {
+Test(key, bomm_key_iterator_next) {
     bomm_key_space_t* key_space = bomm_key_space_init_enigma_i();
+    key_space->plug_mask = BOMM_LETTERMASK_NONE;
     bomm_key_iterator_t key_iterator;
-    bomm_key_iterator_t expected_key_iterator;
     bomm_key_iterator_init(&key_iterator, key_space);
+
+    bomm_key_iterator_t expected_key_iterator;
     memcpy(&expected_key_iterator, &key_iterator, sizeof(key_iterator));
-    cr_assert_eq(bomm_key_iterator_count(&key_iterator), 79092000);
+
+    unsigned int count = 1;
+    while (!bomm_key_iterator_next(&key_iterator)) {
+        count++;
+    }
+
+    cr_assert_eq(count, 26364000);
     cr_assert_arr_eq(&key_iterator, &expected_key_iterator, sizeof(key_iterator));
+    free(key_space);
+}
+
+Test(key, bomm_key_iterator_plugboard_next_r_stecker) {
+    bomm_key_space_t* key_space = bomm_key_space_init_enigma_i();
+    bomm_key_iterator_t iterator, initial_iterator;
+    char string[8];
+
+    // Configure the key space with no plugboard exhaustion
+    key_space->plug_mask = BOMM_LETTERMASK_NONE;
+
+    // Such a plugboard iterator must yield the empty plugboard only
+    cr_assert_eq(bomm_key_iterator_init(&iterator, key_space), &iterator);
+    memcpy(&initial_iterator, &iterator, sizeof(iterator));
+    bomm_key_plugboard_stringify(string, sizeof(string), &iterator.key);
+    cr_assert_str_eq(string, "");
+    cr_assert_eq(bomm_key_iterator_plugboard_next(&iterator), true);
+    cr_assert_arr_eq(&iterator, &initial_iterator, sizeof(iterator));
+
+    // Configure a key space with R-Stecker plugboard exhaustion
+    key_space->plug_mask = 0x22010;
+
+    // For such a key space the following plugboard configurations are expected
+    const char expected_strings[72][128] = {
+        "ae", "an", "ar", "be", "bn", "br", "ce", "cn", "cr",
+        "de", "dn", "dr", "ef", "eg", "eh", "ei", "ej", "ek",
+        "el", "em", "en", "eo", "ep", "eq", "er", "es", "et",
+        "eu", "ev", "ew", "ex", "ey", "ez", "fn", "fr", "gn",
+        "gr", "hn", "hr", "in", "ir", "jn", "jr", "kn", "kr",
+        "ln", "lr", "mn", "mr", "no", "np", "nq", "nr", "ns",
+        "nt", "nu", "nv", "nw", "nx", "ny", "nz", "or", "pr",
+        "qr", "rs", "rt", "ru", "rv", "rw", "rx", "ry", "rz"
+    };
+
+    cr_assert_eq(bomm_key_iterator_init(&iterator, key_space), &iterator);
+    memcpy(&initial_iterator, &iterator, sizeof(iterator));
+
+    bomm_key_plugboard_stringify(string, sizeof(string), &iterator.key);
+    cr_assert_str_eq(string, "");
+
+    for (unsigned int i = 0; i < 72; i++) {
+        cr_assert_eq(bomm_key_iterator_plugboard_next(&iterator), false);
+        bomm_key_plugboard_stringify(string, sizeof(string), &iterator.key);
+        cr_assert_str_eq(string, expected_strings[i]);
+    }
+
+    cr_assert_eq(bomm_key_iterator_plugboard_next(&iterator), true);
+    cr_assert_arr_eq(&iterator, &initial_iterator, sizeof(iterator));
+
+    free(key_space);
+}
+
+Test(key, bomm_key_space_plugboard_count) {
+    bomm_key_space_t* key_space = bomm_key_space_init_enigma_i();
+
+    // No plugboard exhaustion (identity only)
+    key_space->plug_mask = BOMM_LETTERMASK_NONE;
+    cr_assert_eq(bomm_key_space_plugboard_count(key_space), 1);
+
+    // E-Stecker exhaustion
+    key_space->plug_mask = 0x10;
+    cr_assert_eq(bomm_key_space_plugboard_count(key_space), 26);
+
+    // R-Stecker exhaustion
+    key_space->plug_mask = 0x22010;
+    cr_assert_eq(bomm_key_space_plugboard_count(key_space), 73);
+
+    // I-Stecker exhaustion
+    key_space->plug_mask = 0x862110;
+    cr_assert_eq(bomm_key_space_plugboard_count(key_space), 136);
+
+    // Solo exhaustion
+    key_space->plug_mask = BOMM_LETTERMASK_ALL;
+    cr_assert_eq(bomm_key_space_plugboard_count(key_space), 326);
+
+    free(key_space);
+}
+
+Test(key, bomm_key_space_count) {
+    bomm_key_space_t* key_space = bomm_key_space_init_enigma_i();
+
+    key_space->plug_mask = BOMM_LETTERMASK_NONE;
+    cr_assert_eq(bomm_key_space_count(key_space), 26364000);
+
+    key_space->plug_mask = 0x862110;
+    cr_assert_eq(bomm_key_space_count(key_space), 3585504000);
+
+    key_space->plug_mask = BOMM_LETTERMASK_ALL;
+    cr_assert_eq(bomm_key_space_count(key_space), 8594664000);
+
     free(key_space);
 }

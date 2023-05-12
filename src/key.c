@@ -29,6 +29,7 @@ bomm_key_space_t* bomm_key_space_init(
     // Store meta data
     key_space->mechanism = mechanism;
     key_space->slot_count = slot_count;
+    key_space->plug_mask = BOMM_LETTERMASK_NONE;
 
     // Clear wheel sets
     size_t wheel_sets_mem_size =
@@ -153,15 +154,27 @@ bomm_key_space_t* bomm_key_space_init_with_json(
         slot++;
     }
 
+    // Read plug mask
+    json_t* plug_mask_json = json_object_get(key_space_json, "plugs");
+    if (plug_mask_json != NULL) {
+        if (plug_mask_json->type == JSON_STRING) {
+            if (bomm_lettermask_from_string(
+                &key_space->plug_mask,
+                json_string_value(plug_mask_json)
+            ) == NULL) {
+                error = true;
+            }
+        } else {
+            error = true;
+        }
+    }
+
     if (error) {
         if (key_space_ptr == NULL) {
             free(key_space);
         }
         return NULL;
     }
-
-    // I-Stecker strategy
-    key_space->plug_mask = 0x862110;
 
     return key_space;
 }
@@ -185,14 +198,10 @@ bomm_key_space_t* bomm_key_space_init_enigma_i(void) {
     bomm_wheel_t* w_iv      = bomm_wheel_init_with_name(NULL, "IV");
     bomm_wheel_t* w_v       = bomm_wheel_init_with_name(NULL, "V");
     bomm_wheel_t* w_etw_abc = bomm_wheel_init_with_name(NULL, "ETW-ABC");
-    bomm_wheel_t* w_ukw_a   = bomm_wheel_init_with_name(NULL, "UKW-A");
     bomm_wheel_t* w_ukw_b   = bomm_wheel_init_with_name(NULL, "UKW-B");
-    bomm_wheel_t* w_ukw_c   = bomm_wheel_init_with_name(NULL, "UKW-C");
 
     // Set of reflectors (in the order they are tested)
     key_space->wheel_sets[0][0] = w_ukw_b;
-    key_space->wheel_sets[0][1] = w_ukw_c;
-    key_space->wheel_sets[0][2] = w_ukw_a;
 
     // Wheel sets for slots 1, 2, and 3
     for (int slot = 1; slot <= 3; slot++) {
@@ -210,9 +219,6 @@ bomm_key_space_t* bomm_key_space_init_enigma_i(void) {
     // as they can be neglected
     key_space->ring_masks[1] = BOMM_LETTERMASK_FIRST;
     key_space->ring_masks[2] = BOMM_LETTERMASK_FIRST;
-
-    // No plugboard iteration
-    key_space->plug_mask = 0x0;
 
     return key_space;
 }
@@ -306,6 +312,33 @@ bomm_key_iterator_t* bomm_key_iterator_init(
     }
 
     return iterator;
+}
+
+unsigned long bomm_key_space_count(
+    const bomm_key_space_t* key_space
+) {
+    // Derive a key space without plug mask
+    bomm_key_space_t counting_key_space;
+    memcpy(&counting_key_space, key_space, sizeof(counting_key_space));
+    counting_key_space.plug_mask = BOMM_LETTERMASK_NONE;
+
+    // Create a new iterator for it
+    bomm_key_iterator_t key_iterator;
+    if (bomm_key_iterator_init(&key_iterator, &counting_key_space) == NULL) {
+        // The key space is empty
+        return 0;
+    }
+
+    // Count scrambler keys
+    unsigned long count = 1;
+    while (!bomm_key_iterator_next(&key_iterator)) {
+        count++;
+    }
+
+    // Multiply the scrambler keys with the number of solo plugs
+    count *= bomm_key_space_plugboard_count(key_space);
+
+    return count;
 }
 
 void bomm_key_stringify(char* str, size_t size, bomm_key_t* key) {

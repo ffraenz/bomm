@@ -54,7 +54,7 @@ inline static void bomm_enigma_encrypt(
  * length. The key's plugboard is irrelevant when evaluating this function.
  * The key is used in-place during evaluation and is reset afterwards.
  */
-inline static void bomm_enigma_generate_scrambler(
+inline static __attribute__((always_inline)) void bomm_enigma_generate_scrambler(
     bomm_scrambler_t* scrambler,
     bomm_key_t* key
 ) {

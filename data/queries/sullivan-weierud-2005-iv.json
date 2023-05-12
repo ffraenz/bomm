@@ -6,110 +6,60 @@
   "attacks": [
     {
       "space": {
+        "plugs": "e",
         "slots": [
           { "wheels": ["UKW-B"] },
           { "wheels": ["I"], "rings": "a" },
           { "wheels": ["II", "III", "IV", "V"], "rings": "a" },
-          { "wheels": ["II", "III", "IV", "V"], "rings": "abcdefghijklm" },
+          { "wheels": ["II", "III", "IV", "V"] },
           { "wheels": ["ETW-ABC"] }
         ]
       }
     },
     {
       "space": {
-        "slots": [
-          { "wheels": ["UKW-B"] },
-          { "wheels": ["I"], "rings": "a" },
-          { "wheels": ["II", "III", "IV", "V"], "rings": "a" },
-          { "wheels": ["II", "III", "IV", "V"], "rings": "nopqrstuvwxyz" },
-          { "wheels": ["ETW-ABC"] }
-        ]
-      }
-    },
-    {
-      "space": {
+        "plugs": "e",
         "slots": [
           { "wheels": ["UKW-B"] },
           { "wheels": ["II"], "rings": "a" },
           { "wheels": ["I", "III", "IV", "V"], "rings": "a" },
-          { "wheels": ["I", "III", "IV", "V"], "rings": "abcdefghijklm" },
+          { "wheels": ["I", "III", "IV", "V"] },
           { "wheels": ["ETW-ABC"] }
         ]
       }
     },
     {
       "space": {
-        "slots": [
-          { "wheels": ["UKW-B"] },
-          { "wheels": ["II"], "rings": "a" },
-          { "wheels": ["I", "III", "IV", "V"], "rings": "a" },
-          { "wheels": ["I", "III", "IV", "V"], "rings": "nopqrstuvwxyz" },
-          { "wheels": ["ETW-ABC"] }
-        ]
-      }
-    },
-    {
-      "space": {
+        "plugs": "e",
         "slots": [
           { "wheels": ["UKW-B"] },
           { "wheels": ["III"], "rings": "a" },
           { "wheels": ["I", "II", "IV", "V"], "rings": "a" },
-          { "wheels": ["I", "II", "IV", "V"], "rings": "abcdefghijklm" },
+          { "wheels": ["I", "II", "IV", "V"] },
           { "wheels": ["ETW-ABC"] }
         ]
       }
     },
     {
       "space": {
-        "slots": [
-          { "wheels": ["UKW-B"] },
-          { "wheels": ["III"], "rings": "a" },
-          { "wheels": ["I", "II", "IV", "V"], "rings": "a" },
-          { "wheels": ["I", "II", "IV", "V"], "rings": "nopqrstuvwxyz" },
-          { "wheels": ["ETW-ABC"] }
-        ]
-      }
-    },
-    {
-      "space": {
+        "plugs": "e",
         "slots": [
           { "wheels": ["UKW-B"] },
           { "wheels": ["IV"], "rings": "a" },
           { "wheels": ["I", "II", "III", "V"], "rings": "a" },
-          { "wheels": ["I", "II", "III", "V"], "rings": "abcdefghijklm" },
+          { "wheels": ["I", "II", "III", "V"] },
           { "wheels": ["ETW-ABC"] }
         ]
       }
     },
     {
       "space": {
-        "slots": [
-          { "wheels": ["UKW-B"] },
-          { "wheels": ["IV"], "rings": "a" },
-          { "wheels": ["I", "II", "III", "V"], "rings": "a" },
-          { "wheels": ["I", "II", "III", "V"], "rings": "nopqrstuvwxyz" },
-          { "wheels": ["ETW-ABC"] }
-        ]
-      }
-    },
-    {
-      "space": {
+        "plugs": "e",
         "slots": [
           { "wheels": ["UKW-B"] },
           { "wheels": ["V"], "rings": "a" },
           { "wheels": ["I", "II", "III", "IV"], "rings": "a" },
-          { "wheels": ["I", "II", "III", "IV"], "rings": "abcdefghijklm" },
-          { "wheels": ["ETW-ABC"] }
-        ]
-      }
-    },
-    {
-      "space": {
-        "slots": [
-          { "wheels": ["UKW-B"] },
-          { "wheels": ["V"], "rings": "a" },
-          { "wheels": ["I", "II", "III", "IV"], "rings": "a" },
-          { "wheels": ["I", "II", "III", "IV"], "rings": "nopqrstuvwxyz" },
+          { "wheels": ["I", "II", "III", "IV"] },
           { "wheels": ["ETW-ABC"] }
         ]
       }
@@ -127,7 +77,7 @@
     { "name": "UKW-C",   "wiring": "fvpjiaoyedrzxwgctkuqsbnmhl" }
   ],
   "frequencies": {
-    "bigram": "./data/frequencies/enigma1941-bigram.txt",
-    "trigram": "./data/frequencies/enigma1941-trigram.txt"
+    "bigram": "/Users/ff/Projects/Bachelor/bomm/data/frequencies/enigma1941-bigram.txt",
+    "trigram": "/Users/ff/Projects/Bachelor/bomm/data/frequencies/enigma1941-trigram.txt"
   }
 }

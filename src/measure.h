@@ -242,7 +242,7 @@ typedef enum {
 /**
  * Measure a message
  */
-static inline float bomm_measure_message(
+static inline __attribute__((always_inline)) float bomm_measure_message(
     bomm_measure_t measure,
     bomm_message_t* message
 ) {
@@ -262,7 +262,7 @@ static inline float bomm_measure_message(
 /**
  * Measure a message put through the given scrabler and plugboard
  */
-static inline float bomm_measure_scrambler(
+static inline __attribute__((always_inline)) float bomm_measure_scrambler(
     bomm_measure_t measure,
     bomm_scrambler_t* scrambler,
     unsigned int* plugboard,
