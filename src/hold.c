@@ -60,6 +60,7 @@ float bomm_hold_add(bomm_hold_t* hold, float score, void* data, char* preview) {
     bool duplicate =
         index != -1 &&
         (unsigned int) index < hold->count &&
+        ((bomm_hold_element_t*) element_ptr)->score == score &&
         memcmp(
            ((bomm_hold_element_t*) element_ptr)->data,
            data,
