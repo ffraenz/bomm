@@ -30,6 +30,8 @@ bomm_key_space_t* bomm_key_space_init(
     key_space->mechanism = mechanism;
     key_space->slot_count = slot_count;
     key_space->plug_mask = BOMM_LETTERMASK_NONE;
+    key_space->offset = 0;
+    key_space->limit = LONG_MAX;
 
     // Clear wheel sets
     size_t wheel_sets_mem_size =
@@ -169,6 +171,26 @@ bomm_key_space_t* bomm_key_space_init_with_json(
         }
     }
 
+    // Read offset
+    json_t* offset_json = json_object_get(key_space_json, "offset");
+    if (offset_json != NULL) {
+        if (offset_json->type == JSON_INTEGER) {
+            key_space->offset = json_integer_value(offset_json);
+        } else {
+            error = true;
+        }
+    }
+
+    // Read limit
+    json_t* limit_json = json_object_get(key_space_json, "limit");
+    if (limit_json != NULL) {
+        if (limit_json->type == JSON_INTEGER) {
+            key_space->limit = json_integer_value(limit_json);
+        } else {
+            error = true;
+        }
+    }
+
     if (error) {
         if (key_space_ptr == NULL) {
             free(key_space);
@@ -223,7 +245,69 @@ bomm_key_space_t* bomm_key_space_init_enigma_i(void) {
     return key_space;
 }
 
-bomm_key_t* bomm_key_init(bomm_key_t* key, bomm_key_space_t* key_space) {
+void bomm_key_space_slice(
+    const bomm_key_space_t* key_space,
+    unsigned int split_count,
+    bomm_key_space_t* slices
+) {
+    // TODO: Add unit tests
+    if (split_count == 0) {
+        return;
+    }
+
+    unsigned long count = bomm_key_space_count(key_space);
+    unsigned long slice_count = count / split_count;
+    unsigned long offset = key_space->offset;
+    for (unsigned int i = 0; i < split_count; i++) {
+        memcpy(&slices[i], key_space, sizeof(bomm_key_space_t));
+        slices[i].offset = offset;
+        if (i < split_count - 1) {
+            slices[i].limit = slice_count;
+            offset += slice_count;
+        } else {
+            slices[i].limit = count - offset;
+        }
+    }
+}
+
+unsigned long bomm_key_space_count(
+    const bomm_key_space_t* key_space
+) {
+    // Derive a key space without plug mask
+    bomm_key_space_t counting_key_space;
+    memcpy(&counting_key_space, key_space, sizeof(counting_key_space));
+    counting_key_space.plug_mask = BOMM_LETTERMASK_NONE;
+
+    // Create a new iterator for it
+    bomm_key_iterator_t key_iterator;
+    if (bomm_key_iterator_init(&key_iterator, &counting_key_space) == NULL) {
+        // The key space is empty
+        return 0;
+    }
+
+    // Count scrambler keys
+    unsigned long count = 1;
+    while (!bomm_key_iterator_next(&key_iterator)) {
+        count++;
+    }
+
+    // Multiply the scrambler keys with the number of solo plugs
+    count *= bomm_key_space_plugboard_count(key_space);
+    
+    if (count <= key_space->offset) {
+        return 0;
+    }
+    
+    count -= key_space->offset;
+    
+    if (count > key_space->limit) {
+        return key_space->limit;
+    }
+    
+    return count;
+}
+
+bomm_key_t* bomm_key_init(bomm_key_t* key, const bomm_key_space_t* key_space) {
     if (key == NULL) {
         key = malloc(sizeof(bomm_key_t));
         if (key == NULL) {
@@ -259,7 +343,7 @@ bomm_key_t* bomm_key_init(bomm_key_t* key, bomm_key_space_t* key_space) {
 
 bomm_key_iterator_t* bomm_key_iterator_init(
     bomm_key_iterator_t* iterator,
-    bomm_key_space_t* key_space
+    const bomm_key_space_t* key_space
 ) {
     unsigned int slot_count = key_space->slot_count;
     bool empty = false;
@@ -281,6 +365,7 @@ bomm_key_iterator_t* bomm_key_iterator_init(
 
     // Reference key space
     iterator->key_space = key_space;
+    iterator->index = 0;
 
     // Init key
     bomm_key_init(&iterator->key, key_space);
@@ -311,34 +396,23 @@ bomm_key_iterator_t* bomm_key_iterator_init(
         return NULL;
     }
 
+    // Skip key space offset
+    unsigned long offset = key_space->offset + 1;
+    while (--offset > 0 && !empty) {
+        // When calling `bomm_key_iterator_next` then `iterator->index` will
+        // be incremented and checked against the limit
+        iterator->index = -1;
+        empty = bomm_key_iterator_next(iterator);
+    }
+
+    if (empty) {
+        if (owning) {
+            free(iterator);
+        }
+        return NULL;
+    }
+
     return iterator;
-}
-
-unsigned long bomm_key_space_count(
-    const bomm_key_space_t* key_space
-) {
-    // Derive a key space without plug mask
-    bomm_key_space_t counting_key_space;
-    memcpy(&counting_key_space, key_space, sizeof(counting_key_space));
-    counting_key_space.plug_mask = BOMM_LETTERMASK_NONE;
-
-    // Create a new iterator for it
-    bomm_key_iterator_t key_iterator;
-    if (bomm_key_iterator_init(&key_iterator, &counting_key_space) == NULL) {
-        // The key space is empty
-        return 0;
-    }
-
-    // Count scrambler keys
-    unsigned long count = 1;
-    while (!bomm_key_iterator_next(&key_iterator)) {
-        count++;
-    }
-
-    // Multiply the scrambler keys with the number of solo plugs
-    count *= bomm_key_space_plugboard_count(key_space);
-
-    return count;
 }
 
 void bomm_key_stringify(char* str, size_t size, bomm_key_t* key) {

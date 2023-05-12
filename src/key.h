@@ -85,6 +85,18 @@ typedef struct _bomm_key_space {
      * Example: The I-Stecker with letters E, N, R, X, S, or I: `0x862110`
      */
     bomm_lettermask_t plug_mask;
+
+    /**
+     * The number of elements to be skipped by the iterator when iterating over
+     * this key space. This is similar to an array slice.
+     */
+    unsigned long offset;
+
+    /**
+     * The maximum number of elements to be enumerated by the iterator when
+     * iterating over this key space. This is similar to an array slice.
+     */
+    unsigned long limit;
 } bomm_key_space_t;
 
 /**
@@ -137,6 +149,11 @@ typedef struct _bomm_key_iterator {
      * Key space iterator was created for
      */
     const bomm_key_space_t* key_space;
+
+    /**
+     * Index of the current key in the key space
+     */
+    unsigned long index;
 
     /**
      * Current key
@@ -234,12 +251,21 @@ unsigned long bomm_key_space_count(
 );
 
 /**
+ * Split a key space into the given number of slices.
+ */
+void bomm_key_space_slice(
+    const bomm_key_space_t* key_space,
+    unsigned int slice_count,
+    bomm_key_space_t* slices
+);
+
+/**
  * Initialize a key from the given key space. Wheels are initialized to the
  * first wheel in each wheel set (might not be valid for duplicate wheels).
  * @param key Pointer to an existing key in memory or null, if a new key
  * should be allocated and returned.
  */
-bomm_key_t* bomm_key_init(bomm_key_t* key, bomm_key_space_t* key_space);
+bomm_key_t* bomm_key_init(bomm_key_t* key, const bomm_key_space_t* key_space);
 
 /**
  * Iterate to the 'next' plugboard configuration in the key space.
@@ -405,7 +431,7 @@ static inline bool bomm_key_iterator_wheels_next(
  */
 bomm_key_iterator_t* bomm_key_iterator_init(
     bomm_key_iterator_t* iterator,
-    bomm_key_space_t* key_space
+    const bomm_key_space_t* key_space
 );
 
 /**
@@ -445,8 +471,17 @@ static inline __attribute__((always_inline)) bool bomm_key_iterator_next(
         scrambler_changed = scrambler_changed || plugboard_carry;
         carry_out = carry_out || carry;
     } while (!bomm_key_is_relevant(key));
+
+    iterator->index++;
     iterator->scrambler_changed = scrambler_changed;
-    return carry_out;
+
+    if (carry_out || iterator->index >= iterator->key_space->limit) {
+        // Reset iterator to re-establish initial key and offset
+        bomm_key_iterator_init(iterator, iterator->key_space);
+        return true;
+    }
+
+    return false;
 }
 
 /**
