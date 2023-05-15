@@ -174,3 +174,56 @@ Test(key, bomm_key_space_count) {
 
     free(key_space);
 }
+
+Test(key, bomm_key_space_slice) {
+    bomm_key_space_t* key_space = bomm_key_space_init_enigma_i();
+    key_space->plug_mask = 0x10;
+    key_space->position_masks[1] = BOMM_LETTERMASK_FIRST;
+    key_space->position_masks[2] = BOMM_LETTERMASK_FIRST;
+
+    // Expected count: 26 plugboards * 60 wheel orders * 26 rings * 26 positions
+    unsigned long expected_count = 1054560;
+
+    bomm_key_iterator_t key_space_iterator;
+    bomm_key_iterator_init(&key_space_iterator, key_space);
+
+    // Test a single split, 2 splits (even splits), and 3 splits (odd splits)
+    for (unsigned int split_count = 1; split_count < 4; split_count++) {
+        bomm_key_space_t key_space_slices[split_count];
+        bomm_key_space_slice(key_space, split_count, key_space_slices);
+
+        bool key_space_end = false;
+        bool slice_end = false;
+        unsigned long count = 0;
+
+        for (unsigned int i = 0; i < split_count; i++) {
+            bomm_key_iterator_t slice_iterator;
+            bomm_key_iterator_init(&slice_iterator, &key_space_slices[i]);
+
+            do {
+                // Iterating the elements of each slice is expected to be
+                // equivalent to iterating the elements of the entire key space
+                cr_assert_eq(
+                    memcmp(
+                        &key_space_iterator.key,
+                        &slice_iterator.key,
+                        sizeof(bomm_key_t)
+                    ),
+                    0,
+                    "Key at index %lu is not equivalent to key from slice",
+                    count
+                );
+                count++;
+                key_space_end = bomm_key_iterator_next(&key_space_iterator);
+                slice_end = bomm_key_iterator_next(&slice_iterator);
+            } while (!slice_end && !key_space_end);
+        }
+
+        // Iterating slice is expected to be complete
+        cr_assert_eq(key_space_end, true);
+        cr_assert_eq(slice_end, true);
+        cr_assert_eq(count, expected_count);
+    }
+
+    free(key_space);
+}

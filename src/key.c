@@ -250,7 +250,6 @@ void bomm_key_space_slice(
     unsigned int split_count,
     bomm_key_space_t* slices
 ) {
-    // TODO: Add unit tests
     if (split_count == 0) {
         return;
     }
@@ -320,15 +319,23 @@ bomm_key_t* bomm_key_init(bomm_key_t* key, const bomm_key_space_t* key_space) {
     key->slot_count = key_space->slot_count;
     memcpy(&key->rotating_slots, &key_space->rotating_slots, sizeof(key->rotating_slots));
 
-    // Reset the wheel order, ring settings, and start positions
-    for (unsigned int slot = 0; slot < key_space->slot_count; slot++) {
-        memcpy(
-            &key->wheels[slot],
-            key_space->wheel_sets[slot][0],
-            sizeof(bomm_wheel_t)
-        );
+    // Reset the wheel order, ring settings, and start positions of all slots,
+    // including the unused ones to remove undefined memory and thus make keys
+    // comparable as a whole using `memcmp`.
+    for (unsigned int slot = 0; slot < BOMM_MAX_SLOT_COUNT; slot++) {
         key->rings[slot] = 0;
         key->positions[slot] = 0;
+        if (slot < key_space->slot_count) {
+            key->rotating_slots[slot] = key_space->rotating_slots[slot];
+            memcpy(
+                &key->wheels[slot],
+                key_space->wheel_sets[slot][0],
+                sizeof(bomm_wheel_t)
+            );
+        } else {
+            key->rotating_slots[slot] = false;
+            memset(&key->wheels[slot], 0, sizeof(bomm_wheel_t));
+        }
     }
 
     // Initialize the key with the identity plugboard

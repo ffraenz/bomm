@@ -17,7 +17,7 @@ unsigned int _plug_order[] = {
 };
 
 void* bomm_attack_thread(void* arg) {
-    // The argument is assumed to be an attack slice
+    // The argument is assumed to be an attack
     bomm_attack_t* attack = (bomm_attack_t*) arg;
     bomm_attack_key_space(attack);
     return NULL;
