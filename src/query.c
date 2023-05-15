@@ -6,13 +6,16 @@
 //
 
 #include <getopt.h>
+#include <limits.h>
 #include "query.h"
 #include "utility.h"
 #include "measure.h"
 
 static struct option _input_options[] = {
-    {"verbose", no_argument, 0, 'v'},
     {"help", no_argument, 0, 'h'},
+    {"num-hold", no_argument, 0, 'n'},
+    {"num-threads", no_argument, 0, 't'},
+    {"verbose", no_argument, 0, 'v'},
     {0, 0, 0, 0}
 };
 
@@ -27,19 +30,48 @@ static char* _frequencies_keys[8] = {
 
 bomm_query_t* bomm_query_init(int argc, char *argv[]) {
     bool verbose = false;
-    unsigned int hold_size = 40;
+    unsigned int hold_size = 0;
+    unsigned int thread_count = 0;
 
     // Read options
     int option;
     int option_index = 0;
-    while ((option = getopt_long(argc, argv, "hv", _input_options, &option_index)) != -1) {
+    while ((option = getopt_long(argc, argv, "hn:t:v", _input_options, &option_index)) != -1) {
         switch (option) {
             case 'h': {
-                printf("Usage: %s [-h] filename\n", argv[0]);
+                printf("Usage: %s [-v] query_filename\n", argv[0]);
                 printf("Options:\n");
                 printf("  -h, --help        display this help message\n");
+                printf("  -n, --num-hold    number of hold elements to collect\n");
+                printf("  -t, --num-threads number of concurrent threads to use\n");
                 printf("  -v, --verbose     verbose mode\n");
                 return NULL;
+            }
+            case 'n': {
+                unsigned long int number = strtoul(optarg, NULL, 0);
+                if (number >= INT_MAX) {
+                    fprintf(
+                        stderr,
+                        "The number of hold elements must be less than %d\n",
+                        INT_MAX
+                    );
+                    return NULL;
+                }
+                hold_size = (unsigned int) number;
+                break;
+            }
+            case 't': {
+                unsigned long int number = strtoul(optarg, NULL, 0);
+                if (number >= INT_MAX) {
+                    fprintf(
+                        stderr,
+                        "The number of concurrent threads must be less than %d\n",
+                        INT_MAX
+                    );
+                    return NULL;
+                }
+                thread_count = (unsigned int) number;
+                break;
             }
             case 'v': {
                 verbose = true;
@@ -53,6 +85,14 @@ bomm_query_t* bomm_query_init(int argc, char *argv[]) {
     if (optind != argc - 1) {
         fprintf(stderr, "Error: A single argument with the query filename is expected\n");
         return NULL;
+    }
+    
+    // Apply defaults
+    if (hold_size == 0) {
+        hold_size = 100;
+    }
+    if (thread_count == 0) {
+        thread_count = bomm_hardware_concurrency();
     }
 
     // Read the query
@@ -101,17 +141,8 @@ bomm_query_t* bomm_query_init(int argc, char *argv[]) {
         }
     }
 
-    // Read attack count
-    json_t* attacks_json = json_object_get(query_json, "attacks");
-    if (attacks_json->type != JSON_ARRAY) {
-        json_decref(query_json);
-        fprintf(stderr, "Error: Query field 'attacks' is expected to be an array\n");
-        return NULL;
-    }
-    unsigned int attack_count = (unsigned int) json_array_size(attacks_json);
-
     // Alloc query
-    size_t query_size = sizeof(bomm_query_t) + attack_count * sizeof(bomm_attack_t);
+    size_t query_size = sizeof(bomm_query_t) + thread_count * sizeof(bomm_attack_t);
     bomm_query_t* query = malloc(query_size);
     if (query == NULL) {
         json_decref(query_json);
@@ -124,7 +155,7 @@ bomm_query_t* bomm_query_init(int argc, char *argv[]) {
     query->ciphertext = NULL;
     query->hold = NULL;
     query->verbose = verbose;
-    query->attack_count = attack_count;
+    query->attack_count = thread_count;
 
     // Read ciphertext
     json_t* ciphertext_json = json_object_get(query_json, "ciphertext");
@@ -166,52 +197,41 @@ bomm_query_t* bomm_query_init(int argc, char *argv[]) {
         }
     }
 
-    // Read attacks
-    json_t* attack_json;
-    bomm_attack_t* attack;
+    // Read key space
+    bomm_key_space_t key_space;
+    json_t* key_space_json = json_object_get(query_json, "space");
+    if (bomm_key_space_init_with_json(&key_space, key_space_json, query->wheels, query->wheel_count) == NULL) {
+        bomm_query_destroy(query);
+        json_decref(query_json);
+        return NULL;
+    }
+
+    // Split the key space into the requested number of concurrent threads
+    bomm_key_space_t key_space_slices[thread_count];
+    unsigned int attack_count = bomm_key_space_slice(&key_space, thread_count, key_space_slices);
+
+    // Reduce the size of the query if necessary
+    if (attack_count < thread_count) {
+        query_size = sizeof(bomm_query_t) + attack_count * sizeof(bomm_attack_t);
+        query = realloc(query, query_size);
+    }
+
+    // Initialize parallel attacks
     for (unsigned int i = 0; i < attack_count; i++) {
-        attack = &query->attacks[i];
-        attack->id = i + 1;
+        bomm_attack_t* attack = &query->attacks[i];
         attack->query = query;
+        attack->id = i + 1;
+        memcpy(&attack->key_space, &key_space_slices[i], sizeof(bomm_key_space_t));
+        attack->ciphertext = query->ciphertext;
         attack->thread = 0;
         attack->state = BOMM_ATTACK_STATE_IDLE;
 
-        pthread_mutex_init(&attack->mutex, NULL);
         attack->progress.batch_unit_size = 1;
         attack->progress.completed_unit_count = 0;
         attack->progress.unit_count = 0;
         attack->progress.duration_sec = 0;
         attack->progress.batch_duration_sec = 0;
-
-        attack_json = json_array_get(attacks_json, i);
-        if (attack_json->type != JSON_OBJECT) {
-            bomm_query_destroy(query);
-            json_decref(query_json);
-            fprintf(stderr, "Error: An attack is expected to be an object\n");
-            return NULL;
-        }
-
-        // Read attack ciphertext
-        json_t* ciphertext_json = json_object_get(attack_json, "ciphertext");
-        if (ciphertext_json != NULL) {
-            if (ciphertext_json->type != JSON_STRING) {
-                bomm_query_destroy(query);
-                json_decref(query_json);
-                fprintf(stderr, "Error: The optional attack field 'ciphertext' is expected to be a string\n");
-                return NULL;
-            }
-            attack->ciphertext = bomm_message_init(json_string_value(ciphertext_json));
-        } else {
-            attack->ciphertext = query->ciphertext;
-        }
-
-        // Read attack key space
-        json_t* key_space_json = json_object_get(attack_json, "space");
-        if (bomm_key_space_init_with_json(&attack->key_space, key_space_json, query->wheels, query->wheel_count) == NULL) {
-            bomm_query_destroy(query);
-            json_decref(query_json);
-            return NULL;
-        }
+        pthread_mutex_init(&attack->mutex, NULL);
     }
 
     // Prepare hold

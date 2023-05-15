@@ -87,6 +87,11 @@ typedef struct _bomm_key_space {
     bomm_lettermask_t plug_mask;
 
     /**
+     * Number of elements contained. Set to 0 if unknown.
+     */
+    unsigned long count;
+
+    /**
      * The number of elements to be skipped by the iterator when iterating over
      * this key space. This is similar to an array slice.
      */
@@ -252,8 +257,9 @@ unsigned long bomm_key_space_count(
 
 /**
  * Split a key space into the given number of slices.
+ * @return Actual number of slices
  */
-void bomm_key_space_slice(
+unsigned int bomm_key_space_slice(
     const bomm_key_space_t* key_space,
     unsigned int slice_count,
     bomm_key_space_t* slices

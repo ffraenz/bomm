@@ -3,118 +3,15 @@
     "https://cryptocellar.org/bgac/keyofE.html"
   ],
   "ciphertext": "erjar wmmhj sthoy ooiqb hsszu eookf tasxn xvywe sctch nrnbl zpebh xpaqe dfnys xhmni hraro unbmd zrzdn wtgui ucbzn ztfja ekomj aziln rkvfd uniew ilzvl kqyyj ankxg nnnht emavd fxkay mlwcv qdfwx lo",
-  "attacks": [
-    {
-      "space": {
-        "slots": [
-          { "wheels": ["UKW-B"] },
-          { "wheels": ["I"], "rings": "a" },
-          { "wheels": ["II", "III", "IV", "V"], "rings": "a" },
-          { "wheels": ["II", "III", "IV", "V"], "rings": "abcdefghijklm" },
-          { "wheels": ["ETW-ABC"] }
-        ]
-      }
-    },
-    {
-      "space": {
-        "slots": [
-          { "wheels": ["UKW-B"] },
-          { "wheels": ["I"], "rings": "a" },
-          { "wheels": ["II", "III", "IV", "V"], "rings": "a" },
-          { "wheels": ["II", "III", "IV", "V"], "rings": "nopqrstuvwxyz" },
-          { "wheels": ["ETW-ABC"] }
-        ]
-      }
-    },
-    {
-      "space": {
-        "slots": [
-          { "wheels": ["UKW-B"] },
-          { "wheels": ["II"], "rings": "a" },
-          { "wheels": ["I", "III", "IV", "V"], "rings": "a" },
-          { "wheels": ["I", "III", "IV", "V"], "rings": "abcdefghijklm" },
-          { "wheels": ["ETW-ABC"] }
-        ]
-      }
-    },
-    {
-      "space": {
-        "slots": [
-          { "wheels": ["UKW-B"] },
-          { "wheels": ["II"], "rings": "a" },
-          { "wheels": ["I", "III", "IV", "V"], "rings": "a" },
-          { "wheels": ["I", "III", "IV", "V"], "rings": "nopqrstuvwxyz" },
-          { "wheels": ["ETW-ABC"] }
-        ]
-      }
-    },
-    {
-      "space": {
-        "slots": [
-          { "wheels": ["UKW-B"] },
-          { "wheels": ["III"], "rings": "a" },
-          { "wheels": ["I", "II", "IV", "V"], "rings": "a" },
-          { "wheels": ["I", "II", "IV", "V"], "rings": "abcdefghijklm" },
-          { "wheels": ["ETW-ABC"] }
-        ]
-      }
-    },
-    {
-      "space": {
-        "slots": [
-          { "wheels": ["UKW-B"] },
-          { "wheels": ["III"], "rings": "a" },
-          { "wheels": ["I", "II", "IV", "V"], "rings": "a" },
-          { "wheels": ["I", "II", "IV", "V"], "rings": "nopqrstuvwxyz" },
-          { "wheels": ["ETW-ABC"] }
-        ]
-      }
-    },
-    {
-      "space": {
-        "slots": [
-          { "wheels": ["UKW-B"] },
-          { "wheels": ["IV"], "rings": "a" },
-          { "wheels": ["I", "II", "III", "V"], "rings": "a" },
-          { "wheels": ["I", "II", "III", "V"], "rings": "abcdefghijklm" },
-          { "wheels": ["ETW-ABC"] }
-        ]
-      }
-    },
-    {
-      "space": {
-        "slots": [
-          { "wheels": ["UKW-B"] },
-          { "wheels": ["IV"], "rings": "a" },
-          { "wheels": ["I", "II", "III", "V"], "rings": "a" },
-          { "wheels": ["I", "II", "III", "V"], "rings": "nopqrstuvwxyz" },
-          { "wheels": ["ETW-ABC"] }
-        ]
-      }
-    },
-    {
-      "space": {
-        "slots": [
-          { "wheels": ["UKW-B"] },
-          { "wheels": ["V"], "rings": "a" },
-          { "wheels": ["I", "II", "III", "IV"], "rings": "a" },
-          { "wheels": ["I", "II", "III", "IV"], "rings": "abcdefghijklm" },
-          { "wheels": ["ETW-ABC"] }
-        ]
-      }
-    },
-    {
-      "space": {
-        "slots": [
-          { "wheels": ["UKW-B"] },
-          { "wheels": ["V"], "rings": "a" },
-          { "wheels": ["I", "II", "III", "IV"], "rings": "a" },
-          { "wheels": ["I", "II", "III", "IV"], "rings": "nopqrstuvwxyz" },
-          { "wheels": ["ETW-ABC"] }
-        ]
-      }
-    }
-  ],
+  "space": {
+    "slots": [
+      { "wheels": ["UKW-B"] },
+      { "wheels": ["I", "II", "III", "IV", "V"], "rings": "a" },
+      { "wheels": ["I", "II", "III", "IV", "V"], "rings": "a" },
+      { "wheels": ["I", "II", "III", "IV", "V"] },
+      { "wheels": ["ETW-ABC"] }
+    ]
+  },
   "wheels": [
     { "name": "I",       "wiring": "ekmflgdqvzntowyhxuspaibrcj", "turnovers": "q" },
     { "name": "II",      "wiring": "ajdksiruxblhwtmcqgznpyfvoe", "turnovers": "e" },

@@ -3,63 +3,15 @@
     "https://cryptocellar.org/bgac/keyofE.html"
   ],
   "ciphertext": "smdax nooyh rczgv vzcbi gibgw hmxkr rvqcf jczpt unswa ddsti gqqcs agpkr xxlom gfxap hhmrf sdkyt mypmv rohas qyrwf wvavg ccudb ibxxd yzsac jsyot mwucn womhh jpywd cclup gswcl mbczs syxpg mgmqx auful nozeq enhei zzakl c",
-  "attacks": [
-    {
-      "space": {
-        "slots": [
-          { "wheels": ["UKW-B"] },
-          { "wheels": ["I"], "rings": "a" },
-          { "wheels": ["II", "III", "IV", "V"], "rings": "a" },
-          { "wheels": ["II", "III", "IV", "V"] },
-          { "wheels": ["ETW-ABC"] }
-        ]
-      }
-    },
-    {
-      "space": {
-        "slots": [
-          { "wheels": ["UKW-B"] },
-          { "wheels": ["II"], "rings": "a" },
-          { "wheels": ["I", "III", "IV", "V"], "rings": "a" },
-          { "wheels": ["I", "III", "IV", "V"] },
-          { "wheels": ["ETW-ABC"] }
-        ]
-      }
-    },
-    {
-      "space": {
-        "slots": [
-          { "wheels": ["UKW-B"] },
-          { "wheels": ["III"], "rings": "a" },
-          { "wheels": ["I", "II", "IV", "V"], "rings": "a" },
-          { "wheels": ["I", "II", "IV", "V"] },
-          { "wheels": ["ETW-ABC"] }
-        ]
-      }
-    },
-    {
-      "space": {
-        "slots": [
-          { "wheels": ["UKW-B"] },
-          { "wheels": ["IV"], "rings": "a" },
-          { "wheels": ["I", "II", "III", "V"], "rings": "a" },
-          { "wheels": ["I", "II", "III", "V"] },
-          { "wheels": ["ETW-ABC"] }
-        ]
-      }
-    },
-    {
-      "space": {
-        "slots": [
-          { "wheels": ["UKW-B"] },
-          { "wheels": ["V"], "rings": "a" },
-          { "wheels": ["I", "II", "III", "IV"], "rings": "a" },
-          { "wheels": ["I", "II", "III", "IV"] },
-          { "wheels": ["ETW-ABC"] }
-        ]
-      }
-    }
-  ],
+  "space": {
+    "slots": [
+      { "wheels": ["UKW-B"] },
+      { "wheels": ["I", "II", "III", "IV", "V"], "rings": "a" },
+      { "wheels": ["I", "II", "III", "IV", "V"], "rings": "a" },
+      { "wheels": ["I", "II", "III", "IV", "V"] },
+      { "wheels": ["ETW-ABC"] }
+    ]
+  },
   "wheels": [
     { "name": "I",       "wiring": "ekmflgdqvzntowyhxuspaibrcj", "turnovers": "q" },
     { "name": "II",      "wiring": "ajdksiruxblhwtmcqgznpyfvoe", "turnovers": "e" },

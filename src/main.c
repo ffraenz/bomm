@@ -39,6 +39,10 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
+    // Print out details
+    printf("Hold size: %d\n", bomm_query_main->hold->size);
+    printf("Concurrent attacks: %d\n", bomm_query_main->attack_count);
+
     // Install signal handler
     signal(SIGINT, bomm_signal_handler);
     signal(SIGTERM, bomm_signal_handler);

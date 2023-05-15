@@ -1,18 +1,14 @@
 {
   "ciphertext": "nzcmy cjjvp vdlxg vvkyw fmihg hzwsj ggagz tbjha yqisl vqizi hmxwu itufh vvccs vwbrp kjlbw kcpen rlhab pmlmg mjrvs brwjs bamez qzyrb ijzlj xnnsq wpahl unlon qdgsb vodzj ujhds rzmlv foivz qqpgy yvsba jxzuw lukyl ishup ofkb",
-  "attacks": [
-    {
-      "space": {
-        "slots": [
-          { "wheels": ["UKW-B"] },
-          { "wheels": ["II"], "rings": "x", "positions": "m" },
-          { "wheels": ["III"], "rings": "d", "positions": "j" },
-          { "wheels": ["IV"], "rings": "q", "positions": "w" },
-          { "wheels": ["ETW-ABC"] }
-        ]
-      }
-    }
-  ],
+  "space": {
+    "slots": [
+      { "wheels": ["UKW-B"] },
+      { "wheels": ["II"], "rings": "x", "positions": "m" },
+      { "wheels": ["III"], "rings": "d", "positions": "j" },
+      { "wheels": ["IV"], "rings": "q", "positions": "w" },
+      { "wheels": ["ETW-ABC"] }
+    ]
+  },
   "wheels": [
     { "name": "I",       "wiring": "ekmflgdqvzntowyhxuspaibrcj", "turnovers": "q" },
     { "name": "II",      "wiring": "ajdksiruxblhwtmcqgznpyfvoe", "turnovers": "e" },

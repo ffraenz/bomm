@@ -30,6 +30,7 @@ bomm_key_space_t* bomm_key_space_init(
     key_space->mechanism = mechanism;
     key_space->slot_count = slot_count;
     key_space->plug_mask = BOMM_LETTERMASK_NONE;
+    key_space->count = 0;
     key_space->offset = 0;
     key_space->limit = LONG_MAX;
 
@@ -245,33 +246,47 @@ bomm_key_space_t* bomm_key_space_init_enigma_i(void) {
     return key_space;
 }
 
-void bomm_key_space_slice(
+unsigned int bomm_key_space_slice(
     const bomm_key_space_t* key_space,
     unsigned int split_count,
     bomm_key_space_t* slices
 ) {
     if (split_count == 0) {
-        return;
+        return 0;
     }
 
-    unsigned long count = bomm_key_space_count(key_space);
-    unsigned long slice_count = count / split_count;
+    unsigned long key_count = bomm_key_space_count(key_space);
+
+    // Make sure every slice gets at least 1 key to work on
+    unsigned int actual_split_count =
+        key_count < (unsigned long) split_count
+            ? (unsigned int) key_count
+            : split_count;
+
+    unsigned long slice_count = key_count / actual_split_count;
     unsigned long offset = key_space->offset;
-    for (unsigned int i = 0; i < split_count; i++) {
+    for (unsigned int i = 0; i < actual_split_count; i++) {
         memcpy(&slices[i], key_space, sizeof(bomm_key_space_t));
         slices[i].offset = offset;
-        if (i < split_count - 1) {
-            slices[i].limit = slice_count;
+        if (i < actual_split_count - 1) {
+            slices[i].count = slices[i].limit = slice_count;
             offset += slice_count;
         } else {
-            slices[i].limit = count - offset;
+            slices[i].count = slices[i].limit = key_count - offset;
         }
     }
+
+    return actual_split_count;
 }
 
 unsigned long bomm_key_space_count(
     const bomm_key_space_t* key_space
 ) {
+    // Return count if known
+    if (key_space->count != 0) {
+        return key_space->count;
+    }
+
     // Derive a key space without plug mask
     bomm_key_space_t counting_key_space;
     memcpy(&counting_key_space, key_space, sizeof(counting_key_space));

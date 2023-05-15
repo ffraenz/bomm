@@ -115,4 +115,10 @@ static inline void bomm_duration_stringify(
     );
 }
 
+/**
+ * Return the number of concurrent threads supported by the current environment.
+ * Similar to `std::thread::hardware_concurrency` in C++.
+ */
+unsigned int bomm_hardware_concurrency(void);
+
 #endif /* utility_h */

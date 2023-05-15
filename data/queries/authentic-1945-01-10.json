@@ -1,62 +1,14 @@
 {
   "ciphertext": "tsunq rtlia bftqr nuwlq vnitr sctnq ipklm aheef dcabc uworu bswyr bggfd txcbx dvduc ezgfb kyilx aunpq rtuvs wm",
-  "attacks": [
-    {
-      "space": {
-        "slots": [
-          { "wheels": ["UKW-B"] },
-          { "wheels": ["I"], "rings": "a" },
-          { "wheels": ["II", "III", "IV", "V"], "rings": "a" },
-          { "wheels": ["II", "III", "IV", "V"] },
-          { "wheels": ["ETW-ABC"] }
-        ]
-      }
-    },
-    {
-      "space": {
-        "slots": [
-          { "wheels": ["UKW-B"] },
-          { "wheels": ["II"], "rings": "a" },
-          { "wheels": ["I", "III", "IV", "V"], "rings": "a" },
-          { "wheels": ["I", "III", "IV", "V"] },
-          { "wheels": ["ETW-ABC"] }
-        ]
-      }
-    },
-    {
-      "space": {
-        "slots": [
-          { "wheels": ["UKW-B"] },
-          { "wheels": ["III"], "rings": "a" },
-          { "wheels": ["I", "II", "IV", "V"], "rings": "a" },
-          { "wheels": ["I", "II", "IV", "V"] },
-          { "wheels": ["ETW-ABC"] }
-        ]
-      }
-    },
-    {
-      "space": {
-        "slots": [
-          { "wheels": ["UKW-B"] },
-          { "wheels": ["IV"], "rings": "a" },
-          { "wheels": ["I", "II", "III", "V"], "rings": "a" },
-          { "wheels": ["I", "II", "III", "V"] },
-          { "wheels": ["ETW-ABC"] }
-        ]
-      }
-    },
-    {
-      "space": {
-        "slots": [
-          { "wheels": ["UKW-B"] },
-          { "wheels": ["V"], "rings": "a" },
-          { "wheels": ["I", "II", "III", "IV"], "rings": "a" },
-          { "wheels": ["I", "II", "III", "IV"] },
-          { "wheels": ["ETW-ABC"] }
-        ]
-      }
-    }
-  ],
+  "space": {
+    "slots": [
+      { "wheels": ["UKW-B"] },
+      { "wheels": ["I", "II", "III", "IV", "V"], "rings": "a" },
+      { "wheels": ["I", "II", "III", "IV", "V"], "rings": "a" },
+      { "wheels": ["I", "II", "III", "IV", "V"] },
+      { "wheels": ["ETW-ABC"] }
+    ]
+  },
   "wheels": [
     { "name": "I",       "wiring": "ekmflgdqvzntowyhxuspaibrcj", "turnovers": "q" },
     { "name": "II",      "wiring": "ajdksiruxblhwtmcqgznpyfvoe", "turnovers": "e" },
