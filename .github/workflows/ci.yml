@@ -12,7 +12,12 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: Install dependencies
-      run: apt-get install -y --no-install-recommends build-essential libcriterion-dev libjansson-dev
+      run: |
+        sudo apt-get update &&
+        apt-get install -y --no-install-recommends
+        build-essential
+        libcriterion-dev
+        libjansson-dev
     - name: configure
       run: ./configure
     - name: make build
