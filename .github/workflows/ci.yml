@@ -1,0 +1,21 @@
+name: CI
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Install dependencies
+      run: apt-get install -y --no-install-recommends build-essential libcriterion-dev libjansson-dev
+    - name: configure
+      run: ./configure
+    - name: make build
+      run: make build
+    - name: make test
+      run: make test
