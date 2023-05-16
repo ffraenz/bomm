@@ -15,16 +15,19 @@
 #include <sys/time.h>
 
 /**
- * Safe alternative to `strncpy`: Up to `n` characters of the `src` string are
- * copied to `dest`. If the original string is longer than `n` it is truncated.
- * The copied string at `dest` will always be terminated with a null byte.
+ * Safe alternative to `strncpy`: Up to `n` characters (incl. null byte) of the
+ * `src` string is copied to `dest`. If the original string is longer than `n`
+ * it is truncated. The copied string at `dest` will always be terminated with
+ * a null byte if it contains at least one byte.
  */
 inline static char* bomm_strncpy(char* dest, const char* src, size_t n) {
     size_t i;
     for (i = 0; i < n - 1 && src[i] != '\0'; i++) {
         dest[i] = src[i];
     }
-    dest[i] = '\0';
+    if (n > 0) {
+        dest[i] = '\0';
+    }
     return dest;
 }
 

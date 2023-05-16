@@ -5,6 +5,13 @@
 //  Created by Fränz Friederes on 22/03/2023.
 //
 
+#define _GNU_SOURCE
+#include <stdio.h>
+#undef _GNU_SOURCE
+
+#include <math.h>
+#include <stdlib.h>
+#include <sys/types.h>
 #include "measure.h"
 
 const bomm_ngram_map_t* bomm_ngram_map[7] = {

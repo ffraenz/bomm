@@ -8,8 +8,6 @@
 #ifndef measure_h
 #define measure_h
 
-#include <stdio.h>
-#include <math.h>
 #include "message.h"
 #include "wiring.h"
 

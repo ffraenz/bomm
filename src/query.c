@@ -320,20 +320,11 @@ void bomm_query_print(bomm_query_t* query, unsigned int count) {
         attack_progress[i] = &query->attacks[i].progress;
     }
 
-    char space_string[80] =
-        "                                        " \
-        "                                        ";
-    char line_string[240] =
-        "────────────────────────────────────────" \
-        "────────────────────────────────────────";
-    char double_line_string[240] =
-        "════════════════════════════════════════" \
-        "════════════════════════════════════════";
     char duration_string[16];
     char time_remaining_string[16];
     char message_string[80];
     char detail_string[80];
-    char score_string[10];
+    char score_string[512];
 
     // Lock progress updates
     for (unsigned int i = 0; i < query->attack_count; i++) {
@@ -358,7 +349,7 @@ void bomm_query_print(bomm_query_t* query, unsigned int count) {
     pthread_mutex_lock(&query->hold->mutex);
 
     // Print header
-    printf("┌──────┬─%1$-.207s─┐\n", line_string);
+    printf("┌──────┬───────────────────────────────────────────────────────────────────────┐\n");
     printf(
         "│ Bomm │ Progress \x1b[32m%10.3f %%\x1b[37m │ " \
         "Elapsed \x1b[32m%13.13s\x1b[37m │ " \
@@ -367,7 +358,7 @@ void bomm_query_print(bomm_query_t* query, unsigned int count) {
         duration_string,
         time_remaining_string
     );
-    printf("├──────┴─%1$-.171s─┬─%1$-.27s─┤\n", line_string);
+    printf("├──────┴───────────────────────────────────────────────────────────┬───────────┤\n");
 
     // Print hold
     for (unsigned int i = 0; i < count; i++) {
@@ -382,11 +373,11 @@ void bomm_query_print(bomm_query_t* query, unsigned int count) {
             );
             printf("│ %-76.76s │\n", detail_string);
         } else {
-            printf("│ %-.76s │\n", space_string);
-            printf("│ %-.76s │\n", space_string);
+            printf("│                                                                              │\n");
+            printf("│                                                                              │\n");
         }
         if (i < count - 1) {
-            printf("├─%1$-.192s─┬─%1$-.27s─┤\n", line_string);
+            printf("├──────────────────────────────────────────────────────────────────┬───────────┤\n");
         }
     }
 
@@ -399,14 +390,14 @@ void bomm_query_print(bomm_query_t* query, unsigned int count) {
         "Unchanged ciphertext (%d letters)",
         query->ciphertext->length
     );
-    printf("╞═%1$-.192s═╤═%1$-.27s═╡\n", double_line_string);
+    printf("╞══════════════════════════════════════════════════════════════════╤═══════════╡\n");
     printf(
         "│ \x1b[32m%-64.64s\x1b[37m   %9.9s │\n",
         message_string,
         score_string
     );
     printf("│ %-76.76s │\n", detail_string);
-    printf("└─%1$-.228s─┘\n", line_string);
+    printf("└──────────────────────────────────────────────────────────────────────────────┘\n");
 
     // Unlock hold mutex
     pthread_mutex_unlock(&query->hold->mutex);

@@ -5,6 +5,10 @@
 //  Created by Fränz Friederes on 20/03/2023.
 //
 
+#define _GNU_SOURCE
+#include <stdio.h>
+#undef _GNU_SOURCE
+
 #include "attack.h"
 
 // During the hillclimb we exhaust the following plugs in order

@@ -438,44 +438,59 @@ bomm_key_iterator_t* bomm_key_iterator_init(
 }
 
 void bomm_key_stringify(char* str, size_t size, bomm_key_t* key) {
-    size_t wheel_order_string_size = (key->slot_count * BOMM_WHEEL_NAME_MAX_LENGTH + 1) + 1;
-    char wheel_order_string[wheel_order_string_size];
-    bomm_key_wheels_stringify(wheel_order_string, wheel_order_string_size, key);
-
-    size_t rings_string_size = key->slot_count + 1;
-    char rings_string[rings_string_size];
-    bomm_key_rings_stringify(rings_string, rings_string_size, key);
-
-    size_t positions_string_size = key->slot_count + 1;
-    char positions_string[positions_string_size];
-    bomm_key_positions_stringify(positions_string, positions_string_size, key);
-
-    char plugboard_string[39];
-    bomm_key_plugboard_stringify(plugboard_string, 39, key);
-
+    char wheel_order_string[size];
+    bomm_key_wheels_stringify(wheel_order_string, size, key);
+    char rings_string[size];
+    bomm_key_rings_stringify(rings_string, size, key);
+    char positions_string[size];
+    bomm_key_positions_stringify(positions_string, size, key);
+    char plugboard_string[size];
+    bomm_key_plugboard_stringify(plugboard_string, size, key);
     snprintf(str, size, "%s %s %s %s", wheel_order_string, rings_string, positions_string, plugboard_string);
 }
 
 void bomm_key_wheels_stringify(char* str, size_t size, bomm_key_t* key) {
-    str[0] = 0;
-    for (unsigned int slot = 0; slot < key->slot_count; slot++) {
-        char* name = key->wheels[slot].name;
-        snprintf(str, size, "%s%s%s", str, slot == 0 ? "" : ",", name);
+    unsigned int i = 0;
+    unsigned int slot = 0;
+    
+    char* name;
+    size_t name_len;
+    
+    while (
+        slot < key->slot_count &&
+        (name = key->wheels[slot].name) &&
+        (name_len = strlen(name)) > 0 &&
+        i + (slot > 0 ? 1 : 0) + name_len < size - 1
+    ) {
+        if (slot > 0) {
+            str[i++] = ',';
+        }
+        memcpy(&str[i], name, name_len);
+        i += name_len;
+        slot++;
+    }
+    
+    if (size > 0) {
+        str[i] = '\0';
     }
 }
 
 void bomm_key_rings_stringify(char* str, size_t size, bomm_key_t* key) {
-    for (unsigned int slot = 0; slot < key->slot_count && slot < size - 1; slot++) {
-        str[slot] = bomm_message_letter_to_ascii(key->rings[slot]);
+    unsigned int i = 0;
+    while (i < key->slot_count && i < size - 1) {
+        str[i] = bomm_message_letter_to_ascii(key->rings[i]);
+        i++;
     }
-    str[size - 1] = '\0';
+    str[i] = '\0';
 }
 
 void bomm_key_positions_stringify(char* str, size_t size, bomm_key_t* key) {
-    for (unsigned int slot = 0; slot < key->slot_count && slot < size - 1; slot++) {
-        str[slot] = bomm_message_letter_to_ascii(key->positions[slot]);
+    unsigned int i = 0;
+    while (i < key->slot_count && i < size - 1) {
+        str[i] = bomm_message_letter_to_ascii(key->positions[i]);
+        i++;
     }
-    str[size - 1] = '\0';
+    str[i] = '\0';
 }
 
 void bomm_key_plugboard_stringify(char* str, size_t size, bomm_key_t* key) {

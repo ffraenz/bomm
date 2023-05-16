@@ -8,7 +8,6 @@
 #ifndef attack_h
 #define attack_h
 
-#include <stdio.h>
 #include <time.h>
 #include <math.h>
 #include "enigma.h"
