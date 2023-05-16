@@ -307,17 +307,17 @@ unsigned long bomm_key_space_count(
 
     // Multiply the scrambler keys with the number of solo plugs
     count *= bomm_key_space_plugboard_count(key_space);
-    
+
     if (count <= key_space->offset) {
         return 0;
     }
-    
+
     count -= key_space->offset;
-    
+
     if (count > key_space->limit) {
         return key_space->limit;
     }
-    
+
     return count;
 }
 
@@ -452,10 +452,10 @@ void bomm_key_stringify(char* str, size_t size, bomm_key_t* key) {
 void bomm_key_wheels_stringify(char* str, size_t size, bomm_key_t* key) {
     unsigned int i = 0;
     unsigned int slot = 0;
-    
+
     char* name;
     size_t name_len;
-    
+
     while (
         slot < key->slot_count &&
         (name = key->wheels[slot].name) &&
@@ -469,7 +469,7 @@ void bomm_key_wheels_stringify(char* str, size_t size, bomm_key_t* key) {
         i += name_len;
         slot++;
     }
-    
+
     if (size > 0) {
         str[i] = '\0';
     }

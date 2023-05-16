@@ -86,7 +86,7 @@ bomm_query_t* bomm_query_init(int argc, char *argv[]) {
         fprintf(stderr, "Error: A single argument with the query filename is expected\n");
         return NULL;
     }
-    
+
     // Apply defaults
     if (hold_size == 0) {
         hold_size = 100;

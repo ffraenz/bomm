@@ -56,7 +56,12 @@ run: $(TARGET_PATH)
 
 # Run tests task
 test: $(TEST_BINS)
-	for PATH in $^; do echo $$PATH; ./$$PATH; done
+	EXIT_CODE=0; \
+	for PATH in $^; do \
+		echo "Running tests in $$PATH"; \
+		./$$PATH || EXIT_CODE=$$?; \
+	done; \
+	exit $$EXIT_CODE;
 
 # Clean task
 .PHONY: clean
