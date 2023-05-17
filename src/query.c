@@ -211,7 +211,8 @@ bomm_query_t* bomm_query_init(int argc, char *argv[]) {
     unsigned int attack_count = bomm_key_space_slice(&key_space, thread_count, key_space_slices);
 
     // Reduce the size of the query if necessary
-    if (attack_count < thread_count) {
+    if (attack_count != thread_count) {
+        query->attack_count = attack_count;
         query_size = sizeof(bomm_query_t) + attack_count * sizeof(bomm_attack_t);
         query = realloc(query, query_size);
     }

@@ -12,7 +12,7 @@
 Test(key, bomm_hold_init) {
     size_t element_size = sizeof(unsigned int);
     bomm_hold_t* hold = bomm_hold_init(NULL, element_size, 5);
-    cr_assert_eq(hold->element_size, element_size);
+    cr_assert_eq(hold->data_size, element_size);
     cr_assert_eq(hold->size, 5);
     cr_assert_eq(hold->count, 0);
     bomm_hold_destroy(hold);

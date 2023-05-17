@@ -14,7 +14,7 @@
 #include <stdbool.h>
 #include <pthread.h>
 
-#define BOMM_HOLD_PREVIEW_SIZE 72
+#define BOMM_HOLD_PREVIEW_SIZE (128 - sizeof(float))
 
 /**
  * Variable-size struct representing a single element in a hold.
@@ -48,7 +48,7 @@ typedef struct _bomm_hold {
     /**
      * Size of an element's data in memory.
      */
-    size_t element_size;
+    size_t data_size;
 
     /**
      * Maximum number of elements to be hold
@@ -102,7 +102,7 @@ static inline bomm_hold_element_t* bomm_hold_at(bomm_hold_t* hold, int index) {
 
     // TODO: Assert `index < hold->size`
 
-    size_t element_mem_size = sizeof(bomm_hold_element_t) + hold->element_size;
+    size_t element_mem_size = sizeof(bomm_hold_element_t) + hold->data_size;
     return (bomm_hold_element_t*) (&hold->elements[0] + element_mem_size * index);
 }
 

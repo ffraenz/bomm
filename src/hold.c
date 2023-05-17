@@ -28,7 +28,7 @@ bomm_hold_t* bomm_hold_init(
     }
 
     // Initialize hold
-    hold->element_size = element_size;
+    hold->data_size = element_size;
     hold->size = hold_size;
     hold->count = 0;
     pthread_mutex_init(&hold->mutex, NULL);
@@ -42,13 +42,13 @@ void bomm_hold_destroy(bomm_hold_t* hold) {
 }
 
 float bomm_hold_add(bomm_hold_t* hold, float score, void* data, char* preview) {
-    size_t element_mem_size = sizeof(bomm_hold_element_t) + hold->element_size;
+    size_t element_mem_size = sizeof(bomm_hold_element_t) + hold->data_size;
 
     // Lock hold for atomic mutation
     pthread_mutex_lock(&hold->mutex);
 
     int index = hold->count - 1;
-    char* element_ptr = &hold->elements[0] + element_mem_size * index;
+    char* element_ptr = &hold->elements[0] + (int) element_mem_size * index;
 
     // Find the index that beats the given score (-1 if no such score exists)
     while (index >= 0 && ((bomm_hold_element_t*) element_ptr)->score < score) {
@@ -64,7 +64,7 @@ float bomm_hold_add(bomm_hold_t* hold, float score, void* data, char* preview) {
         memcmp(
            ((bomm_hold_element_t*) element_ptr)->data,
            data,
-           hold->element_size
+           hold->data_size
         ) == 0;
 
     // Move below this element
@@ -90,7 +90,7 @@ float bomm_hold_add(bomm_hold_t* hold, float score, void* data, char* preview) {
         // Insert element
         bomm_hold_element_t* element = (bomm_hold_element_t*) element_ptr;
         element->score = score;
-        memcpy(element->data, data, hold->element_size);
+        memcpy(element->data, data, hold->data_size);
         if (preview != NULL) {
             memcpy(element->preview, preview, BOMM_HOLD_PREVIEW_SIZE);
         } else {

@@ -25,7 +25,7 @@
     { "name": "UKW-C",   "wiring": "fvpjiaoyedrzxwgctkuqsbnmhl" }
   ],
   "frequencies": {
-    "bigram": "/Users/ff/Projects/Bachelor/bomm/data/frequencies/enigma1941-bigram.txt",
-    "trigram": "/Users/ff/Projects/Bachelor/bomm/data/frequencies/enigma1941-trigram.txt"
+    "bigram": "./data/frequencies/enigma1941-bigram.txt",
+    "trigram": "./data/frequencies/enigma1941-trigram.txt"
   }
 }
