@@ -1,9 +1,11 @@
 
-CC := cc
-RELEASE_CFLAGS := -O3 -std=c17 -pthread -pedantic -Wall -Werror -Wextra
-RELEASE_LDFLAGS := -ljansson -lm
-TEST_CFLAGS := -std=c17 -pthread -pedantic -Wall -Werror -Wextra
-TEST_LDFLAGS := -lcriterion -ljansson -lm
+CC = cc
+LD = cc
+
+RELEASE_CFLAGS := $(CFLAGS) -O3 -std=c11 -pthread -pedantic -Wall -Werror -Wextra
+RELEASE_LDFLAGS := $(LDFLAGS) -lm -lpthread -ljansson
+TEST_CFLAGS := $(CFLAGS) -std=c11 -pthread -pedantic -Wall -Werror -Wextra
+TEST_LDFLAGS := $(LDFLAGS) -lm -lpthread -ljansson -lcriterion
 
 TARGET_EXEC := bomm
 BUILD_PATH := build
@@ -35,7 +37,7 @@ build/obj/%.o: $(RELEASE_SRC_PATH)/%.c
 # Link release task
 $(TARGET_PATH): $(RELEASE_OBJS)
 	mkdir -p $(dir $@)
-	$(CC) $(RELEASE_OBJS) -o $@ $(RELEASE_LDFLAGS)
+	$(LD) $(RELEASE_OBJS) -o $@ $(RELEASE_LDFLAGS)
 
 # Compile tests task
 $(TEST_OBJ_PATH)/%.o: $(TEST_SRC_PATH)/%.c
@@ -45,7 +47,7 @@ $(TEST_OBJ_PATH)/%.o: $(TEST_SRC_PATH)/%.c
 # Link tests task
 $(TEST_BIN_PATH)/%: $(TEST_OBJ_PATH)/%.o $(filter-out $(RELEASE_OBJ_MAIN_PATH), $(RELEASE_OBJS))
 	mkdir -p $(dir $@)
-	$(CC) $^ -o $@ $(TEST_LDFLAGS)
+	$(LD) $^ -o $@ $(TEST_LDFLAGS)
 
 # Build program task
 build: $(TARGET_PATH)
@@ -66,7 +68,7 @@ test: $(TEST_BINS)
 # Clean task
 .PHONY: clean
 clean:
-	rm -r $(BUILD_PATH)
+	if [ -d $(BUILD_PATH) ]; then rm -r $(BUILD_PATH); fi
 
 # Include the .d makefiles
 -include $(DEPS)
