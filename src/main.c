@@ -55,20 +55,22 @@ int main(int argc, char *argv[]) {
     }
 
     // Start view loop
-    bool initial_view = true;
-    do {
-        if (!initial_view) {
-            // Move up the print cursor 24 lines to redraw
-            printf("\x1b[%dA", 24);
-        }
-        bomm_query_print(bomm_query_main, 6);
+    if (!bomm_query_main->quiet) {
+        bool initial_view = true;
+        do {
+            if (!initial_view) {
+                // Move up the print cursor 24 lines to redraw
+                printf("\x1b[%dA", 24);
+            }
+            bomm_query_print(bomm_query_main, 6);
 
-        if (initial_view) {
-            initial_view = false;
-        } else {
-            sleep(2);
-        }
-    } while (bomm_query_is_pending(bomm_query_main));
+            if (initial_view) {
+                initial_view = false;
+            } else {
+                sleep(2);
+            }
+        } while (bomm_query_is_pending(bomm_query_main));
+    }
 
     // Wait for the threads to finish
     printf("Waiting for query threads to terminate.\n");

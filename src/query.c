@@ -15,6 +15,7 @@ static struct option _input_options[] = {
     {"help", no_argument, 0, 'h'},
     {"num-hold", no_argument, 0, 'n'},
     {"num-threads", no_argument, 0, 't'},
+    {"quiet", no_argument, 0, 'q'},
     {"verbose", no_argument, 0, 'v'},
     {0, 0, 0, 0}
 };
@@ -30,13 +31,14 @@ static char* _frequencies_keys[8] = {
 
 bomm_query_t* bomm_query_init(int argc, char *argv[]) {
     bool verbose = false;
+    bool quiet = false;
     unsigned int hold_size = 0;
     unsigned int thread_count = 0;
 
     // Read options
     int option;
     int option_index = 0;
-    while ((option = getopt_long(argc, argv, "hn:t:v", _input_options, &option_index)) != -1) {
+    while ((option = getopt_long(argc, argv, "hn:t:qv", _input_options, &option_index)) != -1) {
         switch (option) {
             case 'h': {
                 printf("Usage: %s [-v] query_filename\n", argv[0]);
@@ -44,6 +46,7 @@ bomm_query_t* bomm_query_init(int argc, char *argv[]) {
                 printf("  -h, --help        display this help message\n");
                 printf("  -n, --num-hold    number of hold elements to collect\n");
                 printf("  -t, --num-threads number of concurrent threads to use\n");
+                printf("  -q, --quiet       quiet mode\n");
                 printf("  -v, --verbose     verbose mode\n");
                 return NULL;
             }
@@ -73,9 +76,12 @@ bomm_query_t* bomm_query_init(int argc, char *argv[]) {
                 thread_count = (unsigned int) number;
                 break;
             }
+            case 'q': {
+                quiet = true;
+                break;
+            }
             case 'v': {
                 verbose = true;
-                printf("Verbose mode enabled\n");
                 break;
             }
         }
@@ -154,6 +160,7 @@ bomm_query_t* bomm_query_init(int argc, char *argv[]) {
     bomm_strncpy(query->name, query_filename, 80);
     query->ciphertext = NULL;
     query->hold = NULL;
+    query->quiet = quiet;
     query->verbose = verbose;
     query->attack_count = thread_count;
 

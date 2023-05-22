@@ -123,6 +123,11 @@ typedef struct _bomm_query {
     bomm_hold_t* hold;
 
     /**
+     * Whether quiet mode is enabled
+     */
+    bool quiet;
+
+    /**
      * Whether verbose mode is enabled
      */
     bool verbose;
