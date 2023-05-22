@@ -84,13 +84,29 @@ static inline void bomm_scrambler_encrypt(
 }
 
 /**
+ * Load the identity plugboard
+ */
+unsigned int* bomm_wiring_plugboard_init_identity(unsigned int* plugboard);
+
+/**
+ * Stringify the given plugboard wiring.
+ */
+void bomm_wiring_plugboard_stringify(
+    char* str,
+    size_t size,
+    const unsigned int* plugboard
+);
+
+/**
  * Validate the given plugboard wiring.
  *
  * Assumptions:
  * - The map is bijective
  * - The map is an involution
  */
-static inline bool bomm_wiring_plugboard_validate(unsigned int* plugboard) {
+static inline bool bomm_wiring_plugboard_validate(
+    const unsigned int* plugboard
+) {
     bomm_lettermask_t image_letters = BOMM_LETTERMASK_NONE;
     bool is_involution = true;
     unsigned int i = 0;

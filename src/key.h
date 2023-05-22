@@ -497,6 +497,5 @@ void bomm_key_stringify(char* str, size_t size, bomm_key_t* key);
 void bomm_key_wheels_stringify(char* str, size_t size, bomm_key_t* key);
 void bomm_key_rings_stringify(char* str, size_t size, bomm_key_t* key);
 void bomm_key_positions_stringify(char* str, size_t size, bomm_key_t* key);
-void bomm_key_plugboard_stringify(char* str, size_t size, bomm_key_t* key);
 
 #endif /* key_h */

@@ -6,6 +6,7 @@
 //
 
 #include "wiring.h"
+#include "utility.h"
 
 bomm_wiring_t* bomm_wiring_init(bomm_wiring_t* wiring, const char* string) {
     bomm_message_t* message;
@@ -62,4 +63,52 @@ void bomm_wiring_stringify(char* str, size_t size, bomm_wiring_t* wiring) {
         i++;
     }
     str[i] = '\0';
+}
+
+unsigned int* bomm_wiring_plugboard_init_identity(unsigned int* plugboard) {
+    // Allocate plugboard
+    if (plugboard == NULL) {
+        plugboard = malloc(sizeof(unsigned int) * BOMM_ALPHABET_SIZE);
+        if (plugboard == NULL) {
+            return NULL;
+        }
+    }
+    
+    // Load identity plugboard
+    for (unsigned int i = 0; i < BOMM_ALPHABET_SIZE; i++) {
+        plugboard[i] = i;
+    }
+    return plugboard;
+}
+
+void bomm_wiring_plugboard_stringify(
+    char* str,
+    size_t size,
+    const unsigned int* plugboard
+) {
+    unsigned long j = 0;
+    
+    if (!bomm_wiring_plugboard_validate(plugboard)) {
+        bomm_strncpy(str, "(invalid)", size);
+        j = strlen(str);
+    }
+
+    bomm_lettermask_t used_letters = BOMM_LETTERMASK_NONE;
+
+    unsigned int i = 0;
+    while (i < BOMM_ALPHABET_SIZE && j + 3 < size - 1) {
+        if (plugboard[i] != i && !bomm_lettermask_has(&used_letters, i)) {
+            if (j > 0) {
+                str[j++] = ' ';
+            }
+            bomm_lettermask_set(&used_letters, plugboard[i]);
+            str[j++] = bomm_message_letter_to_ascii(i);
+            str[j++] = bomm_message_letter_to_ascii(plugboard[i]);
+        }
+        i++;
+    }
+
+    if (size > 0) {
+        str[j] = '\0';
+    }
 }

@@ -30,16 +30,6 @@ void* bomm_attack_thread(void* arg);
  */
 void bomm_attack_key_space(bomm_attack_t* attack);
 
-/**
- * Attack the plugboard using the given scrambler and ciphertext.
- */
-float bomm_attack_plugboard(
-    unsigned int* plugboard,
-    const unsigned int* plug_order,
-    bomm_scrambler_t* scrambler,
-    bomm_message_t* ciphertext
-);
-
 typedef enum {
     BOMM_ATTACK_PLUGBOARD_FIRST_IMPROVEMENT,
     BOMM_ATTACK_PLUGBOARD_ENIGMA_SUITE,
@@ -53,7 +43,6 @@ float bomm_attack_plugboard_hill_climb(
     bomm_attack_plugboard_strategy_t strategy,
     const bomm_measure_t* measures,
     unsigned int* plugboard,
-    const unsigned int* plug_order,
     bomm_scrambler_t* scrambler,
     bomm_message_t* ciphertext
 );

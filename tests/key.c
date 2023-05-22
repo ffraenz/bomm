@@ -8,29 +8,6 @@
 #include <criterion/criterion.h>
 #include "../src/key.h"
 
-Test(key, bomm_key_plugboard_stringify) {
-    char actual_plugboard_string[39];
-    char* expected_plugboard_string;
-    bomm_key_t key;
-
-    // Identity plugboard
-    expected_plugboard_string = "";
-    memcpy(&key.plugboard, &bomm_key_plugboard_identity, sizeof(bomm_key_plugboard_identity));
-    bomm_key_plugboard_stringify(actual_plugboard_string, 39, &key);
-    cr_assert_str_eq(actual_plugboard_string, expected_plugboard_string);
-
-    // Plugboard sample
-    expected_plugboard_string = "bc dx eq fl hy mo nz pr st vw";
-    unsigned int example_plugboard[] = {
-         0,  2,  1, 23, 16, 11,  6, 24,  8,  9,
-        10,  5, 14, 25, 12, 17,  4, 15, 19,
-        18, 20, 22, 21,  3,  7, 13
-    };
-    memcpy(&key.plugboard, &example_plugboard, sizeof(example_plugboard));
-    bomm_key_plugboard_stringify(actual_plugboard_string, 39, &key);
-    cr_assert_str_eq(actual_plugboard_string, expected_plugboard_string);
-}
-
 Test(key, bomm_key_mechanism_from_string) {
     bomm_mechanism_t actual_mechanism;
     actual_mechanism = bomm_key_mechanism_from_string("stepping");
@@ -96,7 +73,7 @@ Test(key, bomm_key_iterator_plugboard_next_r_stecker) {
     // Such a plugboard iterator must yield the empty plugboard only
     cr_assert_eq(bomm_key_iterator_init(&iterator, key_space), &iterator);
     memcpy(&initial_iterator, &iterator, sizeof(iterator));
-    bomm_key_plugboard_stringify(string, sizeof(string), &iterator.key);
+    bomm_wiring_plugboard_stringify(string, sizeof(string), iterator.key.plugboard);
     cr_assert_str_eq(string, "");
     cr_assert_eq(bomm_key_iterator_plugboard_next(&iterator), true);
     cr_assert_arr_eq(&iterator, &initial_iterator, sizeof(iterator));
@@ -119,12 +96,12 @@ Test(key, bomm_key_iterator_plugboard_next_r_stecker) {
     cr_assert_eq(bomm_key_iterator_init(&iterator, key_space), &iterator);
     memcpy(&initial_iterator, &iterator, sizeof(iterator));
 
-    bomm_key_plugboard_stringify(string, sizeof(string), &iterator.key);
+    bomm_wiring_plugboard_stringify(string, sizeof(string), iterator.key.plugboard);
     cr_assert_str_eq(string, "");
 
     for (unsigned int i = 0; i < 72; i++) {
         cr_assert_eq(bomm_key_iterator_plugboard_next(&iterator), false);
-        bomm_key_plugboard_stringify(string, sizeof(string), &iterator.key);
+        bomm_wiring_plugboard_stringify(string, sizeof(string), iterator.key.plugboard);
         cr_assert_str_eq(string, expected_strings[i]);
     }
 

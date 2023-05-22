@@ -11,15 +11,6 @@
 
 #include "attack.h"
 
-// During the hillclimb we exhaust the following plugs in order
-// The I-Stecker strategy starts with E, N, R, X, S, I
-// TODO: Make dependent on monogram frequencies
-unsigned int _plug_order[] = {
-     4, 13, 17, 23, 18,  8,  0,  1,  2,  3,
-     5,  6,  7,  9, 10, 11, 12, 14, 15, 16,
-    19, 20, 21, 22, 24, 25
-};
-
 void* bomm_attack_thread(void* arg) {
     // The argument is assumed to be an attack
     bomm_attack_t* attack = (bomm_attack_t*) arg;
@@ -43,12 +34,6 @@ void bomm_attack_key_space(bomm_attack_t* attack) {
     // Allocate scrambler on the stack
     bomm_scrambler_t *scrambler = alloca(bomm_scrambler_size(ciphertext->length));
     scrambler->length = ciphertext->length;
-
-    // Randomize plug order, keeping the order of the first 6 letters intact
-    // TODO: To be removed when using best improvement
-    unsigned int plug_order[BOMM_ALPHABET_SIZE];
-    memcpy(plug_order, _plug_order, sizeof(plug_order));
-    bomm_array_shuffle(&plug_order[6], BOMM_ALPHABET_SIZE - 6);
 
     const bomm_measure_t measures[] = {
         BOMM_MEASURE_SINKOV_TRIGRAM,
@@ -92,7 +77,6 @@ void bomm_attack_key_space(bomm_attack_t* attack) {
             BOMM_ATTACK_PLUGBOARD_BEST_IMPROVEMENT,
             measures,
             working_plugboard,
-            plug_order,
             scrambler,
             ciphertext
         );
@@ -135,75 +119,28 @@ void bomm_attack_key_space(bomm_attack_t* attack) {
     pthread_mutex_unlock(&attack->mutex);
 }
 
-float bomm_attack_plugboard(
-    unsigned int* plugboard,
-    const unsigned int* plug_order,
-    bomm_scrambler_t* scrambler,
-    bomm_message_t* ciphertext
-) {
-    unsigned int i, j, a, b, best_b;
-    float score, best_score;
-
-    // Score empty plugboard
-    best_score = bomm_measure_scrambler_sinkov(3, scrambler, plugboard, ciphertext);
-
-    // Enumerate over the first plug
-    for (i = 0; i < BOMM_ALPHABET_SIZE; i++) {
-        a = plug_order[i];
-
-        // Skip if plug is already in use
-        if (plugboard[a] != a) {
-            continue;
-        }
-
-        // Start with the self-steckered right letter and the score from the
-        // initialization or previous iteration
-        best_b = a;
-
-        // Enumerate over the second plug
-        for (j = i; j < BOMM_ALPHABET_SIZE; j++) {
-            b = plug_order[j];
-
-            // Skip if plug is already in use
-            if (plugboard[b] != b) {
-                continue;
-            }
-
-            // Apply plug
-            plugboard[a] = b;
-            plugboard[b] = a;
-
-            // Measure score and compare it to the previous best score
-            score = bomm_measure_scrambler_sinkov(3, scrambler, plugboard, ciphertext);
-            if (score > best_score) {
-                best_score = score;
-                best_b = b;
-            }
-
-            // Undo plug
-            plugboard[a] = a;
-            plugboard[b] = b;
-        }
-
-        // Choose best option to go forward
-        plugboard[a] = best_b;
-        plugboard[best_b] = a;
-    }
-
-    return best_score;
-}
-
 float bomm_attack_plugboard_hill_climb(
     bomm_attack_plugboard_strategy_t strategy,
     const bomm_measure_t* measures,
     unsigned int* plugboard,
-    const unsigned int* plug_order,
     bomm_scrambler_t* scrambler,
     bomm_message_t* ciphertext
 ) {
+    // Use the expected monogram frequencies as plug order when not using
+    // the best improvement approach
+    // TODO: Make dependent on monogram frequencies
+    unsigned int plug_order[] = {
+         4, 13, 17, 23, 18,  8,  0,  1,  2,  3,
+         5,  6,  7,  9, 10, 11, 12, 14, 15, 16,
+        19, 20, 21, 22, 24, 25
+    };
+
     // Action values encode swap operations that can be applied to a set of
-    // 4 plugs. The special value `0xf` marks when to take a measurement.
-    // Finally, 0x0 marks the end of the array.
+    // 4 plugs (the chosen pair and up to two letters that may be connected to
+    // them). The special value `0xf` marks when improvement should be
+    // evaluated. Finally, 0x0 marks the end of the array. Every set of actions
+    // below apply valid swap operations on the 4 plugs and make sure the
+    // original arrangement is restored at the end of the array.
     //
     // Act | Description
     // --- | -----------
@@ -218,7 +155,7 @@ float bomm_attack_plugboard_hill_climb(
 
     // Case 1: Both plugs are either self-steckered or form a steckered pair
     //
-    // Legend: / not relevant, * self-steckered, AA steckered with each other
+    // Legend: `/` ignored, `*` self-steckered, `AA` steckered with each other
     //
     // N | Act | Description
     // - | --- | -----------
@@ -306,6 +243,10 @@ float bomm_attack_plugboard_hill_climb(
         // Enumerate all possible plugboard pairs
         for (unsigned int i = 0; i < BOMM_ALPHABET_SIZE; i++) {
             for (unsigned int k = i + 1; k < BOMM_ALPHABET_SIZE; k++) {
+                // "We need to consider the chosen pair of letters, and also
+                // other letters that may already be connected to them",
+                // SullivanWeierud2005, 198.
+
                 // Selected plugs 4-tuple (`i` partner, `i`, `k`, `k` partner)
                 unsigned int* plugs[4] = {
                     &plugboard[plugboard[plug_order[i]]],
@@ -314,20 +255,24 @@ float bomm_attack_plugboard_hill_climb(
                     &plugboard[plugboard[plug_order[k]]]
                 };
 
-                // Determine the set of actions available to the selected plugs
+                // Determine the set of actions applicable to the selected plugs
                 if (plugs[0] == plugs[1] && plugs[2] == plugs[3]) {
+                    // Both `i`, `k` are self-steckered
                     actions_begin = case_1_actions;
                 } else if (plugs[0] == plugs[2] && plugs[1] == plugs[3]) {
+                    // `i` and `k` are steckered
                     actions_begin = case_1_actions;
                 } else if (plugs[0] == plugs[1] && plugs[2] != plugs[3]) {
+                    // `i` is self-steckered while `k` is not
                     actions_begin = case_2_actions;
                 } else if (plugs[0] != plugs[1] && plugs[2] == plugs[3]) {
-                    actions_begin = case_2_actions;
-
-                    // Swap such that `i` becomes self-steckered
+                    // `k` is self-steckered while `i` is not
+                    // Swap such that `i` becomes self-steckered, reusing case 2
                     bomm_swap_pointer((void**) &plugs[1], (void**) &plugs[2]);
                     bomm_swap_pointer((void**) &plugs[0], (void**) &plugs[3]);
+                    actions_begin = case_2_actions;
                 } else {
+                    // Both `i`, `k` are steckered separately
                     actions_begin = case_3_actions;
                 }
 

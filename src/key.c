@@ -7,13 +7,6 @@
 
 #include "key.h"
 
-// TODO: Make this generic (depending on `BOMM_ALPHABET_SIZE`)
-const unsigned int bomm_key_plugboard_identity[] = {
-    0,  1,  2,  3,  4,  5,  6,  7,  8,  9,
-   10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
-   20, 21, 22, 23, 24, 25
-};
-
 bomm_key_space_t* bomm_key_space_init(
     bomm_key_space_t* key_space,
     bomm_mechanism_t mechanism,
@@ -354,12 +347,7 @@ bomm_key_t* bomm_key_init(bomm_key_t* key, const bomm_key_space_t* key_space) {
     }
 
     // Initialize the key with the identity plugboard
-    memcpy(
-        &key->plugboard,
-        &bomm_key_plugboard_identity,
-        sizeof(bomm_key_plugboard_identity)
-    );
-
+    bomm_wiring_plugboard_init_identity(key->plugboard);
     return key;
 }
 
@@ -445,7 +433,7 @@ void bomm_key_stringify(char* str, size_t size, bomm_key_t* key) {
     char positions_string[size];
     bomm_key_positions_stringify(positions_string, size, key);
     char plugboard_string[size];
-    bomm_key_plugboard_stringify(plugboard_string, size, key);
+    bomm_wiring_plugboard_stringify(plugboard_string, size, key->plugboard);
     snprintf(str, size, "%s %s %s %s", wheel_order_string, rings_string, positions_string, plugboard_string);
 }
 
@@ -491,23 +479,4 @@ void bomm_key_positions_stringify(char* str, size_t size, bomm_key_t* key) {
         i++;
     }
     str[i] = '\0';
-}
-
-void bomm_key_plugboard_stringify(char* str, size_t size, bomm_key_t* key) {
-    unsigned int i = 0;
-    unsigned int j = 0;
-
-    bomm_lettermask_t used_letters = BOMM_LETTERMASK_NONE;
-
-    while (i < BOMM_ALPHABET_SIZE && j + 3 < size) {
-        if (key->plugboard[i] != i && !bomm_lettermask_has(&used_letters, i)) {
-            bomm_lettermask_set(&used_letters, key->plugboard[i]);
-            str[j++] = bomm_message_letter_to_ascii(i);
-            str[j++] = bomm_message_letter_to_ascii(key->plugboard[i]);
-            str[j++] = ' ';
-        }
-        i++;
-    }
-
-    str[j > 0 ? j - 1 : 0] = '\0';
 }
