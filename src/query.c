@@ -219,7 +219,22 @@ bomm_query_t* bomm_query_init(int argc, char *argv[]) {
 
     // Split the key space into the requested number of concurrent threads
     bomm_key_space_t key_space_slices[thread_count];
-    unsigned int attack_count = bomm_key_space_slice(&key_space, thread_count, key_space_slices);
+    unsigned int attack_count = bomm_key_space_slice(
+        &key_space,
+        thread_count,
+        key_space_slices
+    );
+
+    if (attack_count == 0) {
+        bomm_query_destroy(query);
+        json_decref(query_json);
+        fprintf(
+            stderr,
+            "Error: The key space is empty. If you have configured a single " \
+            "key it may not be considered to be relevant.\n"
+        );
+        return NULL;
+    }
 
     // Reduce the size of the query if necessary
     if (attack_count != thread_count) {

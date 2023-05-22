@@ -32,14 +32,13 @@ void bomm_attack_key_space(bomm_attack_t* attack);
 
 typedef enum {
     BOMM_ATTACK_PLUGBOARD_FIRST_IMPROVEMENT,
-    BOMM_ATTACK_PLUGBOARD_ENIGMA_SUITE,
     BOMM_ATTACK_PLUGBOARD_BEST_IMPROVEMENT
 } bomm_attack_plugboard_strategy_t;
 
 /**
  * Attack the plugboard using the hill climb strategy.
  */
-float bomm_attack_plugboard_hill_climb(
+double bomm_attack_plugboard_hill_climb(
     bomm_attack_plugboard_strategy_t strategy,
     const bomm_measure_t* measures,
     unsigned int* plugboard,

@@ -49,7 +49,7 @@ bomm_ngram_map_t* bomm_measure_ngram_map_init(unsigned char n, const char* filen
  * scrabler and plugboard.
  * @param n The n in n-gram
  */
-static inline float bomm_measure_scrambler_sinkov(
+static inline double bomm_measure_scrambler_sinkov(
     unsigned int n,
     bomm_scrambler_t* scrambler,
     unsigned int* plugboard,
@@ -59,7 +59,7 @@ static inline float bomm_measure_scrambler_sinkov(
     const bomm_ngram_map_t* map = bomm_ngram_map[n];
     unsigned int index, letter;
 
-    float score = 0;
+    double score = 0;
     unsigned int map_index = 0;
 
     for (index = 0; index < message->length; index++) {
@@ -75,14 +75,14 @@ static inline float bomm_measure_scrambler_sinkov(
         }
     }
 
-    return score / (message->length - n + 1);
+    return score / (double) (message->length - n + 1);
 }
 
 /**
  * Measure the n-gram score of the given message.
  * @param n The n in n-gram
  */
-static inline float bomm_measure_message_sinkov(
+static inline double bomm_measure_message_sinkov(
     unsigned int n,
     bomm_message_t* message
 ) {
@@ -90,7 +90,7 @@ static inline float bomm_measure_message_sinkov(
     const bomm_ngram_map_t* map = bomm_ngram_map[n];
     unsigned int index, letter;
 
-    float score = 0;
+    double score = 0;
     unsigned int map_index = 0;
 
     for (index = 0; index < message->length; index++) {
@@ -102,7 +102,7 @@ static inline float bomm_measure_message_sinkov(
         }
     }
 
-    return score / (message->length - n + 1);
+    return score / (double) (message->length - n + 1);
 }
 
 /**
@@ -170,7 +170,7 @@ static inline void bomm_measure_message_frequency(
  * @param n The n in n-gram
  * @param frequencies Frequencies map of size `pow(BOMM_ALPHABET_SIZE, n)`
  */
-static inline float bomm_measure_frequency_ic(
+static inline double bomm_measure_frequency_ic(
     unsigned int n,
     unsigned int* frequencies
 ) {
@@ -183,7 +183,7 @@ static inline float bomm_measure_frequency_ic(
         coincidence += frequency * (frequency - 1);
         sum += frequency;
     }
-    return (float) (count * coincidence) / (sum * (sum - 1));
+    return (double) (count * coincidence) / (double) (sum * (sum - 1));
 }
 
 /**
@@ -191,7 +191,7 @@ static inline float bomm_measure_frequency_ic(
  * @param n The n in n-gram
  * @param frequencies Frequencies map of size `pow(BOMM_ALPHABET_SIZE, n)`
  */
-static inline float bomm_measure_frequency_entropy(
+static inline double bomm_measure_frequency_entropy(
     unsigned int n,
     unsigned int* frequencies
 ) {
@@ -207,11 +207,11 @@ static inline float bomm_measure_frequency_entropy(
     double p;
     if (sum > 0) {
         for (index = 0; index < count; index++) {
-            p = (double) frequencies[index] / sum;
+            p = (double) frequencies[index] / (double) sum;
             entropy -= (p > 0) ? (p * log2(p)) : 0;
         }
     }
-    return (float) entropy;
+    return entropy;
 }
 
 /**
@@ -234,13 +234,22 @@ typedef enum {
     BOMM_MEASURE_IC_PENTAGRAM = 0x15,
     BOMM_MEASURE_IC_HEXAGRAM  = 0x16,
     BOMM_MEASURE_IC_HEPTAGRAM = 0x17,
-    BOMM_MEASURE_IC_OCTAGRAM  = 0x18
+    BOMM_MEASURE_IC_OCTAGRAM  = 0x18,
+
+    BOMM_MEASURE_ENTROPY           = 0x21,
+    BOMM_MEASURE_ENTROPY_BIGRAM    = 0x22,
+    BOMM_MEASURE_ENTROPY_TRIGRAM   = 0x23,
+    BOMM_MEASURE_ENTROPY_QUADGRAM  = 0x24,
+    BOMM_MEASURE_ENTROPY_PENTAGRAM = 0x25,
+    BOMM_MEASURE_ENTROPY_HEXAGRAM  = 0x26,
+    BOMM_MEASURE_ENTROPY_HEPTAGRAM = 0x27,
+    BOMM_MEASURE_ENTROPY_OCTAGRAM  = 0x28
 } bomm_measure_t;
 
 /**
  * Measure a message
  */
-static inline __attribute__((always_inline)) float bomm_measure_message(
+static inline __attribute__((always_inline)) double bomm_measure_message(
     bomm_measure_t measure,
     bomm_message_t* message
 ) {
@@ -252,6 +261,11 @@ static inline __attribute__((always_inline)) float bomm_measure_message(
         unsigned int frequencies[bomm_pow_map[n]];
         bomm_measure_message_frequency(n, frequencies, message);
         return bomm_measure_frequency_ic(n, frequencies);
+    } else if (measure < 0x30) {
+        unsigned int n = measure - 0x20;
+        unsigned int frequencies[bomm_pow_map[n]];
+        bomm_measure_message_frequency(n, frequencies, message);
+        return bomm_measure_frequency_entropy(n, frequencies);
     } else {
         return 0;
     }
@@ -260,7 +274,7 @@ static inline __attribute__((always_inline)) float bomm_measure_message(
 /**
  * Measure a message put through the given scrabler and plugboard
  */
-static inline __attribute__((always_inline)) float bomm_measure_scrambler(
+static inline __attribute__((always_inline)) double bomm_measure_scrambler(
     bomm_measure_t measure,
     bomm_scrambler_t* scrambler,
     unsigned int* plugboard,
@@ -274,6 +288,11 @@ static inline __attribute__((always_inline)) float bomm_measure_scrambler(
         unsigned int frequencies[bomm_pow_map[n]];
         bomm_measure_scrambler_frequency(n, frequencies, scrambler, plugboard, message);
         return bomm_measure_frequency_ic(n, frequencies);
+    } else if (measure < 0x30) {
+        unsigned int n = measure - 0x20;
+        unsigned int frequencies[bomm_pow_map[n]];
+        bomm_measure_scrambler_frequency(n, frequencies, scrambler, plugboard, message);
+        return bomm_measure_frequency_entropy(n, frequencies);
     } else {
         return 0;
     }

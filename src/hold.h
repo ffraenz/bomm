@@ -14,7 +14,7 @@
 #include <stdbool.h>
 #include <pthread.h>
 
-#define BOMM_HOLD_PREVIEW_SIZE (128 - sizeof(float))
+#define BOMM_HOLD_PREVIEW_SIZE (128 - sizeof(double))
 
 /**
  * Variable-size struct representing a single element in a hold.
@@ -23,7 +23,7 @@ typedef struct _bomm_hold_element {
     /**
      * Score positioning this element in a hold
      */
-    float score;
+    double score;
 
     /**
      * Preview string visualizing the hold element
@@ -89,7 +89,12 @@ void bomm_hold_destroy(bomm_hold_t* hold);
  * @param preview Pointer to the preview string or a NULL-pointer to omit
  * @return New score boundary to enter the hold
  */
-float bomm_hold_add(bomm_hold_t* hold, float score, void* data, char* preview);
+double bomm_hold_add(
+    bomm_hold_t* hold,
+    double score,
+    const void* data,
+    const char* preview
+);
 
 /**
  * Return a pointer to the element at the given index.

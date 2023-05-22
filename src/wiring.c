@@ -56,7 +56,11 @@ bomm_wiring_t* bomm_wiring_init(bomm_wiring_t* wiring, const char* string) {
     return wiring;
 }
 
-void bomm_wiring_stringify(char* str, size_t size, bomm_wiring_t* wiring) {
+void bomm_wiring_stringify(
+    char* str,
+    size_t size,
+    const bomm_wiring_t* wiring
+) {
     unsigned int i = 0;
     while (i < BOMM_ALPHABET_SIZE && i < size - 1) {
         str[i] = wiring->map[i] + 97;
@@ -73,7 +77,7 @@ unsigned int* bomm_wiring_plugboard_init_identity(unsigned int* plugboard) {
             return NULL;
         }
     }
-    
+
     // Load identity plugboard
     for (unsigned int i = 0; i < BOMM_ALPHABET_SIZE; i++) {
         plugboard[i] = i;
@@ -87,7 +91,7 @@ void bomm_wiring_plugboard_stringify(
     const unsigned int* plugboard
 ) {
     unsigned long j = 0;
-    
+
     if (!bomm_wiring_plugboard_validate(plugboard)) {
         bomm_strncpy(str, "(invalid)", size);
         j = strlen(str);

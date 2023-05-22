@@ -41,7 +41,12 @@ void bomm_hold_destroy(bomm_hold_t* hold) {
     free(hold);
 }
 
-float bomm_hold_add(bomm_hold_t* hold, float score, void* data, char* preview) {
+double bomm_hold_add(
+    bomm_hold_t* hold,
+    double score,
+    const void* data,
+    const char* preview
+) {
     size_t element_mem_size = sizeof(bomm_hold_element_t) + hold->data_size;
 
     // Lock hold for atomic mutation
@@ -99,7 +104,7 @@ float bomm_hold_add(bomm_hold_t* hold, float score, void* data, char* preview) {
     }
 
     // Return new score boundary necessary to enter the hold
-    float new_score_boundary =
+    double new_score_boundary =
         hold->count == hold->size
             ? bomm_hold_at(hold, -1)->score
             : -INFINITY;

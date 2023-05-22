@@ -209,6 +209,33 @@ bomm_key_space_t* bomm_key_space_init_with_json(
     return key_space;
 }
 
+void bomm_key_space_debug(const bomm_key_space_t* key_space) {
+    printf("Debug key space %p:\n", (void*) key_space);
+
+    for (unsigned int slot = 0; slot < key_space->slot_count; slot++) {
+        printf(
+            "  Slot %d%s:\n",
+            slot + 1,
+            key_space->rotating_slots[slot] ? " (rotating)" : ""
+        );
+
+        const bomm_wheel_t* wheel = &key_space->wheel_sets[slot][0];
+        while (wheel->name[0] != '\0') {
+            char wiring_string[128];
+            bomm_wiring_stringify(wiring_string, sizeof(wiring_string), &wheel->wiring);
+            char turnovers_string[128];
+            bomm_lettermask_stringify(turnovers_string, sizeof(turnovers_string), &wheel->turnovers);
+            printf(
+                "    - %s (%s) '%s'\n",
+                wiring_string,
+                turnovers_string,
+                wheel->name
+            );
+            wheel++;
+        }
+    }
+}
+
 void bomm_key_space_destroy(bomm_key_space_t* key_space) {
     free(key_space);
 }
@@ -229,6 +256,10 @@ unsigned int bomm_key_space_slice(
         key_count < (unsigned long) split_count
             ? (unsigned int) key_count
             : split_count;
+
+    if (actual_split_count == 0) {
+        return 0;
+    }
 
     unsigned long slice_count = key_count / actual_split_count;
     unsigned long offset = key_space->offset;
@@ -367,7 +398,8 @@ bomm_key_iterator_t* bomm_key_iterator_init(
         bomm_key_iterator_positions_init(
             iterator->key.rings, iterator->ring_masks, slot_count) ||
         bomm_key_iterator_positions_init(
-            iterator->key.positions, iterator->position_masks, slot_count)
+            iterator->key.positions, iterator->position_masks, slot_count) ||
+        !bomm_key_is_relevant(&iterator->key)
     );
 
     if (empty) {
@@ -450,4 +482,33 @@ void bomm_key_positions_stringify(char* str, size_t size, bomm_key_t* key) {
         i++;
     }
     str[i] = '\0';
+}
+
+void bomm_key_debug(const bomm_key_t* key) {
+    printf("Debug key %p:\n", (void*) key);
+
+    char plugboard_string[128];
+    bomm_wiring_plugboard_stringify(plugboard_string, sizeof(plugboard_string), key->plugboard);
+    printf("  Mechanism: %s\n", bomm_key_mechanism_string(key->mechanism));
+    printf("  Plugboard: '%s'\n", plugboard_string);
+
+    char wiring_string[128];
+    char turnovers_string[128];
+    for (unsigned int slot = 0; slot < key->slot_count; slot++) {
+        const bomm_wheel_t* wheel = &key->wheels[slot];
+        bomm_wiring_stringify(wiring_string, sizeof(wiring_string), &wheel->wiring);
+        bomm_lettermask_stringify(turnovers_string, sizeof(turnovers_string), &wheel->turnovers);
+        printf(
+            "  Slot %d: Ring %2d/%c Position %2d/%c Wheel %-7s (%s, %s)%s\n",
+            slot + 1,
+            key->rings[slot] + 1,
+            bomm_message_letter_to_ascii(key->rings[slot]),
+            key->positions[slot] + 1,
+            bomm_message_letter_to_ascii(key->positions[slot]),
+            wheel->name,
+            wiring_string,
+            turnovers_string,
+            key->rotating_slots[slot] ? " (rotating)" : ""
+        );
+    }
 }

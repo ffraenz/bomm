@@ -56,6 +56,22 @@ static inline bomm_mechanism_t bomm_key_mechanism_from_string(
 }
 
 /**
+ * Return the string value for the given mechanism.
+ */
+static inline char* bomm_key_mechanism_string(bomm_mechanism_t mechanism) {
+    switch (mechanism) {
+        case BOMM_MECHANISM_NONE:
+            return "none";
+        case BOMM_MECHANISM_STEPPING:
+            return "stepping";
+        case BOMM_MECHANISM_ODOMETER:
+            return "odometer";
+        default:
+            return NULL;
+    }
+}
+
+/**
  * Struct representing a key space, from which a set of keys can be derived.
  * It can be traversed using an `bomm_key_iterator_t` and related functions.
  */
@@ -235,6 +251,11 @@ bomm_key_space_t* bomm_key_space_init_with_json(
     bomm_wheel_t wheels[],
     unsigned int wheel_count
 );
+
+/**
+ * Print the contents of the given key space to stdout. Useful for debugging.
+ */
+void bomm_key_space_debug(const bomm_key_space_t* key_space);
 
 /**
  * Destroy the given key space.
@@ -502,5 +523,10 @@ void bomm_key_stringify(char* str, size_t size, bomm_key_t* key);
 void bomm_key_wheels_stringify(char* str, size_t size, bomm_key_t* key);
 void bomm_key_rings_stringify(char* str, size_t size, bomm_key_t* key);
 void bomm_key_positions_stringify(char* str, size_t size, bomm_key_t* key);
+
+/**
+ * Print the contents of the given key to stdout. Useful for debugging.
+ */
+void bomm_key_debug(const bomm_key_t* key);
 
 #endif /* key_h */

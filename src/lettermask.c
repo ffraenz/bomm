@@ -31,7 +31,7 @@ bomm_lettermask_t* bomm_lettermask_from_string(
 void bomm_lettermask_stringify(
     char* str,
     size_t size,
-    bomm_lettermask_t* lettermask
+    const bomm_lettermask_t* lettermask
 ) {
     unsigned int i = 0;
     unsigned int letter = 0;

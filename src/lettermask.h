@@ -43,7 +43,7 @@ typedef unsigned long bomm_lettermask_t;
  * Return true, if the given letter is set to 1 in a lettermask.
  */
 inline static bool bomm_lettermask_has(
-    bomm_lettermask_t* mask,
+    const bomm_lettermask_t* mask,
     bomm_letter_t letter
 ) {
     return (*mask >> letter) & 0x1;
@@ -98,7 +98,7 @@ bomm_lettermask_t* bomm_lettermask_from_string(
 void bomm_lettermask_stringify(
     char* str,
     size_t size,
-    bomm_lettermask_t* lettermask
+    const bomm_lettermask_t* lettermask
 );
 
 #endif /* lettermask_h */

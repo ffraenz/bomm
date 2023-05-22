@@ -20,8 +20,8 @@ void* bomm_attack_thread(void* arg) {
 
 void bomm_attack_key_space(bomm_attack_t* attack) {
     bool cancelling = false;
-    float score;
-    float min_score = -INFINITY;
+    double score;
+    double min_score = -INFINITY;
     unsigned int working_plugboard[BOMM_ALPHABET_SIZE];
     char hold_preview[BOMM_HOLD_PREVIEW_SIZE];
 
@@ -36,6 +36,7 @@ void bomm_attack_key_space(bomm_attack_t* attack) {
     scrambler->length = ciphertext->length;
 
     const bomm_measure_t measures[] = {
+        BOMM_MEASURE_IC,
         BOMM_MEASURE_SINKOV_TRIGRAM,
         0
     };
@@ -67,6 +68,9 @@ void bomm_attack_key_space(bomm_attack_t* attack) {
     do {
         if (key_iterator.scrambler_changed) {
             bomm_enigma_generate_scrambler(scrambler, &key_iterator.key);
+
+            // TODO: Remove debugging code
+            // bomm_key_debug(&key_iterator.key);
         }
 
         // Make a working copy of the plugboard
@@ -119,22 +123,13 @@ void bomm_attack_key_space(bomm_attack_t* attack) {
     pthread_mutex_unlock(&attack->mutex);
 }
 
-float bomm_attack_plugboard_hill_climb(
+double bomm_attack_plugboard_hill_climb(
     bomm_attack_plugboard_strategy_t strategy,
     const bomm_measure_t* measures,
     unsigned int* plugboard,
     bomm_scrambler_t* scrambler,
     bomm_message_t* ciphertext
 ) {
-    // Use the expected monogram frequencies as plug order when not using
-    // the best improvement approach
-    // TODO: Make dependent on monogram frequencies
-    unsigned int plug_order[] = {
-         4, 13, 17, 23, 18,  8,  0,  1,  2,  3,
-         5,  6,  7,  9, 10, 11, 12, 14, 15, 16,
-        19, 20, 21, 22, 24, 25
-    };
-
     // Action values encode swap operations that can be applied to a set of
     // 4 plugs (the chosen pair and up to two letters that may be connected to
     // them). The special value `0xf` marks when improvement should be
@@ -213,13 +208,16 @@ float bomm_attack_plugboard_hill_climb(
     const unsigned char* action;
     const unsigned char* actions_begin;
 
+    // TODO: Remove debugging code
+    // char string[128];
+
     // Set of plugs and set of actions needed to recreate the best result
     unsigned int* best_plugs[4];
     const unsigned char* best_actions_begin;
     const unsigned char* best_actions_end;
 
-    float best_score = 0;
-    float score;
+    double best_score = 0;
+    double score;
 
     // Enumerate measures
     const bomm_measure_t* measure = measures;
@@ -238,6 +236,10 @@ float bomm_attack_plugboard_hill_climb(
                 plugboard,
                 ciphertext
             );
+
+            // TODO: Remove debugging code
+            // bomm_wiring_plugboard_stringify(string, sizeof(string), plugboard);
+            // printf("Initial me.: %+016.12f '%s'\n", best_score, string);
         }
 
         // Enumerate all possible plugboard pairs
@@ -249,10 +251,10 @@ float bomm_attack_plugboard_hill_climb(
 
                 // Selected plugs 4-tuple (`i` partner, `i`, `k`, `k` partner)
                 unsigned int* plugs[4] = {
-                    &plugboard[plugboard[plug_order[i]]],
-                    &plugboard[plug_order[i]],
-                    &plugboard[plug_order[k]],
-                    &plugboard[plugboard[plug_order[k]]]
+                    &plugboard[plugboard[i]],
+                    &plugboard[i],
+                    &plugboard[k],
+                    &plugboard[plugboard[k]]
                 };
 
                 // Determine the set of actions applicable to the selected plugs
@@ -260,7 +262,7 @@ float bomm_attack_plugboard_hill_climb(
                     // Both `i`, `k` are self-steckered
                     actions_begin = case_1_actions;
                 } else if (plugs[0] == plugs[2] && plugs[1] == plugs[3]) {
-                    // `i` and `k` are steckered
+                    // `i` and `k` form a steckered pair
                     actions_begin = case_1_actions;
                 } else if (plugs[0] == plugs[1] && plugs[2] != plugs[3]) {
                     // `i` is self-steckered while `k` is not
@@ -275,6 +277,10 @@ float bomm_attack_plugboard_hill_climb(
                     // Both `i`, `k` are steckered separately
                     actions_begin = case_3_actions;
                 }
+
+                // TODO: Remove debugging code
+                // unsigned int original_plugboard[BOMM_ALPHABET_SIZE];
+                // memcpy(original_plugboard, plugboard, sizeof(original_plugboard));
 
                 // Enumerate the set of actions
                 for (action = actions_begin; *action != 0x0; action++) {
@@ -295,6 +301,10 @@ float bomm_attack_plugboard_hill_climb(
                             best_score = score;
                             found_improvement = true;
 
+                            // TODO: Remove debugging code
+                            // bomm_wiring_plugboard_stringify(string, sizeof(string), plugboard);
+                            // printf("Measure:     %+016.12f '%s'\n", score, string);
+
                             if (strategy == BOMM_ATTACK_PLUGBOARD_FIRST_IMPROVEMENT) {
                                 // Choose first improvement and immediately
                                 // restart the plugboard pair enumeration
@@ -310,16 +320,11 @@ float bomm_attack_plugboard_hill_climb(
                     }
                 }
 
-                if (best_actions_end != NULL && strategy == BOMM_ATTACK_PLUGBOARD_ENIGMA_SUITE) {
-                    // Choose the best performing result for a single pair
-                    for (action = best_actions_begin; action < best_actions_end; action++) {
-                        if (*action < 0xf) {
-                            bomm_swap(best_plugs[*action & 0x03], best_plugs[*action >> 2]);
-                        }
-                    }
-                    best_actions_begin = NULL;
-                    best_actions_end = NULL;
-                }
+                // TODO: Remove debugging code
+                // if (memcmp(plugboard, original_plugboard, sizeof(original_plugboard)) != 0) {
+                //     printf("Action set is not restoring original plugboard!\n");
+                //     exit(1);
+                // }
             }
         } // End: Enumerate all possible plugboard pairs
 
@@ -332,6 +337,10 @@ float bomm_attack_plugboard_hill_climb(
             }
             best_actions_begin = NULL;
             best_actions_end = NULL;
+
+            // TODO: Remove debugging code
+            // bomm_wiring_plugboard_stringify(string, sizeof(string), plugboard);
+            // printf("Apply best:  %+016.12f '%s'\n", best_score, string);
         }
 
 end_outer_loop:

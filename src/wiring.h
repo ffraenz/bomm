@@ -56,7 +56,7 @@ bomm_wiring_t* bomm_wiring_init(bomm_wiring_t* wiring, const char* string);
 /**
  * Export the given enigma wiring to a string
  */
-void bomm_wiring_stringify(char* str, size_t size, bomm_wiring_t* wiring);
+void bomm_wiring_stringify(char* str, size_t size, const bomm_wiring_t* wiring);
 
 /**
  * Calculate the scrambler struct size for the given message length.
@@ -112,7 +112,10 @@ static inline bool bomm_wiring_plugboard_validate(
     unsigned int i = 0;
     while (is_involution && i < BOMM_ALPHABET_SIZE) {
         bomm_lettermask_set(&image_letters, plugboard[i]);
-        is_involution = is_involution && i == plugboard[plugboard[i]];
+        is_involution =
+            is_involution &&
+            plugboard[i] < BOMM_ALPHABET_SIZE &&
+            i == plugboard[plugboard[i]];
         i++;
     }
     return is_involution && image_letters == BOMM_LETTERMASK_ALL;

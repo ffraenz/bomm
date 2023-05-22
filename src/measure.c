@@ -23,9 +23,12 @@ const unsigned int bomm_pow_map[7] = {
     BOMM_ALPHABET_SIZE,
     BOMM_ALPHABET_SIZE * BOMM_ALPHABET_SIZE,
     BOMM_ALPHABET_SIZE * BOMM_ALPHABET_SIZE * BOMM_ALPHABET_SIZE,
-    BOMM_ALPHABET_SIZE * BOMM_ALPHABET_SIZE * BOMM_ALPHABET_SIZE * BOMM_ALPHABET_SIZE,
-    BOMM_ALPHABET_SIZE * BOMM_ALPHABET_SIZE * BOMM_ALPHABET_SIZE * BOMM_ALPHABET_SIZE * BOMM_ALPHABET_SIZE,
-    BOMM_ALPHABET_SIZE * BOMM_ALPHABET_SIZE * BOMM_ALPHABET_SIZE * BOMM_ALPHABET_SIZE * BOMM_ALPHABET_SIZE * BOMM_ALPHABET_SIZE
+    BOMM_ALPHABET_SIZE * BOMM_ALPHABET_SIZE * BOMM_ALPHABET_SIZE *
+    BOMM_ALPHABET_SIZE,
+    BOMM_ALPHABET_SIZE * BOMM_ALPHABET_SIZE * BOMM_ALPHABET_SIZE *
+    BOMM_ALPHABET_SIZE * BOMM_ALPHABET_SIZE,
+    BOMM_ALPHABET_SIZE * BOMM_ALPHABET_SIZE * BOMM_ALPHABET_SIZE *
+    BOMM_ALPHABET_SIZE * BOMM_ALPHABET_SIZE * BOMM_ALPHABET_SIZE
 };
 
 bomm_ngram_map_t* bomm_measure_ngram_map_init(unsigned char n, const char* filename) {
@@ -121,7 +124,8 @@ bomm_ngram_map_t* bomm_measure_ngram_map_init(unsigned char n, const char* filen
     for (map_index = 0; map_index < map_size; map_index++) {
         probability = ngram_map->map[map_index] / frequency_sum;
         ngram_map->map[map_index] =
-            (float) log(probability > 0 ? probability : fallback_probability);
+            (bomm_ngram_map_entry)
+            log(probability > 0 ? probability : fallback_probability);
     }
 
     bomm_ngram_map[n] = ngram_map;
