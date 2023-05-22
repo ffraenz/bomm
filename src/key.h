@@ -41,6 +41,21 @@ typedef enum {
 } bomm_mechanism_t;
 
 /**
+ * Extract a mechanism value from the given string.
+ */
+static inline bomm_mechanism_t bomm_key_mechanism_from_string(
+    const char* mechanism_string
+) {
+    if (strcmp(mechanism_string, "stepping") == 0) {
+        return BOMM_MECHANISM_STEPPING;
+    } else if (strcmp(mechanism_string, "odometer") == 0) {
+        return BOMM_MECHANISM_ODOMETER;
+    } else {
+        return BOMM_MECHANISM_NONE;
+    }
+}
+
+/**
  * Struct representing a key space, from which a set of keys can be derived.
  * It can be traversed using an `bomm_key_iterator_t` and related functions.
  */
@@ -60,7 +75,7 @@ typedef struct _bomm_key_space {
      * Set of wheels per slot.
      * Each set is terminated with a null pointer.
      */
-    bomm_wheel_t* wheel_sets[BOMM_MAX_SLOT_COUNT]
+    bomm_wheel_t wheel_sets[BOMM_MAX_SLOT_COUNT]
         [BOMM_MAX_WHEEL_SET_SIZE + 1];
 
     /**
@@ -194,16 +209,6 @@ typedef struct _bomm_key_iterator {
 } bomm_key_iterator_t;
 
 /**
- * Identity or empty plugboard having all plugs self-steckered.
- */
-extern const unsigned int bomm_key_plugboard_identity[BOMM_ALPHABET_SIZE];
-
-/**
- * Extract a mechanism value from the given string.
- */
-bomm_mechanism_t bomm_key_mechanism_from_string(const char* mechanism_string);
-
-/**
  * Initialize a key space with the given mechanism and slot count.
  */
 bomm_key_space_t* bomm_key_space_init(
@@ -211,6 +216,11 @@ bomm_key_space_t* bomm_key_space_init(
     bomm_mechanism_t mechanism,
     unsigned int slot_count
 );
+
+/**
+ * Initialize a key space for the Enigma I model.
+ */
+bomm_key_space_t* bomm_key_space_init_enigma_i(bomm_key_space_t* key_space);
 
 /**
  * Extract a key space from the given JSON object.
@@ -225,11 +235,6 @@ bomm_key_space_t* bomm_key_space_init_with_json(
     bomm_wheel_t wheels[],
     unsigned int wheel_count
 );
-
-/**
- * Initialize a key space for the Enigma I model.
- */
-bomm_key_space_t* bomm_key_space_init_enigma_i(void);
 
 /**
  * Destroy the given key space.
@@ -385,10 +390,10 @@ static inline bool bomm_key_iterator_wheels_validate(
     int slot_count = iterator->key_space->slot_count;
     for (int i = 0; i < slot_count; i++) {
         for (int j = i + 1; j < slot_count; j++) {
-            if (
-                iterator->key_space->wheel_sets[i][iterator->wheel_indices[i]] ==
-                iterator->key_space->wheel_sets[j][iterator->wheel_indices[j]]
-            ) {
+            if (strcmp(
+                iterator->key_space->wheel_sets[i][iterator->wheel_indices[i]].name,
+                iterator->key_space->wheel_sets[j][iterator->wheel_indices[j]].name
+            ) == 0) {
                 return false;
             }
         }
@@ -414,12 +419,12 @@ static inline bool bomm_key_iterator_wheels_next(
         int slot = slot_count;
         while (carry && --slot >= 0) {
             iterator->wheel_indices[slot]++;
-            if ((carry = (iterator->key_space->wheel_sets[slot][iterator->wheel_indices[slot]] == NULL))) {
+            if ((carry = (iterator->key_space->wheel_sets[slot][iterator->wheel_indices[slot]].name[0] == '\0'))) {
                 iterator->wheel_indices[slot] = 0;
             }
             memcpy(
                 &iterator->key.wheels[slot],
-                iterator->key_space->wheel_sets[slot][iterator->wheel_indices[slot]],
+                &iterator->key_space->wheel_sets[slot][iterator->wheel_indices[slot]],
                 sizeof(bomm_wheel_t)
             );
         }

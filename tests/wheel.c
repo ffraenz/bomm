@@ -43,7 +43,7 @@ Test(wiring, bomm_wheel_set_init_with_json) {
     json_t* wheel_set_json = json_loads(wheel_set_json_string, 0, &error);
 
     unsigned int wheel_set_size = 3;
-    bomm_wheel_t* wheel_set[wheel_set_size];
+    bomm_wheel_t wheel_set[wheel_set_size];
     bool success = bomm_wheel_set_init_with_json(
         wheel_set,
         wheel_set_size,
@@ -53,7 +53,7 @@ Test(wiring, bomm_wheel_set_init_with_json) {
     );
 
     cr_assert_eq(success, true);
-    cr_assert_eq(wheel_set[0], &wheels[1]);
-    cr_assert_eq(wheel_set[1], &wheels[0]);
-    cr_assert_eq(wheel_set[2], &wheels[2]);
+    cr_assert_arr_eq(&wheel_set[0], &wheels[1], sizeof(bomm_wheel_t));
+    cr_assert_arr_eq(&wheel_set[1], &wheels[0], sizeof(bomm_wheel_t));
+    cr_assert_arr_eq(&wheel_set[2], &wheels[2], sizeof(bomm_wheel_t));
 }

@@ -9,22 +9,18 @@
 #include "../src/enigma.h"
 
 void _load_test_key(bomm_key_t* key) {
-    bomm_key_space_t* key_space = bomm_key_space_init_enigma_i();
-    bomm_key_init(key, key_space);
+    bomm_key_space_t key_space;
+    bomm_key_space_init_enigma_i(&key_space);
+    bomm_key_init(key, &key_space);
 
-    // Steal wheels from key space for wheel order UKW-B, I, II, III, ABC
     unsigned int wheel_indices[] = {0, 0, 1, 2, 0};
     for (unsigned int slot = 0; slot < 5; slot++) {
-        memcpy(&key->wheels[slot], key_space->wheel_sets[slot][wheel_indices[slot]], sizeof(bomm_wheel_t));
+        memcpy(&key->wheels[slot], &key_space.wheel_sets[slot][wheel_indices[slot]], sizeof(bomm_wheel_t));
     }
 
-    // Apply start positions
     key->positions[1] = 12;
     key->positions[2] = 4;
     key->positions[3] = 20;
-
-    // Keys work without the key space they have been created from
-    free(key_space);
 }
 
 Test(enigma, bomm_enigma_encrypt) {

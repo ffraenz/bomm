@@ -180,6 +180,7 @@ bomm_query_t* bomm_query_init(int argc, char *argv[]) {
     }
 
     // Read wheels
+    unsigned int wheel_count = 0;
     json_t* wheels_json = json_object_get(query_json, "wheels");
     if (wheels_json != NULL) {
         if (wheels_json->type != JSON_ARRAY) {
@@ -188,16 +189,14 @@ bomm_query_t* bomm_query_init(int argc, char *argv[]) {
             fprintf(stderr, "Error: The query field 'wheels' is expected to be an array\n");
             return NULL;
         }
-        query->wheel_count = (unsigned int) json_array_size(wheels_json);
-        if (query->wheel_count > BOMM_QUERY_MAX_WHEEL_COUNT) {
-            bomm_query_destroy(query);
-            json_decref(query_json);
-            fprintf(stderr, "Error: The query field 'wheels' is limited to %d elements\n", BOMM_QUERY_MAX_WHEEL_COUNT);
-            return NULL;
-        }
+        wheel_count = (unsigned int) json_array_size(wheels_json);
     }
-    for (unsigned int i = 0; i < query->wheel_count; i++) {
-        if (bomm_wheel_init_with_json(&query->wheels[i], json_array_get(wheels_json, i)) == NULL) {
+    bomm_wheel_t wheels[wheel_count];
+    for (unsigned int i = 0; i < wheel_count; i++) {
+        if (bomm_wheel_init_with_json(
+            &wheels[i],
+            json_array_get(wheels_json, i)
+        ) == NULL) {
             bomm_query_destroy(query);
             json_decref(query_json);
             return NULL;
@@ -207,7 +206,12 @@ bomm_query_t* bomm_query_init(int argc, char *argv[]) {
     // Read key space
     bomm_key_space_t key_space;
     json_t* key_space_json = json_object_get(query_json, "space");
-    if (bomm_key_space_init_with_json(&key_space, key_space_json, query->wheels, query->wheel_count) == NULL) {
+    if (bomm_key_space_init_with_json(
+        &key_space,
+        key_space_json,
+        wheels,
+        wheel_count
+    ) == NULL) {
         bomm_query_destroy(query);
         json_decref(query_json);
         return NULL;

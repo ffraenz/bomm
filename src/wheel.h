@@ -21,6 +21,8 @@
 typedef struct _bomm_wheel {
     /**
      * Wheel name (null terminated string of max. 15 chars)
+     * The wheel name is assumed to be at least one character long as an
+     * immediate null character is interpreted as the end of a wheel set.
      */
     char name[BOMM_WHEEL_NAME_MAX_LENGTH];
 
@@ -59,7 +61,7 @@ bomm_wheel_t* bomm_wheel_init_with_json(bomm_wheel_t* wheel, json_t* wheel_json)
  * Initialize a wheel set from the given JSON array.
  */
 bool bomm_wheel_set_init_with_json(
-    bomm_wheel_t* wheel_set[],
+    bomm_wheel_t wheel_set[],
     unsigned int wheel_set_size,
     json_t* wheel_set_json,
     bomm_wheel_t wheels[],

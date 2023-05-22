@@ -15,8 +15,6 @@
 #include "progress.h"
 #include "attack.h"
 
-#define BOMM_QUERY_MAX_WHEEL_COUNT 24
-
 typedef struct _bomm_query bomm_query_t;
 
 /**
@@ -131,16 +129,6 @@ typedef struct _bomm_query {
      * Whether verbose mode is enabled
      */
     bool verbose;
-
-    /**
-     * Number of wheels in the library
-     */
-    unsigned int wheel_count;
-
-    /**
-     * Library of wheels provided with the query
-     */
-    bomm_wheel_t wheels[BOMM_QUERY_MAX_WHEEL_COUNT];
 
     /**
      * Number of attacks executed for this query

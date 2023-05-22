@@ -87,7 +87,7 @@ bomm_wheel_t* bomm_wheel_init_with_json(bomm_wheel_t* wheel, json_t* wheel_json)
 }
 
 bool bomm_wheel_set_init_with_json(
-    bomm_wheel_t* wheel_set[],
+    bomm_wheel_t wheel_set[],
     unsigned int wheel_set_size,
     json_t* wheel_set_json,
     bomm_wheel_t wheels[],
@@ -138,7 +138,7 @@ bool bomm_wheel_set_init_with_json(
             return false;
         }
 
-        wheel_set[i] = wheel;
+        memcpy(&wheel_set[i], wheel, sizeof(bomm_wheel_t));
     }
 
     return true;

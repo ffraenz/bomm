@@ -12,11 +12,8 @@ bomm_key_space_t* bomm_key_space_init(
     bomm_mechanism_t mechanism,
     unsigned int slot_count
 ) {
-    if (key_space == NULL) {
-        key_space = malloc(sizeof(bomm_key_space_t));
-        if (key_space == NULL) {
-            return NULL;
-        }
+    if (!key_space && !(key_space = malloc(sizeof(bomm_key_space_t)))) {
+        return NULL;
     }
 
     // Store meta data
@@ -28,9 +25,7 @@ bomm_key_space_t* bomm_key_space_init(
     key_space->limit = LONG_MAX;
 
     // Clear wheel sets
-    size_t wheel_sets_mem_size =
-        sizeof(bomm_wheel_t*) * BOMM_MAX_SLOT_COUNT * BOMM_MAX_WHEEL_SET_SIZE;
-    memset(key_space->wheel_sets, 0, wheel_sets_mem_size);
+    memset(key_space->wheel_sets, 0, sizeof(key_space->wheel_sets));
 
     // By default, use the full ring setting and start position masks for all
     // slots except for the first (housing the reflector) and the last (housing
@@ -47,18 +42,36 @@ bomm_key_space_t* bomm_key_space_init(
     return key_space;
 }
 
-bomm_mechanism_t bomm_key_mechanism_from_string(const char* mechanism_string) {
-    if (strcmp(mechanism_string, "stepping") == 0) {
-        return BOMM_MECHANISM_STEPPING;
-    } else if (strcmp(mechanism_string, "odometer") == 0) {
-        return BOMM_MECHANISM_ODOMETER;
-    } else {
-        return BOMM_MECHANISM_NONE;
+bomm_key_space_t* bomm_key_space_init_enigma_i(bomm_key_space_t* key_space) {
+    if (!bomm_key_space_init(key_space, BOMM_MECHANISM_STEPPING, 5)) {
+        return NULL;
     }
+
+    // Set of reflectors (in the order they are tested)
+    bomm_wheel_init_with_name(&key_space->wheel_sets[0][0], "UKW-B");
+
+    // Wheel sets for slots 1, 2, and 3
+    for (int slot = 1; slot <= 3; slot++) {
+        bomm_wheel_init_with_name(&key_space->wheel_sets[slot][0], "I");
+        bomm_wheel_init_with_name(&key_space->wheel_sets[slot][1], "II");
+        bomm_wheel_init_with_name(&key_space->wheel_sets[slot][2], "III");
+        bomm_wheel_init_with_name(&key_space->wheel_sets[slot][3], "IV");
+        bomm_wheel_init_with_name(&key_space->wheel_sets[slot][4], "V");
+    }
+
+    // Set of entry wheels
+    bomm_wheel_init_with_name(&key_space->wheel_sets[4][0], "ETW-ABC");
+
+    // Don't test ring settings for the left and middle wheel
+    // as they can be neglected
+    key_space->ring_masks[1] = BOMM_LETTERMASK_FIRST;
+    key_space->ring_masks[2] = BOMM_LETTERMASK_FIRST;
+
+    return key_space;
 }
 
 bomm_key_space_t* bomm_key_space_init_with_json(
-    bomm_key_space_t* key_space_ptr,
+    bomm_key_space_t* key_space,
     json_t* key_space_json,
     bomm_wheel_t wheels[],
     unsigned int wheel_count
@@ -85,7 +98,8 @@ bomm_key_space_t* bomm_key_space_init_with_json(
     }
 
     // Init key space
-    bomm_key_space_t* key_space = bomm_key_space_init(key_space_ptr, mechanism, slot_count);
+    bool owning_key_space = key_space == NULL;
+    key_space = bomm_key_space_init(key_space, mechanism, slot_count);
 
     bool error = false;
     unsigned int slot = 0;
@@ -186,7 +200,7 @@ bomm_key_space_t* bomm_key_space_init_with_json(
     }
 
     if (error) {
-        if (key_space_ptr == NULL) {
+        if (owning_key_space) {
             free(key_space);
         }
         return NULL;
@@ -197,46 +211,6 @@ bomm_key_space_t* bomm_key_space_init_with_json(
 
 void bomm_key_space_destroy(bomm_key_space_t* key_space) {
     free(key_space);
-}
-
-bomm_key_space_t* bomm_key_space_init_enigma_i(void) {
-    bomm_key_space_t* key_space = bomm_key_space_init(NULL, BOMM_MECHANISM_STEPPING, 5);
-    if (key_space == NULL) {
-        return NULL;
-    }
-
-    // Initialize wheels
-    // TODO: Check if initialization succeeded
-    // TODO: Handle ownership of the wheels
-    bomm_wheel_t* w_i       = bomm_wheel_init_with_name(NULL, "I");
-    bomm_wheel_t* w_ii      = bomm_wheel_init_with_name(NULL, "II");
-    bomm_wheel_t* w_iii     = bomm_wheel_init_with_name(NULL, "III");
-    bomm_wheel_t* w_iv      = bomm_wheel_init_with_name(NULL, "IV");
-    bomm_wheel_t* w_v       = bomm_wheel_init_with_name(NULL, "V");
-    bomm_wheel_t* w_etw_abc = bomm_wheel_init_with_name(NULL, "ETW-ABC");
-    bomm_wheel_t* w_ukw_b   = bomm_wheel_init_with_name(NULL, "UKW-B");
-
-    // Set of reflectors (in the order they are tested)
-    key_space->wheel_sets[0][0] = w_ukw_b;
-
-    // Wheel sets for slots 1, 2, and 3
-    for (int slot = 1; slot <= 3; slot++) {
-        key_space->wheel_sets[slot][0] = w_i;
-        key_space->wheel_sets[slot][1] = w_ii;
-        key_space->wheel_sets[slot][2] = w_iii;
-        key_space->wheel_sets[slot][3] = w_iv;
-        key_space->wheel_sets[slot][4] = w_v;
-    }
-
-    // Set of entry wheels
-    key_space->wheel_sets[4][0] = w_etw_abc;
-
-    // Don't test ring settings for the left and middle wheel
-    // as they can be neglected
-    key_space->ring_masks[1] = BOMM_LETTERMASK_FIRST;
-    key_space->ring_masks[2] = BOMM_LETTERMASK_FIRST;
-
-    return key_space;
 }
 
 unsigned int bomm_key_space_slice(
@@ -315,11 +289,8 @@ unsigned long bomm_key_space_count(
 }
 
 bomm_key_t* bomm_key_init(bomm_key_t* key, const bomm_key_space_t* key_space) {
-    if (key == NULL) {
-        key = malloc(sizeof(bomm_key_t));
-        if (key == NULL) {
-            return NULL;
-        }
+    if (!key && !(key = malloc(sizeof(bomm_key_t)))) {
+        return NULL;
     }
 
     // Initialize key from key space meta data
@@ -337,7 +308,7 @@ bomm_key_t* bomm_key_init(bomm_key_t* key, const bomm_key_space_t* key_space) {
             key->rotating_slots[slot] = key_space->rotating_slots[slot];
             memcpy(
                 &key->wheels[slot],
-                key_space->wheel_sets[slot][0],
+                &key_space->wheel_sets[slot][0],
                 sizeof(bomm_wheel_t)
             );
         } else {
@@ -360,7 +331,7 @@ bomm_key_iterator_t* bomm_key_iterator_init(
 
     // Validate wheel sets are not empty
     for (unsigned int slot = 0; slot < slot_count; slot++) {
-        empty = empty || key_space->wheel_sets[slot][0] == NULL;
+        empty = empty || key_space->wheel_sets[slot][0].name[0] == '\0';
     }
     if (empty) {
         return NULL;
