@@ -12,7 +12,7 @@
 Test(wiring, bomm_pass_init_json_hill_climb_1) {
     const char* pass_json_string =
         "{ " \
-        "\"type\": \"hill_climb\", " \
+        "\"type\": \"hillClimb\", " \
         "\"measure\": \"ic\", " \
         "\"finalMeasure\": \"trigram\", " \
         "\"finalMeasureMinNumPlugs\": 4, " \
@@ -35,7 +35,7 @@ Test(wiring, bomm_pass_init_json_hill_climb_1) {
 Test(wiring, bomm_pass_init_json_hill_climb_2) {
     const char* pass_json_string =
         "{ " \
-        "\"type\": \"hill_climb\", " \
+        "\"type\": \"hillClimb\", " \
         "\"measure\": \"trigram\", " \
         "\"backtrackingMinNumPlugs\": 3 " \
         "}";

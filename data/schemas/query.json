@@ -1,0 +1,221 @@
+{
+  "title": "Bomm query schema",
+  "definitions": {
+    "wiring": {
+      "type": "string"
+    },
+    "lettermask": {
+      "type": "string"
+    },
+    "wheelName": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 15
+    },
+    "measure": {
+      "enum": [
+        "monogram",
+        "bigram",
+        "trigram",
+        "quadgram",
+        "pentagram",
+        "hexagram",
+        "heptagram",
+        "octagram",
+        "ic",
+        "icBigram",
+        "icTrigram",
+        "icQuadgram",
+        "icPentagram",
+        "icHexagram",
+        "icHeptagram",
+        "icOctagram",
+        "entropy",
+        "entropyBigram",
+        "entropyTrigram",
+        "entropyQuadgram",
+        "entropyPentagram",
+        "entropyHexagram",
+        "entropyHeptagram",
+        "entropyOctagram"
+      ]
+    },
+    "mechanism": {
+      "enum": [
+        "stepping",
+        "odometer"
+      ]
+    }
+  },
+  "type": "object",
+  "properties": {
+    "ciphertext": {
+      "type": "string"
+    },
+    "space": {
+      "type": "object",
+      "description": "Key space defining what keys are enumerated",
+      "properties": {
+        "mechanism": {
+          "$ref": "#/definitions/mechanism"
+        },
+        "slots": {
+          "type": "array",
+          "description": "Scrambler slots describe what wheels can be used in what slot, whether each slot is rotating, and what ring settings and positions should be enumerated. Slots are assumed in their physical order from left to right including the reflector at the first position and the entry wheel (if any) at the last position.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "wheels": {
+                "type": "array",
+                "description": "Set of wheel names that reference either custom wheels that can be defined in the root `wheels` field or known wheels (e.g. `ETW-ABC`, `I`, `II`, `III`, `UKW-B`).",
+                "minItems": 1,
+                "uniqueItems": true,
+                "items": {
+                  "$ref": "#/definitions/wheelName"
+                }
+              },
+              "rings": {
+                "$ref": "#/definitions/lettermask",
+                "description": "Set of ring settings to be enumerated"
+              },
+              "positions": {
+                "$ref": "#/definitions/lettermask",
+                "description": "Set of positions to be enumerated"
+              },
+              "rotating": {
+                "type": "boolean",
+                "description": "Whether the wheel in this slot rotates or not"
+              }
+            },
+            "required": [
+              "wheels"
+            ]
+          }
+        },
+        "plugs": {
+          "$ref": "#/definitions/lettermask"
+        },
+        "offset": {
+          "type": "number",
+          "description": "The number of keys to be skipped at the beginning of the key space",
+          "minimum": 0
+        },
+        "limit": {
+          "type": "number",
+          "description": "The maximum number of keys to be enumerated in this key space (not including the offset)",
+          "minimum": 1
+        }
+      },
+      "required": [
+        "slots"
+      ]
+    },
+    "passes": {
+      "type": "array",
+      "description": "Set of strategies to be performed in order to find the best performing plugboard configurations",
+      "minItems": 1,
+      "items": {
+        "oneOf": [
+          {
+            "type": "object",
+            "description": "Configurable best improvement hill climb strategy for finding the best performing plugboard configuration",
+            "properties": {
+              "type": {
+                "enum": ["hillClimb"]
+              },
+              "measure": {
+                "$ref": "#/definitions/measure",
+                "description": "Measure to be used to evaluate the first plugs"
+              },
+              "finalMeasure": {
+                "$ref": "#/definitions/measure",
+                "description": "Measure to be used to evaluate the last plugs"
+              },
+              "finalMeasureMinNumPlugs": {
+                "type": "integer",
+                "description": "Minimum number of plugs that need to be assigned before switching from the initial measure to the final measure",
+                "default": 5,
+                "minimum": 0
+              },
+              "backtrackingMinNumPlugs": {
+                "type": "integer",
+                "description": "Minimum number of plugs that need to be assigned before evaluating backtracking steps (i.e. removing plugs)",
+                "default": 5,
+                "minimum": 0
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          {
+            "type": "object",
+            "description": "Reswapping strategy reverse engineered from the enigma-suite project (see https://www.bytereef.org/enigma-suite.html)",
+            "properties": {
+              "type": {
+                "enum": ["reswapping"]
+              },
+              "measure": {
+                "$ref": "#/definitions/measure"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          }
+        ]
+      }
+    },
+    "wheels": {
+      "type": "array",
+      "description": "Set of custom wheels including their wiring and turnovers that can be referenced by name in the key space",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "$ref": "#/definitions/wheelName"
+          },
+          "wiring": {
+            "$ref": "#/definitions/wiring"
+          },
+          "turnovers": {
+            "$ref": "#/definitions/lettermask"
+          }
+        },
+        "required": [
+          "name",
+          "wiring"
+        ]
+      }
+    },
+    "frequencies": {
+      "type": "object",
+      "description": "Set of filenames to be used as frequency maps for Sinkov's measures",
+      "properties": {
+        "monogram": {
+          "type": "string"
+        },
+        "bigram": {
+          "type": "string"
+        },
+        "trigram": {
+          "type": "string"
+        },
+        "quadgram": {
+          "type": "string"
+        },
+        "pentagram": {
+          "type": "string"
+        },
+        "hexagram": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "ciphertext",
+    "space"
+  ]
+}

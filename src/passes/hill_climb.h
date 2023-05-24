@@ -28,14 +28,14 @@ typedef struct _bomm_pass_hill_climb_config {
     bomm_measure_t final_measure;
 
     /**
-     * Minimum number of plugs that need to be assigned to switch from the
-     * initial measure to the final measure
+     * Minimum number of plugs that need to be assigned before switching
+     * from the initial measure to the final measure
      */
     unsigned int final_measure_min_num_plugs;
 
     /**
-     * Minimum number of plugs that need to be assigned in before evaluating
-     * backtracking options (i.e. removing plugs)
+     * Minimum number of plugs that need to be assigned before evaluating
+     * backtracking steps (i.e. removing plugs)
      */
     unsigned int backtracking_min_num_plugs;
 } bomm_pass_hill_climb_config_t;

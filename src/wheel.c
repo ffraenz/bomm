@@ -129,16 +129,17 @@ bool bomm_wheel_set_init_with_json(
             name
         );
 
-        if (wheel == NULL) {
+        if (wheel != NULL) {
+            memcpy(&wheel_set[i], wheel, sizeof(bomm_wheel_t));
+        } else if (!bomm_wheel_init_with_name(&wheel_set[i], name)) {
             fprintf(
                 stderr,
-                "Error: The wheel named '%s' cannot be found\n",
+                "Error: The wheel with name '%s' cannot be found among " \
+                "custom or known wheels\n",
                 name
             );
             return false;
         }
-
-        memcpy(&wheel_set[i], wheel, sizeof(bomm_wheel_t));
     }
 
     return true;

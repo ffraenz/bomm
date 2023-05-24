@@ -1,4 +1,5 @@
 {
+  "$schema": "../schemas/query.json",
   "ciphertext": "nzcmy cjjvp vdlxg vvkyw fmihg hzwsj ggagz tbjha yqisl vqizi hmxwu itufh vvccs vwbrp kjlbw kcpen rlhab pmlmg mjrvs brwjs bamez qzyrb ijzlj xnnsq wpahl unlon qdgsb vodzj ujhds rzmlv foivz qqpgy yvsba jxzuw lukyl ishup ofkb",
   "space": {
     "slots": [
@@ -9,17 +10,6 @@
       { "wheels": ["ETW-ABC"] }
     ]
   },
-  "wheels": [
-    { "name": "I",       "wiring": "ekmflgdqvzntowyhxuspaibrcj", "turnovers": "q" },
-    { "name": "II",      "wiring": "ajdksiruxblhwtmcqgznpyfvoe", "turnovers": "e" },
-    { "name": "III",     "wiring": "bdfhjlcprtxvznyeiwgakmusqo", "turnovers": "v" },
-    { "name": "IV",      "wiring": "esovpzjayquirhxlnftgkdcmwb", "turnovers": "j" },
-    { "name": "V",       "wiring": "vzbrgityupsdnhlxawmjqofeck", "turnovers": "z" },
-    { "name": "ETW-ABC", "wiring": "abcdefghijklmnopqrstuvwxyz" },
-    { "name": "UKW-A",   "wiring": "ejmzalyxvbwfcrquontspikhgd" },
-    { "name": "UKW-B",   "wiring": "yruhqsldpxngokmiebfzcwvjat" },
-    { "name": "UKW-C",   "wiring": "fvpjiaoyedrzxwgctkuqsbnmhl" }
-  ],
   "frequencies": {
     "bigram": "./data/frequencies/en-bigram.txt",
     "trigram": "./data/frequencies/en-trigram.txt"

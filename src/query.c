@@ -208,22 +208,22 @@ bomm_query_t* bomm_query_init(int argc, char *argv[]) {
     query->ciphertext_score = bomm_measure_message(query->measure, query->ciphertext);
 
     // Read wheels
-    unsigned int wheel_count = 0;
-    json_t* wheels_json = json_object_get(query_json, "wheels");
-    if (wheels_json != NULL) {
-        if (wheels_json->type != JSON_ARRAY) {
+    unsigned int custom_wheel_count = 0;
+    json_t* custom_wheels_json = json_object_get(query_json, "wheels");
+    if (custom_wheels_json != NULL) {
+        if (custom_wheels_json->type != JSON_ARRAY) {
             bomm_query_destroy(query);
             json_decref(query_json);
             fprintf(stderr, "Error: The query field 'wheels' is expected to be an array\n");
             return NULL;
         }
-        wheel_count = (unsigned int) json_array_size(wheels_json);
+        custom_wheel_count = (unsigned int) json_array_size(custom_wheels_json);
     }
-    bomm_wheel_t wheels[wheel_count];
-    for (unsigned int i = 0; i < wheel_count; i++) {
+    bomm_wheel_t custom_wheels[custom_wheel_count > 0 ? custom_wheel_count : 1];
+    for (unsigned int i = 0; i < custom_wheel_count; i++) {
         if (bomm_wheel_init_with_json(
-            &wheels[i],
-            json_array_get(wheels_json, i)
+            &custom_wheels[i],
+            json_array_get(custom_wheels_json, i)
         ) == NULL) {
             bomm_query_destroy(query);
             json_decref(query_json);
@@ -237,8 +237,8 @@ bomm_query_t* bomm_query_init(int argc, char *argv[]) {
     if (bomm_key_space_init_with_json(
         &key_space,
         key_space_json,
-        wheels,
-        wheel_count
+        custom_wheels,
+        custom_wheel_count
     ) == NULL) {
         bomm_query_destroy(query);
         json_decref(query_json);

@@ -123,14 +123,13 @@ typedef struct _bomm_key_space {
     unsigned long count;
 
     /**
-     * The number of elements to be skipped by the iterator when iterating over
-     * this key space. This is similar to an array slice.
+     * The number of keys to be skipped at the beginning of the key space
      */
     unsigned long offset;
 
     /**
-     * The maximum number of elements to be enumerated by the iterator when
-     * iterating over this key space. This is similar to an array slice.
+     * The maximum number of keys to be enumerated in this key space (not
+     * including the offset)
      */
     unsigned long limit;
 } bomm_key_space_t;

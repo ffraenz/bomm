@@ -1,4 +1,5 @@
 {
+  "$schema": "../schemas/query.json",
   "sources": [
     "https://cryptocellar.org/bgac/keyofE.html"
   ],
@@ -13,17 +14,6 @@
       { "wheels": ["ETW-ABC"] }
     ]
   },
-  "wheels": [
-    { "name": "I",       "wiring": "ekmflgdqvzntowyhxuspaibrcj", "turnovers": "q" },
-    { "name": "II",      "wiring": "ajdksiruxblhwtmcqgznpyfvoe", "turnovers": "e" },
-    { "name": "III",     "wiring": "bdfhjlcprtxvznyeiwgakmusqo", "turnovers": "v" },
-    { "name": "IV",      "wiring": "esovpzjayquirhxlnftgkdcmwb", "turnovers": "j" },
-    { "name": "V",       "wiring": "vzbrgityupsdnhlxawmjqofeck", "turnovers": "z" },
-    { "name": "ETW-ABC", "wiring": "abcdefghijklmnopqrstuvwxyz" },
-    { "name": "UKW-A",   "wiring": "ejmzalyxvbwfcrquontspikhgd" },
-    { "name": "UKW-B",   "wiring": "yruhqsldpxngokmiebfzcwvjat" },
-    { "name": "UKW-C",   "wiring": "fvpjiaoyedrzxwgctkuqsbnmhl" }
-  ],
   "frequencies": {
     "bigram": "./data/frequencies/enigma1941-bigram.txt",
     "trigram": "./data/frequencies/enigma1941-trigram.txt"
