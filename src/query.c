@@ -168,7 +168,11 @@ bomm_query_t* bomm_query_init(int argc, char *argv[]) {
         }
         num_passes = (unsigned int) num_elements;
         for (unsigned int i = 0; i < num_passes; i++) {
-            bomm_pass_init_json(&passes[i], json_array_get(passes_json, i));
+            if (!bomm_pass_init_json(&passes[i], json_array_get(passes_json, i))) {
+                json_decref(query_json);
+                fprintf(stderr, "Error: The query field 'passes' contains an invalid pass object\n");
+                return NULL;
+            }
         }
     }
 

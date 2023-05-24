@@ -29,7 +29,7 @@ bomm_pass_t* bomm_pass_init_json(
         return NULL;
     }
 
-    const char* type;
+    const char* type = NULL;
     if ((val_json = json_object_get(pass_json, "type"))) {
         if (val_json->type == JSON_STRING) {
             type = json_string_value(val_json);
