@@ -76,7 +76,7 @@ inline static double bomm_pass_run(
                 ciphertext
             );
         }
-        case BOMM_PASS_NONE: {
+        default: {
             return 0;
         }
     }
@@ -93,7 +93,7 @@ inline static bomm_measure_t bomm_pass_result_measure(bomm_pass_t* pass) {
         case BOMM_PASS_RESWAPPING: {
             return pass->config.reswapping.measure;
         }
-        case BOMM_PASS_NONE: {
+        default: {
             return BOMM_MEASURE_NONE;
         }
     }
