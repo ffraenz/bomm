@@ -8,8 +8,76 @@
 #ifndef measure_h
 #define measure_h
 
+#include <jansson.h>
 #include "message.h"
 #include "wiring.h"
+
+/**
+ * Enum identifying a measure
+ */
+typedef enum {
+    BOMM_MEASURE_SINKOV_MONOGRAM   = 0x01,
+    BOMM_MEASURE_SINKOV_BIGRAM     = 0x02,
+    BOMM_MEASURE_SINKOV_TRIGRAM    = 0x03,
+    BOMM_MEASURE_SINKOV_QUADGRAM   = 0x04,
+    BOMM_MEASURE_SINKOV_PENTAGRAM  = 0x05,
+    BOMM_MEASURE_SINKOV_HEXAGRAM   = 0x06,
+    BOMM_MEASURE_SINKOV_HEPTAGRAM  = 0x07,
+    BOMM_MEASURE_SINKOV_OCTAGRAM   = 0x08,
+    BOMM_MEASURE_IC                = 0x11,
+    BOMM_MEASURE_IC_BIGRAM         = 0x12,
+    BOMM_MEASURE_IC_TRIGRAM        = 0x13,
+    BOMM_MEASURE_IC_QUADGRAM       = 0x14,
+    BOMM_MEASURE_IC_PENTAGRAM      = 0x15,
+    BOMM_MEASURE_IC_HEXAGRAM       = 0x16,
+    BOMM_MEASURE_IC_HEPTAGRAM      = 0x17,
+    BOMM_MEASURE_IC_OCTAGRAM       = 0x18,
+    BOMM_MEASURE_ENTROPY           = 0x21,
+    BOMM_MEASURE_ENTROPY_BIGRAM    = 0x22,
+    BOMM_MEASURE_ENTROPY_TRIGRAM   = 0x23,
+    BOMM_MEASURE_ENTROPY_QUADGRAM  = 0x24,
+    BOMM_MEASURE_ENTROPY_PENTAGRAM = 0x25,
+    BOMM_MEASURE_ENTROPY_HEXAGRAM  = 0x26,
+    BOMM_MEASURE_ENTROPY_HEPTAGRAM = 0x27,
+    BOMM_MEASURE_ENTROPY_OCTAGRAM  = 0x28,
+    BOMM_MEASURE_NONE              = 0xff
+} bomm_measure_t;
+
+typedef struct _bomm_measure_string_mapping {
+    bomm_measure_t value;
+    const char* name;
+} bomm_measure_string_mapping_t;
+
+/**
+ * Lookup table mapping measure values to names
+ */
+static const bomm_measure_string_mapping_t bomm_measure_string_map[] = {
+    { BOMM_MEASURE_SINKOV_MONOGRAM,   "monogram" },
+    { BOMM_MEASURE_SINKOV_BIGRAM,     "bigram" },
+    { BOMM_MEASURE_SINKOV_TRIGRAM,    "trigram" },
+    { BOMM_MEASURE_SINKOV_QUADGRAM,   "quadgram" },
+    { BOMM_MEASURE_SINKOV_PENTAGRAM,  "pentagram" },
+    { BOMM_MEASURE_SINKOV_HEXAGRAM,   "hexagram" },
+    { BOMM_MEASURE_SINKOV_HEPTAGRAM,  "heptagram" },
+    { BOMM_MEASURE_SINKOV_OCTAGRAM,   "octagram" },
+    { BOMM_MEASURE_IC,                "ic" },
+    { BOMM_MEASURE_IC_BIGRAM,         "ic_bigram" },
+    { BOMM_MEASURE_IC_TRIGRAM,        "ic_trigram" },
+    { BOMM_MEASURE_IC_QUADGRAM,       "ic_quadgram" },
+    { BOMM_MEASURE_IC_PENTAGRAM,      "ic_pentagram" },
+    { BOMM_MEASURE_IC_HEXAGRAM,       "ic_hexagram" },
+    { BOMM_MEASURE_IC_HEPTAGRAM,      "ic_heptagram" },
+    { BOMM_MEASURE_IC_OCTAGRAM,       "ic_octagram" },
+    { BOMM_MEASURE_ENTROPY,           "entropy" },
+    { BOMM_MEASURE_ENTROPY_BIGRAM,    "entropy_bigram" },
+    { BOMM_MEASURE_ENTROPY_TRIGRAM,   "entropy_trigram" },
+    { BOMM_MEASURE_ENTROPY_QUADGRAM,  "entropy_quadgram" },
+    { BOMM_MEASURE_ENTROPY_PENTAGRAM, "entropy_pentagram" },
+    { BOMM_MEASURE_ENTROPY_HEXAGRAM,  "entropy_hexagram" },
+    { BOMM_MEASURE_ENTROPY_HEPTAGRAM, "entropy_heptagram" },
+    { BOMM_MEASURE_ENTROPY_OCTAGRAM,  "entropy_octagram" },
+    { BOMM_MEASURE_NONE,              "none" }
+};
 
 typedef float bomm_ngram_map_entry;
 
@@ -215,36 +283,55 @@ static inline double bomm_measure_frequency_entropy(
 }
 
 /**
- * Enum identifying a measure for scoring plaintext candidates.
+ * Return the measure value from the given string.
  */
-typedef enum {
-    BOMM_MEASURE_SINKOV           = 0x01,
-    BOMM_MEASURE_SINKOV_BIGRAM    = 0x02,
-    BOMM_MEASURE_SINKOV_TRIGRAM   = 0x03,
-    BOMM_MEASURE_SINKOV_QUADGRAM  = 0x04,
-    BOMM_MEASURE_SINKOV_PENTAGRAM = 0x05,
-    BOMM_MEASURE_SINKOV_HEXAGRAM  = 0x06,
-    BOMM_MEASURE_SINKOV_HEPTAGRAM = 0x07,
-    BOMM_MEASURE_SINKOV_OCTAGRAM  = 0x08,
+static inline bomm_measure_t bomm_measure_from_string(
+    const char* measure_string
+) {
+    unsigned int num_mappings =
+        sizeof(bomm_measure_string_map) /
+        sizeof(bomm_measure_string_mapping_t);
+    unsigned int i = 0;
+    bomm_measure_t measure = BOMM_MEASURE_NONE;
+    while (measure == BOMM_MEASURE_NONE && i < num_mappings) {
+        if (strcmp(bomm_measure_string_map[i].name, measure_string) == 0) {
+            measure = bomm_measure_string_map[i].value;
+        }
+        i++;
+    }
+    return measure;
+}
 
-    BOMM_MEASURE_IC           = 0x11,
-    BOMM_MEASURE_IC_BIGRAM    = 0x12,
-    BOMM_MEASURE_IC_TRIGRAM   = 0x13,
-    BOMM_MEASURE_IC_QUADGRAM  = 0x14,
-    BOMM_MEASURE_IC_PENTAGRAM = 0x15,
-    BOMM_MEASURE_IC_HEXAGRAM  = 0x16,
-    BOMM_MEASURE_IC_HEPTAGRAM = 0x17,
-    BOMM_MEASURE_IC_OCTAGRAM  = 0x18,
+/**
+ * Return the measure value from the given JSON value.
+ */
+static inline bomm_measure_t bomm_measure_from_json(
+    const json_t* measure_json
+) {
+    if (measure_json->type != JSON_STRING) {
+        return BOMM_MEASURE_NONE;
+    } else {
+        return bomm_measure_from_string(json_string_value(measure_json));
+    }
+}
 
-    BOMM_MEASURE_ENTROPY           = 0x21,
-    BOMM_MEASURE_ENTROPY_BIGRAM    = 0x22,
-    BOMM_MEASURE_ENTROPY_TRIGRAM   = 0x23,
-    BOMM_MEASURE_ENTROPY_QUADGRAM  = 0x24,
-    BOMM_MEASURE_ENTROPY_PENTAGRAM = 0x25,
-    BOMM_MEASURE_ENTROPY_HEXAGRAM  = 0x26,
-    BOMM_MEASURE_ENTROPY_HEPTAGRAM = 0x27,
-    BOMM_MEASURE_ENTROPY_OCTAGRAM  = 0x28
-} bomm_measure_t;
+/**
+ * Return the string value for the given measure.
+ */
+static inline const char* bomm_measure_to_string(bomm_measure_t measure) {
+    unsigned int num_mappings =
+        sizeof(bomm_measure_string_map) /
+        sizeof(bomm_measure_string_mapping_t);
+    unsigned int i = 0;
+    const char* string = NULL;
+    while (string == NULL && i < num_mappings) {
+        if (bomm_measure_string_map[i].value == measure) {
+            string = bomm_measure_string_map[i].name;
+        }
+        i++;
+    }
+    return string;
+}
 
 /**
  * Measure a message

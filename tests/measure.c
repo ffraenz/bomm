@@ -10,6 +10,27 @@
 
 #define epsilon 0.00000000000000000001
 
+Test(message, bomm_measure_from_string) {
+    cr_assert_eq(bomm_measure_from_string("bigram"), BOMM_MEASURE_SINKOV_BIGRAM);
+    cr_assert_eq(bomm_measure_from_string("trigram"), BOMM_MEASURE_SINKOV_TRIGRAM);
+    cr_assert_eq(bomm_measure_from_string("ic"), BOMM_MEASURE_IC);
+    cr_assert_eq(bomm_measure_from_string("ic_bigram"), BOMM_MEASURE_IC_BIGRAM);
+    cr_assert_eq(bomm_measure_from_string("entropy"), BOMM_MEASURE_ENTROPY);
+    cr_assert_eq(bomm_measure_from_string("entropy_bigram"), BOMM_MEASURE_ENTROPY_BIGRAM);
+    cr_assert_eq(bomm_measure_from_string("none"), BOMM_MEASURE_NONE);
+    cr_assert_eq(bomm_measure_from_string("sneakers"), BOMM_MEASURE_NONE);
+}
+
+Test(message, bomm_measure_to_string) {
+    cr_assert_str_eq(bomm_measure_to_string(BOMM_MEASURE_SINKOV_BIGRAM), "bigram");
+    cr_assert_str_eq(bomm_measure_to_string(BOMM_MEASURE_SINKOV_TRIGRAM), "trigram");
+    cr_assert_str_eq(bomm_measure_to_string(BOMM_MEASURE_IC), "ic");
+    cr_assert_str_eq(bomm_measure_to_string(BOMM_MEASURE_IC_BIGRAM), "ic_bigram");
+    cr_assert_str_eq(bomm_measure_to_string(BOMM_MEASURE_ENTROPY), "entropy");
+    cr_assert_str_eq(bomm_measure_to_string(BOMM_MEASURE_ENTROPY_BIGRAM), "entropy_bigram");
+    cr_assert_str_eq(bomm_measure_to_string(BOMM_MEASURE_NONE), "none");
+}
+
 Test(message, bomm_measure_message_frequency) {
     bomm_message_t *message;
     unsigned int frequencies[BOMM_ALPHABET_SIZE];

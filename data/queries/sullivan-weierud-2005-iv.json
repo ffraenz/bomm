@@ -4,7 +4,6 @@
   ],
   "ciphertext": "weklm uerds evhlc jsqqk vldes anevt yedgi zqdod rmdkg sxgsq shdqp vieap ienli clzcl lagwc bjzd",
   "space": {
-    "plugs": "e",
     "slots": [
       { "wheels": ["UKW-B"] },
       { "wheels": ["I", "II", "III", "IV", "V"], "rings": "a" },
@@ -13,6 +12,13 @@
       { "wheels": ["ETW-ABC"] }
     ]
   },
+  "passes": [
+    {
+      "type": "hill_climb",
+      "measure": "trigram",
+      "backtrackingMinNumPlugs": 5
+    }
+  ],
   "wheels": [
     { "name": "I",       "wiring": "ekmflgdqvzntowyhxuspaibrcj", "turnovers": "q" },
     { "name": "II",      "wiring": "ajdksiruxblhwtmcqgznpyfvoe", "turnovers": "e" },

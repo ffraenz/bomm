@@ -14,6 +14,9 @@
 #include "message.h"
 #include "progress.h"
 #include "attack.h"
+#include "pass.h"
+
+#define BOMM_MAX_NUM_PASSES 5
 
 typedef struct _bomm_query bomm_query_t;
 
@@ -47,7 +50,6 @@ typedef enum {
     BOMM_ATTACK_STATE_CANCELLED
 } bomm_attack_state_t;
 
-
 /**
  * Struct representing an attack on Enigma ciphertext that is executed in a
  * single thread
@@ -67,6 +69,16 @@ typedef struct _bomm_attack {
      * Target key space
      */
     bomm_key_space_t key_space;
+
+    /**
+     * Number of passes
+     */
+    unsigned int num_passes;
+
+    /**
+     * Passes
+     */
+    bomm_pass_t passes[BOMM_MAX_NUM_PASSES];
 
     /**
      * Target ciphertext
@@ -113,7 +125,12 @@ typedef struct _bomm_query {
     /**
      * Ciphertext score
      */
-    float ciphertext_score;
+    double ciphertext_score;
+
+    /**
+     * Query measure solutions are compared with
+     */
+    bomm_measure_t measure;
 
     /**
      * Shared hold the best results are reported in

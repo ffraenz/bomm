@@ -147,6 +147,31 @@ bomm_query_t* bomm_query_init(int argc, char *argv[]) {
         }
     }
 
+    // Read passes
+    unsigned int num_passes = 0;
+    bomm_pass_t passes[BOMM_MAX_NUM_PASSES];
+    json_t* passes_json = json_object_get(query_json, "passes");
+    if (passes_json == NULL) {
+        // Use a single default pass
+        bomm_pass_init(&passes[num_passes++]);
+    } else {
+        if (passes_json->type != JSON_ARRAY) {
+            json_decref(query_json);
+            fprintf(stderr, "Error: The query field 'passes' is expected to be an array\n");
+            return NULL;
+        }
+        unsigned long num_elements = json_array_size(passes_json);
+        if (num_elements == 0 || num_elements > BOMM_MAX_NUM_PASSES) {
+            json_decref(query_json);
+            fprintf(stderr, "Error: The query field 'passes' must have between 1 and %d elements\n", BOMM_MAX_NUM_PASSES);
+            return NULL;
+        }
+        num_passes = (unsigned int) num_elements;
+        for (unsigned int i = 0; i < num_passes; i++) {
+            bomm_pass_init_json(&passes[i], json_array_get(passes_json, i));
+        }
+    }
+
     // Alloc query
     size_t query_size = sizeof(bomm_query_t) + thread_count * sizeof(bomm_attack_t);
     bomm_query_t* query = malloc(query_size);
@@ -164,20 +189,19 @@ bomm_query_t* bomm_query_init(int argc, char *argv[]) {
     query->verbose = verbose;
     query->attack_count = thread_count;
 
+    // Use the measure of the last pass as the query measure
+    query->measure = bomm_pass_result_measure(&passes[num_passes - 1]);
+
     // Read ciphertext
     json_t* ciphertext_json = json_object_get(query_json, "ciphertext");
-    if (ciphertext_json != NULL) {
-        if (ciphertext_json->type != JSON_STRING) {
-            bomm_query_destroy(query);
-            json_decref(query_json);
-            fprintf(stderr, "Error: The query field 'ciphertext' is expected to be a string\n");
-            return NULL;
-        }
-        query->ciphertext = bomm_message_init(json_string_value(ciphertext_json));
-
-        // TODO: Use the same measure as in the selected attack strategy
-        query->ciphertext_score = bomm_measure_message_sinkov(3, query->ciphertext);
+    if (ciphertext_json == NULL || ciphertext_json->type != JSON_STRING) {
+        bomm_query_destroy(query);
+        json_decref(query_json);
+        fprintf(stderr, "Error: The query field 'ciphertext' is expected to be a string\n");
+        return NULL;
     }
+    query->ciphertext = bomm_message_init(json_string_value(ciphertext_json));
+    query->ciphertext_score = bomm_measure_message(query->measure, query->ciphertext);
 
     // Read wheels
     unsigned int wheel_count = 0;
@@ -249,6 +273,8 @@ bomm_query_t* bomm_query_init(int argc, char *argv[]) {
         attack->query = query;
         attack->id = i + 1;
         memcpy(&attack->key_space, &key_space_slices[i], sizeof(bomm_key_space_t));
+        attack->num_passes = num_passes;
+        memcpy(&attack->passes, &passes, num_passes * sizeof(bomm_pass_t));
         attack->ciphertext = query->ciphertext;
         attack->thread = 0;
         attack->state = BOMM_ATTACK_STATE_IDLE;
