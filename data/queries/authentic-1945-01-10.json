@@ -4,11 +4,25 @@
   "space": {
     "plugs": "e",
     "slots": [
-      { "wheels": ["UKW-B"] },
-      { "wheels": ["I", "II", "III", "IV", "V"], "rings": "a" },
-      { "wheels": ["I", "II", "III", "IV", "V"], "rings": "a" },
-      { "wheels": ["I", "II", "III", "IV", "V"] },
-      { "wheels": ["ETW-ABC"] }
+      {
+        "wheels": ["UKW-B"]
+      },
+      {
+        "rotating": true,
+        "wheels": ["I", "II", "III", "IV", "V"],
+        "positions": "*"
+      },
+      {
+        "rotating": true,
+        "wheels": ["I", "II", "III", "IV", "V"],
+        "positions": "*"
+      },
+      {
+        "rotating": true,
+        "wheels": ["I", "II", "III", "IV", "V"],
+        "rings": "*",
+        "positions": "*"
+      }
     ]
   },
   "frequencies": {

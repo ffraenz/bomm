@@ -6,11 +6,25 @@
   "ciphertext": "gwdmp ogkmq kbhgk hroup rmyqy inhsa mwfbp cdqrg ldbfk ynxpp diqhe aoifq aolrz zfpdj mcgec tahhq mvuya jiawm wsoyu utlep avzkg hjwcd loqhw imstc lqdnp vcfcn fruyr gssjh orqmu iffyu wynta xpyix mytee ftdcv ehuoa dcplm apcau jjyuk",
   "space": {
     "slots": [
-      { "wheels": ["UKW-B"] },
-      { "wheels": ["I", "II", "III", "IV", "V"], "rings": "a" },
-      { "wheels": ["I", "II", "III", "IV", "V"], "rings": "a" },
-      { "wheels": ["I", "II", "III", "IV", "V"] },
-      { "wheels": ["ETW-ABC"] }
+      {
+        "wheels": ["UKW-B"]
+      },
+      {
+        "rotating": true,
+        "wheels": ["I", "II", "III", "IV", "V"],
+        "positions": "*"
+      },
+      {
+        "rotating": true,
+        "wheels": ["I", "II", "III", "IV", "V"],
+        "positions": "*"
+      },
+      {
+        "rotating": true,
+        "wheels": ["I", "II", "III", "IV", "V"],
+        "rings": "*",
+        "positions": "*"
+      }
     ]
   },
   "frequencies": {

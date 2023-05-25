@@ -11,6 +11,12 @@ bomm_lettermask_t* bomm_lettermask_from_string(
     bomm_lettermask_t* lettermask,
     const char* string
 ) {
+    // Handle lettermask wildcard
+    if (strcmp(string, "*") == 0) {
+        *lettermask = BOMM_LETTERMASK_ALL;
+        return lettermask;
+    }
+
     // TODO: Implement parser for lettermask notation
     bomm_message_t *message = bomm_message_init(string);
     if (!message) {

@@ -5,7 +5,8 @@
       "type": "string"
     },
     "lettermask": {
-      "type": "string"
+      "type": "string",
+      "description": "Set of letters drawn from the alphabet. Use '*' to select all letters."
     },
     "wheelName": {
       "type": "string",
@@ -61,10 +62,15 @@
         },
         "slots": {
           "type": "array",
-          "description": "Scrambler slots describe what wheels can be used in what slot, whether each slot is rotating, and what ring settings and positions should be enumerated. Slots are assumed in their physical order from left to right including the reflector at the first position and the entry wheel (if any) at the last position.",
+          "description": "Scrambler slots describe what wheels can be used in what slot, whether each slot is rotating, and what ring settings and positions should be enumerated. Slots are assumed in their physical order from left to right including the reflector at index 0 and the entry wheel (if any) at the last position.",
           "items": {
             "type": "object",
             "properties": {
+              "rotating": {
+                "type": "boolean",
+                "description": "Whether the wheel in this slot rotates or not",
+                "default": false
+              },
               "wheels": {
                 "type": "array",
                 "description": "Set of wheel names that reference either custom wheels that can be defined in the root `wheels` field or known wheels (e.g. `ETW-ABC`, `I`, `II`, `III`, `UKW-B`).",
@@ -76,15 +82,11 @@
               },
               "rings": {
                 "$ref": "#/definitions/lettermask",
-                "description": "Set of ring settings to be enumerated"
+                "default": "a"
               },
               "positions": {
                 "$ref": "#/definitions/lettermask",
-                "description": "Set of positions to be enumerated"
-              },
-              "rotating": {
-                "type": "boolean",
-                "description": "Whether the wheel in this slot rotates or not"
+                "default": "a"
               }
             },
             "required": [

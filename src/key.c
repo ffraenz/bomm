@@ -16,7 +16,6 @@ bomm_key_space_t* bomm_key_space_init(
         return NULL;
     }
 
-    // Store meta data
     key_space->mechanism = mechanism;
     key_space->slot_count = slot_count;
     key_space->plug_mask = BOMM_LETTERMASK_NONE;
@@ -24,19 +23,12 @@ bomm_key_space_t* bomm_key_space_init(
     key_space->offset = 0;
     key_space->limit = LONG_MAX;
 
-    // Clear wheel sets
     memset(key_space->wheel_sets, 0, sizeof(key_space->wheel_sets));
 
-    // By default, use the full ring setting and start position masks for all
-    // slots except for the first (housing the reflector) and the last (housing
-    // the entry wheel) that usually are stagnant
     for (unsigned int slot = 0; slot < slot_count; slot++) {
-        bool is_stagnant = slot == 0 || slot == slot_count - 1;
-        bomm_lettermask_t lettermask =
-            is_stagnant ? BOMM_LETTERMASK_FIRST : BOMM_LETTERMASK_ALL;
-        key_space->rotating_slots[slot] = !is_stagnant;
-        key_space->ring_masks[slot] = lettermask;
-        key_space->position_masks[slot] = lettermask;
+        key_space->ring_masks[slot] = BOMM_LETTERMASK_FIRST;
+        key_space->position_masks[slot] = BOMM_LETTERMASK_FIRST;
+        key_space->rotating_slots[slot] = false;
     }
 
     return key_space;
@@ -46,6 +38,11 @@ bomm_key_space_t* bomm_key_space_init_enigma_i(bomm_key_space_t* key_space) {
     if (!bomm_key_space_init(key_space, BOMM_MECHANISM_STEPPING, 5)) {
         return NULL;
     }
+
+    // Rotating slots
+    key_space->rotating_slots[1] = true;
+    key_space->rotating_slots[2] = true;
+    key_space->rotating_slots[3] = true;
 
     // Set of reflectors (in the order they are tested)
     bomm_wheel_init_with_name(&key_space->wheel_sets[0][0], "UKW-B");
@@ -62,10 +59,13 @@ bomm_key_space_t* bomm_key_space_init_enigma_i(bomm_key_space_t* key_space) {
     // Set of entry wheels
     bomm_wheel_init_with_name(&key_space->wheel_sets[4][0], "ETW-ABC");
 
-    // Don't test ring settings for the left and middle wheel
-    // as they can be neglected
-    key_space->ring_masks[1] = BOMM_LETTERMASK_FIRST;
-    key_space->ring_masks[2] = BOMM_LETTERMASK_FIRST;
+    // Ring settings to be enumerated
+    key_space->ring_masks[3] = BOMM_LETTERMASK_ALL;
+
+    // Positions to be enumerated
+    key_space->position_masks[1] = BOMM_LETTERMASK_ALL;
+    key_space->position_masks[2] = BOMM_LETTERMASK_ALL;
+    key_space->position_masks[3] = BOMM_LETTERMASK_ALL;
 
     return key_space;
 }
@@ -320,6 +320,7 @@ unsigned long bomm_key_space_count(
 }
 
 bomm_key_t* bomm_key_init(bomm_key_t* key, const bomm_key_space_t* key_space) {
+    bool owning = key == NULL;
     if (!key && !(key = malloc(sizeof(bomm_key_t)))) {
         return NULL;
     }
@@ -328,6 +329,24 @@ bomm_key_t* bomm_key_init(bomm_key_t* key, const bomm_key_space_t* key_space) {
     key->mechanism = key_space->mechanism;
     key->slot_count = key_space->slot_count;
     memcpy(&key->rotating_slots, &key_space->rotating_slots, sizeof(key->rotating_slots));
+
+    // Stepping mechanism: Determine the fast rotor slot
+    if (key->mechanism == BOMM_MECHANISM_STEPPING) {
+        key->fast_wheel_slot = key->slot_count - 1;
+        while (key->fast_wheel_slot > 0 && !key->rotating_slots[key->fast_wheel_slot]) {
+            key->fast_wheel_slot--;
+        }
+        if (key->fast_wheel_slot < 3) {
+            fprintf(
+                stderr,
+                "Invalid scrambler configuration for the stepping mechanism\n"
+            );
+            if (owning) {
+                free(key);
+            }
+            return NULL;
+        }
+    }
 
     // Reset the wheel order, ring settings, and start positions of all slots,
     // including the unused ones to remove undefined memory and thus make keys
@@ -369,19 +388,24 @@ bomm_key_iterator_t* bomm_key_iterator_init(
     }
 
     bool owning = iterator == NULL;
-    if (owning) {
-        if ((iterator = malloc(sizeof(bomm_key_iterator_t))) == NULL) {
-            return NULL;
-        }
+    if (!iterator && !(iterator = malloc(sizeof(bomm_key_iterator_t)))) {
+        return NULL;
     }
 
     // Reference key space
     iterator->key_space = key_space;
+    iterator->scrambler_changed = true;
     iterator->index = 0;
 
     // Init key
-    bomm_key_init(&iterator->key, key_space);
-    iterator->scrambler_changed = true;
+    if (bomm_key_init(&iterator->key, key_space) == NULL) {
+        // If no key can be created from the key space, the key space is
+        // considered empty
+        if (owning) {
+            free(iterator);
+        }
+        return NULL;
+    }
 
     // Reset wheels, ring masks, and position masks
     size_t masks_size = sizeof(bomm_lettermask_t) * slot_count;

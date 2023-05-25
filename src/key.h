@@ -145,6 +145,12 @@ typedef struct _bomm_key {
     bomm_mechanism_t mechanism;
 
     /**
+     * Index of the fast wheel slot when using the stepping mechanism.
+     * Undefined, when the mechanism is not set to `BOMM_MECHANISM_STEPPING`.
+     */
+    unsigned int fast_wheel_slot;
+
+    /**
      * Number of wheel slots; The first slot represents the reflector, the last
      * slot represents the entry wheel.
      */

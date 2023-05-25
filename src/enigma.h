@@ -88,27 +88,26 @@ inline static void bomm_enigma_engage_mechanism(bomm_key_t* state) {
             break;
         }
         case BOMM_MECHANISM_STEPPING: {
-            // The Enigma stepping rotation mechanism assumes 1 entry wheel,
-            // 3 rotating wheels, and 1 reflector. The fast rotating wheel is
-            // assumed to be in the second last slot.
+            // The Enigma stepping rotation mechanism assumes 3 rotating wheels
+            // and 1 reflector.
             if (bomm_lettermask_has(
-                &state->wheels[2].turnovers,
-                state->positions[2] % BOMM_ALPHABET_SIZE
+                &state->wheels[state->fast_wheel_slot - 1].turnovers,
+                state->positions[state->fast_wheel_slot - 1] % BOMM_ALPHABET_SIZE
             )) {
                 // If at middle wheel turnover: Step middle and left wheels
                 // (double stepping anomaly)
-                state->positions[2]++;
-                state->positions[1]++;
+                state->positions[state->fast_wheel_slot - 1]++;
+                state->positions[state->fast_wheel_slot - 2]++;
             } else if (bomm_lettermask_has(
-                &state->wheels[3].turnovers,
-                state->positions[3] % BOMM_ALPHABET_SIZE
+                &state->wheels[state->fast_wheel_slot].turnovers,
+                state->positions[state->fast_wheel_slot] % BOMM_ALPHABET_SIZE
             )) {
                 // If at right wheel turnover: Step middle wheel
-                state->positions[2]++;
+                state->positions[state->fast_wheel_slot - 1]++;
             }
 
             // Always step right (fast) wheel
-            state->positions[3]++;
+            state->positions[state->fast_wheel_slot]++;
             break;
         }
         case BOMM_MECHANISM_ODOMETER: {

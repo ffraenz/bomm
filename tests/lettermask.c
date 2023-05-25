@@ -36,6 +36,9 @@ Test(lettermask, bomm_lettermask_from_string) {
 
     bomm_lettermask_from_string(&lettermask, "abcdefghijklmnopqrstuvwxyz");
     cr_assert_eq(lettermask, BOMM_LETTERMASK_ALL);
+
+    bomm_lettermask_from_string(&lettermask, "*");
+    cr_assert_eq(lettermask, BOMM_LETTERMASK_ALL);
 }
 
 Test(lettermask, bomm_lettermask_stringify) {
