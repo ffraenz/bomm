@@ -84,7 +84,8 @@ bomm_key_space_t* bomm_key_space_init_with_json(
     json_t* mechanism_json = json_object_get(key_space_json, "mechanism");
     bomm_mechanism_t mechanism = BOMM_MECHANISM_STEPPING;
     if (mechanism_json != NULL && mechanism_json->type == JSON_STRING) {
-        mechanism = bomm_key_mechanism_from_string(json_string_value(mechanism_json));
+        mechanism =
+            bomm_key_mechanism_from_string(json_string_value(mechanism_json));
     }
 
     // Read slot count

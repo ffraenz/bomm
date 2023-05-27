@@ -29,8 +29,8 @@
   },
   "passes": [
     {
-      "type": "hillClimb",
-      "measure": "trigram",
+      "type": "hill_climb",
+      "measure": "sinkov_trigram",
       "backtrackingMinNumPlugs": 5
     }
   ],

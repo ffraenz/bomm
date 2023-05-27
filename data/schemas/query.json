@@ -15,36 +15,31 @@
     },
     "measure": {
       "enum": [
-        "monogram",
-        "bigram",
-        "trigram",
-        "quadgram",
-        "pentagram",
-        "hexagram",
-        "heptagram",
-        "octagram",
-        "ic",
-        "icBigram",
-        "icTrigram",
-        "icQuadgram",
-        "icPentagram",
-        "icHexagram",
-        "icHeptagram",
-        "icOctagram",
         "entropy",
-        "entropyBigram",
-        "entropyTrigram",
-        "entropyQuadgram",
-        "entropyPentagram",
-        "entropyHexagram",
-        "entropyHeptagram",
-        "entropyOctagram"
+        "entropy_bigram",
+        "entropy_trigram",
+        "entropy_quadgram",
+        "entropy_pentagram",
+        "entropy_hexagram",
+        "ic",
+        "ic_bigram",
+        "ic_trigram",
+        "ic_quadgram",
+        "ic_pentagram",
+        "ic_hexagram",
+        "sinkov_monogram",
+        "sinkov_bigram",
+        "sinkov_trigram",
+        "sinkov_quadgram",
+        "sinkov_pentagram",
+        "sinkov_hexagram"
       ]
     },
     "mechanism": {
       "enum": [
         "stepping",
-        "odometer"
+        "odometer",
+        "none"
       ]
     }
   },
@@ -123,7 +118,7 @@
             "description": "Configurable best improvement hill climb strategy for finding the best performing plugboard configuration",
             "properties": {
               "type": {
-                "enum": ["hillClimb"]
+                "enum": ["hill_climb"]
               },
               "measure": {
                 "$ref": "#/definitions/measure",

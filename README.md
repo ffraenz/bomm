@@ -5,7 +5,15 @@ Bomm is a command line program written in C for breaking Enigma ciphertext in a 
 
 ## Getting started
 
-JSON formatted query files are used as the input or interface of the program. A query consists of the ciphertext to be tested, a set of wheels, incl. their wirings and turnover locations, a set of n-gram frequency tables to be used, and a set of attacks to be run in parallel, each with their own key space. Examples for such queries can be found in `data/queries`.
+JSON formatted query files are used as the input of the program. A query primarily consists of the ciphertext to be tested, a key space (referencing known or custom wheels and wirings), and a set of passes to be executed for each scrambler key attacking the plugboard and scoring the putative plaintext. A schema for query files can be found at `data/schemas/query.json`. Examples for it are stored in `data/queries`.
+
+The following CLI options are available:
+
+- `-h`, `--help` - Display the help message
+- `-n`, `--num-hold` - Number of hold elements to collect
+- `-t`, `--num-threads` - Number of concurrent threads to use (defaults to the number of CPU cores available)
+- `-q`, `--quiet` - Enable quiet mode
+- `-v`, `--verbose` - Enable verbose mode
 
 To run a query, simply provide its path as the only argument when executing the binary:
 
@@ -43,6 +51,20 @@ This will result in the following view that is kept up-to-date while processing 
 ```
 
 When the query completes or the program is terminated with `Ctrl+C`, the full hold is printed out before exiting.
+
+## Measures
+
+In passes built-in measures can be specified that should be used to score and compare putative plaintext.
+
+Many measures are based on n-grams (substrings of length n). These are specified by the tokens `monogram`, `bigram`, `trigram`, `quadgram`, `pentagram`, and `hexagram` for 1-grams, 2-grams, …, and 6-grams respectively.
+
+Token | Measure
+----- | -------
+`sinkov_{n-gram}` | [Sinkov statistic](https://en.wikipedia.org/wiki/Sinkov_statistic) or log-weight statistic for n-grams (1 ≤ n ≤ 6);<br> Requires a frequency map
+`ic` | [Index of coincidence](https://en.wikipedia.org/wiki/Index_of_coincidence) measure
+`ic_{n-gram}` | [Index of coincidence](https://en.wikipedia.org/wiki/Index_of_coincidence) measure for n-grams (2 ≤ n ≤ 6)
+`entropy` | [Shannon entropy](https://en.wikipedia.org/wiki/Entropy_(information_theory)) measure
+`entropy_{n-gram}` | [Shannon entropy](https://en.wikipedia.org/wiki/Entropy_(information_theory)) measure for n-grams (2 ≤ n ≤ 6)
 
 ## Build from source
 

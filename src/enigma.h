@@ -84,9 +84,6 @@ inline static __attribute__((always_inline)) void bomm_enigma_generate_scrambler
  */
 inline static void bomm_enigma_engage_mechanism(bomm_key_t* state) {
     switch (state->mechanism) {
-        case BOMM_MECHANISM_NONE: {
-            break;
-        }
         case BOMM_MECHANISM_STEPPING: {
             // The Enigma stepping rotation mechanism assumes 3 rotating wheels
             // and 1 reflector.
@@ -130,8 +127,11 @@ inline static void bomm_enigma_engage_mechanism(bomm_key_t* state) {
             }
             break;
         }
+        case BOMM_MECHANISM_NONE: {
+            break;
+        }
         default: {
-            fprintf(stderr, "Encountered an unexpected mechanism\n");
+            fprintf(stderr, "Logic error: Unexpected mechanism\n");
             exit(1);
         }
     }

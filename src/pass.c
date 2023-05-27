@@ -38,7 +38,7 @@ bomm_pass_t* bomm_pass_init_with_json(
 
     bool error = false;
     bomm_pass_t new_pass;
-    if (strcmp(type, "hillClimb") == 0) {
+    if (strcmp(type, "hill_climb") == 0) {
         new_pass.type = BOMM_PASS_HILL_CLIMB;
         error = NULL == bomm_pass_hill_climb_config_init_with_json(
             &new_pass.config.hill_climb,
