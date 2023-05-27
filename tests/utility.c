@@ -9,7 +9,7 @@
 #include "../src/utility.h"
 
 Test(wiring, bomm_hardware_concurrency) {
-    unsigned int thread_count = bomm_hardware_concurrency();
-    cr_assert_geq(thread_count, 1);
-    cr_assert_lt(thread_count, INT_MAX);
+    unsigned int num_threads = bomm_hardware_concurrency();
+    cr_assert_geq(num_threads, 1);
+    cr_assert_lt(num_threads, INT_MAX);
 }

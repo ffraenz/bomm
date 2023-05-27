@@ -14,7 +14,7 @@ Test(key, bomm_hold_init) {
     bomm_hold_t* hold = bomm_hold_init(NULL, element_size, 5);
     cr_assert_eq(hold->data_size, element_size);
     cr_assert_eq(hold->size, 5);
-    cr_assert_eq(hold->count, 0);
+    cr_assert_eq(hold->num_elements, 0);
     bomm_hold_destroy(hold);
 }
 
@@ -29,44 +29,44 @@ Test(key, bomm_hold_add) {
     data = 1337;
     score_boundary = bomm_hold_add(hold, 3, &data, "L333t Third");
     cr_assert_eq(score_boundary, -INFINITY);
-    cr_assert_eq(hold->count, 1);
+    cr_assert_eq(hold->num_elements, 1);
 
     data = 8888;
     score_boundary = bomm_hold_add(hold, -10, &data, "8888 Out");
     cr_assert_eq(score_boundary, -INFINITY);
-    cr_assert_eq(hold->count, 2);
+    cr_assert_eq(hold->num_elements, 2);
 
     // Duplicate entry to be ignored
     data = 8888;
     score_boundary = bomm_hold_add(hold, -10, &data, "8888 Out");
     cr_assert_eq(score_boundary, -INFINITY);
-    cr_assert_eq(hold->count, 2);
+    cr_assert_eq(hold->num_elements, 2);
 
     data = 1234;
     score_boundary = bomm_hold_add(hold, 2, &data, "1234 Fifth");
     cr_assert_eq(score_boundary, -INFINITY);
-    cr_assert_eq(hold->count, 3);
+    cr_assert_eq(hold->num_elements, 3);
 
     data = 7777;
     score_boundary = bomm_hold_add(hold, 7, &data, "<7 First");
     cr_assert_eq(score_boundary, -INFINITY);
-    cr_assert_eq(hold->count, 4);
+    cr_assert_eq(hold->num_elements, 4);
 
     data = 4444;
     score_boundary = bomm_hold_add(hold, 4, &data, "<4 Second");
     cr_assert_eq(score_boundary, -10);
-    cr_assert_eq(hold->count, 5);
+    cr_assert_eq(hold->num_elements, 5);
 
     data = 133337;
     score_boundary = bomm_hold_add(hold, 3, &data, "L3333t Fourth");
     cr_assert_eq(score_boundary, 2);
-    cr_assert_eq(hold->count, 5);
+    cr_assert_eq(hold->num_elements, 5);
 
     // Duplicate entry to be ignored
     data = 7777;
     score_boundary = bomm_hold_add(hold, 7, &data, "<7 First");
     cr_assert_eq(score_boundary, 2);
-    cr_assert_eq(hold->count, 5);
+    cr_assert_eq(hold->num_elements, 5);
 
     element = bomm_hold_at(hold, 0);
     cr_assert_eq(element->score, 7);

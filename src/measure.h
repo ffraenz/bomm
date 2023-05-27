@@ -173,8 +173,8 @@ static inline void bomm_measure_scrambler_frequency(
     unsigned int* plugboard,
     bomm_message_t* message
 ) {
-    unsigned int count = bomm_pow_map[n];
-    memset(frequencies, 0, count * sizeof(unsigned int));
+    unsigned int num_frequencies = bomm_pow_map[n];
+    memset(frequencies, 0, num_frequencies * sizeof(unsigned int));
 
     unsigned int letter;
     unsigned int map_index = 0;
@@ -184,7 +184,7 @@ static inline void bomm_measure_scrambler_frequency(
         letter = scrambler->map[index][letter];
         letter = plugboard[letter];
 
-        map_index = (map_index * BOMM_ALPHABET_SIZE + letter) % count;
+        map_index = (map_index * BOMM_ALPHABET_SIZE + letter) % num_frequencies;
         if (index >= n - 1) {
             frequencies[map_index]++;
         }
@@ -202,14 +202,14 @@ static inline void bomm_measure_message_frequency(
     unsigned int* frequencies,
     bomm_message_t* message
 ) {
-    unsigned int count = bomm_pow_map[n];
-    memset(frequencies, 0, count * sizeof(unsigned int));
+    unsigned int num_frequencies = bomm_pow_map[n];
+    memset(frequencies, 0, num_frequencies * sizeof(unsigned int));
 
     unsigned int letter;
     unsigned int map_index = 0;
     for (unsigned int index = 0; index < message->length; index++) {
         letter = message->letters[index];
-        map_index = (map_index * BOMM_ALPHABET_SIZE + letter) % count;
+        map_index = (map_index * BOMM_ALPHABET_SIZE + letter) % num_frequencies;
         if (index >= n - 1) {
             frequencies[map_index]++;
         }
@@ -230,16 +230,16 @@ static inline double bomm_measure_frequency_ic(
     unsigned int n,
     unsigned int* frequencies
 ) {
-    unsigned int count = bomm_pow_map[n];
+    unsigned int num_frequencies = bomm_pow_map[n];
     unsigned int coincidence = 0;
     unsigned int sum = 0;
     unsigned int frequency;
-    for (unsigned int index = 0; index < count; index++) {
+    for (unsigned int index = 0; index < num_frequencies; index++) {
         frequency = frequencies[index];
         coincidence += frequency * (frequency - 1);
         sum += frequency;
     }
-    return (double) (count * coincidence) / (double) (sum * (sum - 1));
+    return (double) (num_frequencies * coincidence) / (double) (sum * (sum - 1));
 }
 
 /**
@@ -251,18 +251,18 @@ static inline double bomm_measure_frequency_entropy(
     unsigned int n,
     unsigned int* frequencies
 ) {
-    unsigned int count = bomm_pow_map[n];
+    unsigned int num_frequencies = bomm_pow_map[n];
 
     unsigned int sum = 0;
     unsigned int index;
-    for (index = 0; index < count; index++) {
+    for (index = 0; index < num_frequencies; index++) {
         sum += frequencies[index];
     }
 
     double entropy = 0;
     double p;
     if (sum > 0) {
-        for (index = 0; index < count; index++) {
+        for (index = 0; index < num_frequencies; index++) {
             p = (double) frequencies[index] / (double) sum;
             entropy -= (p > 0) ? (p * log2(p)) : 0;
         }

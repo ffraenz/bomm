@@ -150,7 +150,7 @@ typedef struct _bomm_query {
     /**
      * Number of attacks executed for this query
      */
-    unsigned int attack_count;
+    unsigned int num_attacks;
 
     /**
      * Array of attacks
@@ -192,8 +192,8 @@ void bomm_query_join(bomm_query_t* query);
 
 /**
  * Print the status quo of the given query.
- * @param count The number of hold entries to be included
+ * @param num_elements The number of hold entries to be included
  */
-void bomm_query_print(bomm_query_t* query, unsigned int count);
+void bomm_query_print(bomm_query_t* query, unsigned int num_elements);
 
 #endif /* query_h */

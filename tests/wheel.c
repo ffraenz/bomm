@@ -66,8 +66,8 @@ Test(wiring, bomm_wheel_init_with_json) {
 }
 
 Test(wiring, bomm_wheel_set_init_with_json) {
-    unsigned int wheel_count = 3;
-    bomm_wheel_t wheels[wheel_count];
+    unsigned int num_wheels = 3;
+    bomm_wheel_t wheels[num_wheels];
     bomm_wheel_init(&wheels[0], "I",   "ekmflgdqvzntowyhxuspaibrcj", "q");
     bomm_wheel_init(&wheels[1], "II",  "ajdksiruxblhwtmcqgznpyfvoe", "e");
     bomm_wheel_init(&wheels[2], "III", "bdfhjlcprtxvznyeiwgakmusqo", "v");
@@ -84,7 +84,7 @@ Test(wiring, bomm_wheel_set_init_with_json) {
         wheel_set_size,
         wheel_set_json,
         wheels,
-        wheel_count
+        num_wheels
     );
 
     cr_assert_eq(success, true);

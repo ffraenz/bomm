@@ -58,7 +58,7 @@ typedef struct _bomm_hold {
     /**
      * Current number of elements
      */
-    unsigned int count;
+    unsigned int num_elements;
 
     /**
      * Mutex for access control across threads
@@ -75,7 +75,11 @@ typedef struct _bomm_hold {
  * Initialize a hold for the given element size and hold size (i.e. the maximum
  * number of elements it should hold).
  */
-bomm_hold_t* bomm_hold_init(bomm_hold_t* hold, size_t element_size, unsigned int hold_size);
+bomm_hold_t* bomm_hold_init(
+    bomm_hold_t* hold,
+    size_t element_size,
+    unsigned int hold_size
+);
 
 /**
  * Destroy a hold and free its memory.

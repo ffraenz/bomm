@@ -45,9 +45,9 @@ void bomm_attack_key_space(bomm_attack_t* attack) {
     double batch_start_timestamp = start_timestamp;
     double batch_duration_sec;
     bool cancelling = false;
-    unsigned long key_space_size = bomm_key_space_count(&attack->key_space);
-    unsigned int batch_count = 0;
-    unsigned int batch_size = 26 * 26 * 8;
+    unsigned long num_keys = bomm_key_space_count(&attack->key_space);
+    unsigned int num_batch_keys = 26 * 26 * 8;
+    unsigned int num_batch_keys_completed = 0;
 
     bomm_key_iterator_t key_iterator;
     if (bomm_key_iterator_init(&key_iterator, &attack->key_space) == NULL) {
@@ -57,9 +57,9 @@ void bomm_attack_key_space(bomm_attack_t* attack) {
 
     // Initial progress update
     pthread_mutex_lock(&attack->mutex);
-    attack->progress.batch_unit_size = batch_size;
-    attack->progress.unit_count = key_space_size;
-    attack->progress.completed_unit_count = 0;
+    attack->progress.num_batch_units = num_batch_keys;
+    attack->progress.num_units = num_keys;
+    attack->progress.num_units_completed = 0;
     attack->progress.batch_duration_sec = 0;
     attack->progress.duration_sec = 0;
     pthread_mutex_unlock(&attack->mutex);
@@ -97,7 +97,7 @@ void bomm_attack_key_space(bomm_attack_t* attack) {
         }
 
         // Report the progress every time a batch has been finalized
-        if (++batch_count >= batch_size) {
+        if (++num_batch_keys_completed >= num_batch_keys) {
             // Measure time
             batch_duration_sec = batch_start_timestamp;
             batch_start_timestamp = bomm_timestamp_sec();
@@ -105,20 +105,20 @@ void bomm_attack_key_space(bomm_attack_t* attack) {
 
             // Intermediate progress update
             pthread_mutex_lock(&attack->mutex);
-            attack->progress.completed_unit_count += batch_count;
+            attack->progress.num_units_completed += num_batch_keys_completed;
             attack->progress.duration_sec = batch_start_timestamp - start_timestamp;
             attack->progress.batch_duration_sec = batch_duration_sec;
             cancelling = attack->state == BOMM_ATTACK_STATE_CANCELLING;
             pthread_mutex_unlock(&attack->mutex);
 
-            // Reset batch count
-            batch_count = 0;
+            // Reset counter
+            num_batch_keys_completed = 0;
         }
     } while (!cancelling && !bomm_key_iterator_next(&key_iterator));
 
     // Final progress update
     pthread_mutex_lock(&attack->mutex);
-    attack->progress.completed_unit_count += batch_count;
+    attack->progress.num_units_completed += num_batch_keys_completed;
     attack->state = cancelling ? BOMM_ATTACK_STATE_CANCELLED : BOMM_ATTACK_STATE_COMPLETED;
     pthread_mutex_unlock(&attack->mutex);
 }

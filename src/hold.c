@@ -30,7 +30,7 @@ bomm_hold_t* bomm_hold_init(
     // Initialize hold
     hold->data_size = element_size;
     hold->size = hold_size;
-    hold->count = 0;
+    hold->num_elements = 0;
     pthread_mutex_init(&hold->mutex, NULL);
 
     return hold;
@@ -52,7 +52,7 @@ double bomm_hold_add(
     // Lock hold for atomic mutation
     pthread_mutex_lock(&hold->mutex);
 
-    int index = hold->count - 1;
+    int index = hold->num_elements - 1;
     char* element_ptr = &hold->elements[0] + (int) element_mem_size * index;
 
     // Find the index that beats the given score (-1 if no such score exists)
@@ -64,7 +64,7 @@ double bomm_hold_add(
     // Check if the element beating the score is a duplicate
     bool duplicate =
         index != -1 &&
-        (unsigned int) index < hold->count &&
+        (unsigned int) index < hold->num_elements &&
         ((bomm_hold_element_t*) element_ptr)->score == score &&
         memcmp(
            ((bomm_hold_element_t*) element_ptr)->data,
@@ -79,16 +79,16 @@ double bomm_hold_add(
     // Decide whether to accept the new element
     if ((unsigned int) index < hold->size && !duplicate) {
         // If hold is not full, yet, append one row
-        if (hold->count < hold->size) {
-            hold->count++;
+        if (hold->num_elements < hold->size) {
+            hold->num_elements++;
         }
 
         // Move elements down one row to make space for the new element
-        if ((unsigned int) index < hold->count - 1) {
+        if ((unsigned int) index < hold->num_elements - 1) {
             memmove(
                 element_ptr + element_mem_size,
                 element_ptr,
-                (hold->count - 1 - index) * element_mem_size
+                (hold->num_elements - 1 - index) * element_mem_size
             );
         }
 
@@ -105,7 +105,7 @@ double bomm_hold_add(
 
     // Return new score boundary necessary to enter the hold
     double new_score_boundary =
-        hold->count == hold->size
+        hold->num_elements == hold->size
             ? bomm_hold_at(hold, -1)->score
             : -INFINITY;
 

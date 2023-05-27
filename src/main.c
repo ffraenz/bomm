@@ -41,7 +41,7 @@ int main(int argc, char *argv[]) {
 
     // Print out details
     printf("Hold size: %d\n", bomm_query_main->hold->size);
-    printf("Concurrent attacks: %d\n", bomm_query_main->attack_count);
+    printf("Concurrent attacks: %d\n", bomm_query_main->num_attacks);
 
     // Install signal handler
     signal(SIGINT, bomm_signal_handler);

@@ -33,7 +33,7 @@ bomm_query_t* bomm_query_init(int argc, char *argv[]) {
     bool verbose = false;
     bool quiet = false;
     unsigned int hold_size = 0;
-    unsigned int thread_count = 0;
+    unsigned int num_threads = 0;
 
     // Read options
     int option;
@@ -73,7 +73,7 @@ bomm_query_t* bomm_query_init(int argc, char *argv[]) {
                     );
                     return NULL;
                 }
-                thread_count = (unsigned int) number;
+                num_threads = (unsigned int) number;
                 break;
             }
             case 'q': {
@@ -97,8 +97,8 @@ bomm_query_t* bomm_query_init(int argc, char *argv[]) {
     if (hold_size == 0) {
         hold_size = 100;
     }
-    if (thread_count == 0) {
-        thread_count = bomm_hardware_concurrency();
+    if (num_threads == 0) {
+        num_threads = bomm_hardware_concurrency();
     }
 
     // Read the query
@@ -177,7 +177,7 @@ bomm_query_t* bomm_query_init(int argc, char *argv[]) {
     }
 
     // Alloc query
-    size_t query_size = sizeof(bomm_query_t) + thread_count * sizeof(bomm_attack_t);
+    size_t query_size = sizeof(bomm_query_t) + num_threads * sizeof(bomm_attack_t);
     bomm_query_t* query = malloc(query_size);
     if (query == NULL) {
         json_decref(query_json);
@@ -191,7 +191,7 @@ bomm_query_t* bomm_query_init(int argc, char *argv[]) {
     query->hold = NULL;
     query->quiet = quiet;
     query->verbose = verbose;
-    query->attack_count = thread_count;
+    query->num_attacks = num_threads;
 
     // Use the measure of the last pass as the query measure
     query->measure = bomm_pass_result_measure(&passes[num_passes - 1]);
@@ -208,7 +208,7 @@ bomm_query_t* bomm_query_init(int argc, char *argv[]) {
     query->ciphertext_score = bomm_measure_message(query->measure, query->ciphertext);
 
     // Read wheels
-    unsigned int custom_wheel_count = 0;
+    unsigned int num_custom_wheels = 0;
     json_t* custom_wheels_json = json_object_get(query_json, "wheels");
     if (custom_wheels_json != NULL) {
         if (custom_wheels_json->type != JSON_ARRAY) {
@@ -217,10 +217,10 @@ bomm_query_t* bomm_query_init(int argc, char *argv[]) {
             fprintf(stderr, "Error: The query field 'wheels' is expected to be an array\n");
             return NULL;
         }
-        custom_wheel_count = (unsigned int) json_array_size(custom_wheels_json);
+        num_custom_wheels = (unsigned int) json_array_size(custom_wheels_json);
     }
-    bomm_wheel_t custom_wheels[custom_wheel_count > 0 ? custom_wheel_count : 1];
-    for (unsigned int i = 0; i < custom_wheel_count; i++) {
+    bomm_wheel_t custom_wheels[num_custom_wheels > 0 ? num_custom_wheels : 1];
+    for (unsigned int i = 0; i < num_custom_wheels; i++) {
         if (bomm_wheel_init_with_json(
             &custom_wheels[i],
             json_array_get(custom_wheels_json, i)
@@ -238,7 +238,7 @@ bomm_query_t* bomm_query_init(int argc, char *argv[]) {
         &key_space,
         key_space_json,
         custom_wheels,
-        custom_wheel_count
+        num_custom_wheels
     ) == NULL) {
         bomm_query_destroy(query);
         json_decref(query_json);
@@ -246,14 +246,14 @@ bomm_query_t* bomm_query_init(int argc, char *argv[]) {
     }
 
     // Split the key space into the requested number of concurrent threads
-    bomm_key_space_t key_space_slices[thread_count];
-    unsigned int attack_count = bomm_key_space_slice(
+    bomm_key_space_t key_space_slices[num_threads];
+    unsigned int num_attacks = bomm_key_space_slice(
         &key_space,
-        thread_count,
+        num_threads,
         key_space_slices
     );
 
-    if (attack_count == 0) {
+    if (num_attacks == 0) {
         bomm_query_destroy(query);
         json_decref(query_json);
         fprintf(
@@ -265,14 +265,14 @@ bomm_query_t* bomm_query_init(int argc, char *argv[]) {
     }
 
     // Reduce the size of the query if necessary
-    if (attack_count != thread_count) {
-        query->attack_count = attack_count;
-        query_size = sizeof(bomm_query_t) + attack_count * sizeof(bomm_attack_t);
+    if (num_attacks != num_threads) {
+        query->num_attacks = num_attacks;
+        query_size = sizeof(bomm_query_t) + num_attacks * sizeof(bomm_attack_t);
         query = realloc(query, query_size);
     }
 
     // Initialize parallel attacks
-    for (unsigned int i = 0; i < attack_count; i++) {
+    for (unsigned int i = 0; i < num_attacks; i++) {
         bomm_attack_t* attack = &query->attacks[i];
         attack->query = query;
         attack->id = i + 1;
@@ -283,9 +283,9 @@ bomm_query_t* bomm_query_init(int argc, char *argv[]) {
         attack->thread = 0;
         attack->state = BOMM_ATTACK_STATE_IDLE;
 
-        attack->progress.batch_unit_size = 1;
-        attack->progress.completed_unit_count = 0;
-        attack->progress.unit_count = 0;
+        attack->progress.num_batch_units = 1;
+        attack->progress.num_units_completed = 0;
+        attack->progress.num_units = 0;
         attack->progress.duration_sec = 0;
         attack->progress.batch_duration_sec = 0;
         pthread_mutex_init(&attack->mutex, NULL);
@@ -299,7 +299,7 @@ bomm_query_t* bomm_query_init(int argc, char *argv[]) {
 }
 
 void bomm_query_destroy(bomm_query_t* query) {
-    for (unsigned int i = 0; i < query->attack_count; i++) {
+    for (unsigned int i = 0; i < query->num_attacks; i++) {
         if (query->attacks[i].ciphertext != query->ciphertext) {
             free(query->attacks[i].ciphertext);
         }
@@ -313,7 +313,7 @@ void bomm_query_destroy(bomm_query_t* query) {
 bool bomm_query_start(bomm_query_t* query) {
     // Create attack threads that work in parallel
     bool error = false;
-    for (unsigned int i = 0; i < query->attack_count; i++) {
+    for (unsigned int i = 0; i < query->num_attacks; i++) {
         bomm_attack_t* attack = &query->attacks[i];
         pthread_mutex_lock(&attack->mutex);
         if (attack->state == BOMM_ATTACK_STATE_IDLE || attack->state == BOMM_ATTACK_STATE_CANCELLED) {
@@ -338,7 +338,7 @@ bool bomm_query_start(bomm_query_t* query) {
 bool bomm_query_is_pending(bomm_query_t* query) {
     bool pending = false;
     unsigned int i = 0;
-    while (!pending && i < query->attack_count) {
+    while (!pending && i < query->num_attacks) {
         bomm_attack_t* attack = &query->attacks[i];
         pthread_mutex_lock(&attack->mutex);
         pending = pending || attack->state == BOMM_ATTACK_STATE_PENDING;
@@ -350,7 +350,7 @@ bool bomm_query_is_pending(bomm_query_t* query) {
 
 void bomm_query_cancel(bomm_query_t* query) {
     // Send cancellation request to query threads
-    for (unsigned int i = 0; i < query->attack_count; i++) {
+    for (unsigned int i = 0; i < query->num_attacks; i++) {
         bomm_attack_t* attack = &query->attacks[i];
         pthread_mutex_lock(&attack->mutex);
         if (attack->state == BOMM_ATTACK_STATE_PENDING) {
@@ -361,7 +361,7 @@ void bomm_query_cancel(bomm_query_t* query) {
 }
 
 void bomm_query_join(bomm_query_t* query) {
-    for (unsigned int i = 0; i < query->attack_count; i++) {
+    for (unsigned int i = 0; i < query->num_attacks; i++) {
         if (query->attacks[i].thread != 0) {
             pthread_join(query->attacks[i].thread, NULL);
             query->attacks[i].thread = 0;
@@ -369,11 +369,11 @@ void bomm_query_join(bomm_query_t* query) {
     }
 }
 
-void bomm_query_print(bomm_query_t* query, unsigned int count) {
+void bomm_query_print(bomm_query_t* query, unsigned int num_elements) {
     bomm_progress_t joint_progress;
-    joint_progress.batch_unit_size = 26;
-    bomm_progress_t* attack_progress[query->attack_count];
-    for (unsigned int i = 0; i < query->attack_count; i++) {
+    joint_progress.num_batch_units = 26;
+    bomm_progress_t* attack_progress[query->num_attacks];
+    for (unsigned int i = 0; i < query->num_attacks; i++) {
         attack_progress[i] = &query->attacks[i].progress;
     }
 
@@ -384,15 +384,15 @@ void bomm_query_print(bomm_query_t* query, unsigned int count) {
     char score_string[512];
 
     // Lock progress updates
-    for (unsigned int i = 0; i < query->attack_count; i++) {
+    for (unsigned int i = 0; i < query->num_attacks; i++) {
         pthread_mutex_lock(&query->attacks[i].mutex);
     }
 
     // Calculate joint progress
-    bomm_progress_parallel(&joint_progress, attack_progress, query->attack_count);
+    bomm_progress_parallel(&joint_progress, attack_progress, query->num_attacks);
 
     // Unlock progress updates
-    for (unsigned int i = 0; i < query->attack_count; i++) {
+    for (unsigned int i = 0; i < query->num_attacks; i++) {
         pthread_mutex_unlock(&query->attacks[i].mutex);
     }
 
@@ -418,8 +418,8 @@ void bomm_query_print(bomm_query_t* query, unsigned int count) {
     printf("├──────┴───────────────────────────────────────────────────────────┬───────────┤\n");
 
     // Print hold
-    for (unsigned int i = 0; i < count; i++) {
-        if (i < query->hold->count) {
+    for (unsigned int i = 0; i < num_elements; i++) {
+        if (i < query->hold->num_elements) {
             bomm_hold_element_t* element = bomm_hold_at(query->hold, i);
             bomm_key_stringify(detail_string, sizeof(detail_string), (bomm_key_t*) element->data);
             snprintf(score_string, sizeof(score_string), "%+10.10f", element->score);
@@ -433,7 +433,7 @@ void bomm_query_print(bomm_query_t* query, unsigned int count) {
             printf("│                                                                              │\n");
             printf("│                                                                              │\n");
         }
-        if (i < count - 1) {
+        if (i < num_elements - 1) {
             printf("├──────────────────────────────────────────────────────────────────┬───────────┤\n");
         }
     }

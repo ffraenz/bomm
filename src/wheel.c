@@ -85,7 +85,7 @@ bool bomm_wheel_set_init_with_json(
     unsigned int wheel_set_size,
     json_t* wheel_set_json,
     bomm_wheel_t wheels[],
-    unsigned int wheel_count
+    unsigned int num_wheels
 ) {
     if (wheel_set_json == NULL || wheel_set_json->type != JSON_ARRAY) {
         fprintf(
@@ -119,7 +119,7 @@ bool bomm_wheel_set_init_with_json(
         bomm_wheel_t* wheel = bomm_lookup_string(
             wheels,
             sizeof(bomm_wheel_t),
-            wheel_count,
+            num_wheels,
             name
         );
 

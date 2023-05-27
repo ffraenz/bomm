@@ -61,20 +61,20 @@ inline static void bomm_swap_pointer(void** a, void** b) {
  * Lookup the given string in an array of arbitrary elements.
  * @param elements Pointer to the first element's string
  * @param element_size Number of bytes until reaching the next element's string
- * @param count Number of elements
+ * @param num_elements Number of elements
  * @param string String to lookup
  */
 inline static void* bomm_lookup_string(
     void* elements,
     size_t element_size,
-    unsigned int count,
+    unsigned int num_elements,
     const char* string
 ) {
     void* match = NULL;
     char* element_string = (char*) elements;
     unsigned int i = 0;
 
-    while (match == NULL && i < count) {
+    while (match == NULL && i < num_elements) {
         if (strcmp(element_string, string) == 0) {
             match = element_string;
         } else {

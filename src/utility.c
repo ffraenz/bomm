@@ -18,9 +18,9 @@ void bomm_array_shuffle(unsigned int* array, size_t size) {
 }
 
 unsigned int bomm_hardware_concurrency(void) {
-    long cpu_core_count = sysconf(_SC_NPROCESSORS_ONLN);
-    if (cpu_core_count < 1) {
+    long num_cpu_cores = sysconf(_SC_NPROCESSORS_ONLN);
+    if (num_cpu_cores < 1) {
         return 1;
     }
-    return (unsigned int) cpu_core_count;
+    return (unsigned int) num_cpu_cores;
 }

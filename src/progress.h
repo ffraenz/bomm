@@ -18,17 +18,17 @@ typedef struct _bomm_progress {
     /**
      * Number of workload units in a batch.
      */
-    unsigned int batch_unit_size;
+    unsigned int num_batch_units;
 
     /**
      * Estimated total number of workload units to be completed.
      */
-    unsigned long unit_count;
+    unsigned long num_units;
 
     /**
      * Number of workload units completed so far.
      */
-    unsigned long completed_unit_count;
+    unsigned long num_units_completed;
 
     /**
      * Number of seconds elapsed so far.
@@ -50,23 +50,23 @@ static inline void bomm_progress_parallel(
     bomm_progress_t* children[],
     unsigned int size
 ) {
-    progress->unit_count = 0;
-    progress->completed_unit_count = 0;
+    progress->num_units = 0;
+    progress->num_units_completed = 0;
     progress->duration_sec = 0;
     progress->batch_duration_sec = 0;
 
     for (unsigned int i = 0; i < size; i++) {
         bomm_progress_t* child = children[i];
 
-        progress->unit_count += child->unit_count;
-        progress->completed_unit_count += child->completed_unit_count;
+        progress->num_units += child->num_units;
+        progress->num_units_completed += child->num_units_completed;
 
         if (child->duration_sec > progress->duration_sec) {
             progress->duration_sec = child->duration_sec;
         }
 
         double normalized_batch_duration =
-            (((double) progress->batch_unit_size / size) / child->batch_unit_size) *
+            (((double) progress->num_batch_units / size) / child->num_batch_units) *
             child->batch_duration_sec;
 
         if (normalized_batch_duration > progress->batch_duration_sec) {
@@ -79,20 +79,20 @@ static inline void bomm_progress_parallel(
  * Calculate the percentage done for the given progress.
  */
 static inline double bomm_progress_percentage(bomm_progress_t* progress) {
-    if (progress->unit_count == 0) {
+    if (progress->num_units == 0) {
         return 0;
     }
-    return (double) progress->completed_unit_count / progress->unit_count;
+    return (double) progress->num_units_completed / progress->num_units;
 }
 
 /**
  * Calculate the estimated time remaining in seconds for the given progress.
  */
 static inline double bomm_progress_time_remaining_sec(bomm_progress_t* progress) {
-    unsigned long remaining_unit_count =
-        progress->unit_count - progress->completed_unit_count;
+    unsigned long num_units_remaining =
+        progress->num_units - progress->num_units_completed;
     double batches_remaining =
-        (double) remaining_unit_count / progress->batch_unit_size;
+        (double) num_units_remaining / progress->num_batch_units;
     return progress->batch_duration_sec * batches_remaining;
 }
 

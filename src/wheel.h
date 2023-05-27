@@ -109,7 +109,7 @@ bool bomm_wheel_set_init_with_json(
     unsigned int wheel_set_size,
     json_t* wheel_set_json,
     bomm_wheel_t wheels[],
-    unsigned int wheel_count
+    unsigned int num_wheels
 );
 
 #endif /* wheel_h */

@@ -28,7 +28,7 @@ inline static void bomm_enigma_encrypt(
     bomm_message_t* result
 ) {
     // Store the original positions as we will reinstate them afterwards
-    unsigned int original_positions[key->slot_count];
+    unsigned int original_positions[key->num_slots];
     memcpy(&original_positions, key->positions, sizeof(original_positions));
 
     // Simulate the Enigma for each letter
@@ -59,7 +59,7 @@ inline static __attribute__((always_inline)) void bomm_enigma_generate_scrambler
     bomm_key_t* key
 ) {
     // Store the original positions as we will reinstate them afterwards
-    unsigned int original_positions[key->slot_count];
+    unsigned int original_positions[key->num_slots];
     memcpy(&original_positions, key->positions, sizeof(original_positions));
 
     unsigned int index, letter;
@@ -142,18 +142,18 @@ inline static void bomm_enigma_engage_mechanism(bomm_key_t* state) {
  * wheels, and reflector wheels) excluding the plugboard.
  */
 inline static int bomm_enigma_scramble_letter(int x, bomm_key_t* state) {
-    int slot_count = state->slot_count;
+    int num_slots = state->num_slots;
     int slot;
 
     // Wheels (entry wheel, wheels right to left, reflector wheel)
-    for (slot = slot_count - 1; slot >= 0; slot--) {
+    for (slot = num_slots - 1; slot >= 0; slot--) {
         x += state->positions[slot] - state->rings[slot];
         x = state->wheels[slot].wiring.map[bomm_mod(x, BOMM_ALPHABET_SIZE)];
         x += state->rings[slot] - state->positions[slot];
     }
 
     // Wheels (wheels left to right, entry wheel)
-    for (slot = 1; slot < slot_count; slot++) {
+    for (slot = 1; slot < num_slots; slot++) {
         x += state->positions[slot] - state->rings[slot];
         x = state->wheels[slot].wiring.rev[bomm_mod(x, BOMM_ALPHABET_SIZE)];
         x += state->rings[slot] - state->positions[slot];

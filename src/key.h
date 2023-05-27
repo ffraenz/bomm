@@ -16,7 +16,7 @@
 #include "lettermask.h"
 #include "utility.h"
 
-#define BOMM_MAX_SLOT_COUNT 6
+#define BOMM_MAX_NUM_SLOTS 6
 #define BOMM_MAX_WHEEL_SET_SIZE 15
 
 /**
@@ -85,31 +85,31 @@ typedef struct _bomm_key_space {
      * Number of wheel slots; The first slot represents the reflector, the last
      * slot represents the entry wheel.
      */
-    unsigned int slot_count;
+    unsigned int num_slots;
 
     /**
      * Set of wheels per slot.
      * Each set is terminated with a null pointer.
      */
-    bomm_wheel_t wheel_sets[BOMM_MAX_SLOT_COUNT]
+    bomm_wheel_t wheel_sets[BOMM_MAX_NUM_SLOTS]
         [BOMM_MAX_WHEEL_SET_SIZE + 1];
 
     /**
      * Whether a wheel is rotating for each slot
      */
-    bool rotating_slots[BOMM_MAX_SLOT_COUNT];
+    bool rotating_slots[BOMM_MAX_NUM_SLOTS];
 
     /**
      * Possible ring settings for each slot.
      * Must not be empty (equal to 0).
      */
-    bomm_lettermask_t ring_masks[BOMM_MAX_SLOT_COUNT];
+    bomm_lettermask_t ring_masks[BOMM_MAX_NUM_SLOTS];
 
     /**
      * Possible start positions for each slot.
      * Must not be empty (equal to 0).
      */
-    bomm_lettermask_t position_masks[BOMM_MAX_SLOT_COUNT];
+    bomm_lettermask_t position_masks[BOMM_MAX_NUM_SLOTS];
 
     /**
      * Mask containing plugs to be exhausted.
@@ -120,7 +120,7 @@ typedef struct _bomm_key_space {
     /**
      * Number of elements contained. Set to 0 if unknown.
      */
-    unsigned long count;
+    unsigned long num_keys;
 
     /**
      * The number of keys to be skipped at the beginning of the key space
@@ -154,27 +154,27 @@ typedef struct _bomm_key {
      * Number of wheel slots; The first slot represents the reflector, the last
      * slot represents the entry wheel.
      */
-    unsigned int slot_count;
+    unsigned int num_slots;
 
     /**
      * Wheel instances matching the wheels of the key
      */
-    bomm_wheel_t wheels[BOMM_MAX_SLOT_COUNT];
+    bomm_wheel_t wheels[BOMM_MAX_NUM_SLOTS];
 
     /**
      * Whether wheel is rotating for each slot
      */
-    bool rotating_slots[BOMM_MAX_SLOT_COUNT];
+    bool rotating_slots[BOMM_MAX_NUM_SLOTS];
 
     /**
      * Ring setting (Ringstellung): Ring position of the wheel in each slot
      */
-    unsigned int rings[BOMM_MAX_SLOT_COUNT];
+    unsigned int rings[BOMM_MAX_NUM_SLOTS];
 
     /**
      * Start position (Walzenstellung): Start position of the wheel in each slot
      */
-    unsigned int positions[BOMM_MAX_SLOT_COUNT];
+    unsigned int positions[BOMM_MAX_NUM_SLOTS];
 
     /**
      * Plugboard setting (Steckerverbindungen) to be used
@@ -211,17 +211,17 @@ typedef struct _bomm_key_iterator {
     /**
      * Wheel set index per slot
      */
-    unsigned int wheel_indices[BOMM_MAX_SLOT_COUNT];
+    unsigned int wheel_indices[BOMM_MAX_NUM_SLOTS];
 
     /**
      * Shifting ring mask per slot
      */
-    bomm_lettermask_t ring_masks[BOMM_MAX_SLOT_COUNT];
+    bomm_lettermask_t ring_masks[BOMM_MAX_NUM_SLOTS];
 
     /**
      * Shifting position mask per slot
      */
-    bomm_lettermask_t position_masks[BOMM_MAX_SLOT_COUNT];
+    bomm_lettermask_t position_masks[BOMM_MAX_NUM_SLOTS];
 
     /**
      * Solo plug counter
@@ -230,12 +230,12 @@ typedef struct _bomm_key_iterator {
 } bomm_key_iterator_t;
 
 /**
- * Initialize a key space with the given mechanism and slot count.
+ * Initialize a key space with the given mechanism and number of slots.
  */
 bomm_key_space_t* bomm_key_space_init(
     bomm_key_space_t* key_space,
     bomm_mechanism_t mechanism,
-    unsigned int slot_count
+    unsigned int num_slots
 );
 
 /**
@@ -248,13 +248,13 @@ bomm_key_space_t* bomm_key_space_init_enigma_i(bomm_key_space_t* key_space);
  * @param key_space Existing key space or NULL to allocate a new one
  * @param key_space_json JSON key space object
  * @param wheels Pointer to an array of wheels for lookup
- * @param wheel_count Number of elements in `wheels`
+ * @param num_wheels Number of elements in `wheels`
  */
 bomm_key_space_t* bomm_key_space_init_with_json(
     bomm_key_space_t* key_space,
     json_t* key_space_json,
     bomm_wheel_t wheels[],
-    unsigned int wheel_count
+    unsigned int num_wheels
 );
 
 /**
@@ -273,10 +273,11 @@ void bomm_key_space_destroy(bomm_key_space_t* key_space);
 static inline unsigned int bomm_key_space_plugboard_count(
     const bomm_key_space_t* key_space
 ) {
-    unsigned int count = bomm_lettermask_count(&key_space->plug_mask);
+    unsigned int num_plugboards = bomm_lettermask_count(&key_space->plug_mask);
     return
         (BOMM_ALPHABET_SIZE - 1) * BOMM_ALPHABET_SIZE / 2 -
-        (BOMM_ALPHABET_SIZE - 1 - count) * (BOMM_ALPHABET_SIZE - count) / 2 + 1;
+        (BOMM_ALPHABET_SIZE - 1 - num_plugboards) *
+        (BOMM_ALPHABET_SIZE - num_plugboards) / 2 + 1;
 }
 
 /**
@@ -292,7 +293,7 @@ unsigned long bomm_key_space_count(
  */
 unsigned int bomm_key_space_slice(
     const bomm_key_space_t* key_space,
-    unsigned int slice_count,
+    unsigned int num_slices,
     bomm_key_space_t* slices
 );
 
@@ -357,11 +358,11 @@ static inline bool bomm_key_iterator_plugboard_next(
 static inline bool bomm_key_iterator_positions_init(
     unsigned int* positions,
     bomm_lettermask_t* shifting_masks,
-    unsigned int size
+    unsigned int num_positions
 ) {
-    memset(positions, 0, size * sizeof(bomm_letter_t));
+    memset(positions, 0, num_positions * sizeof(bomm_letter_t));
     bool empty = false;
-    for (unsigned int slot = 0; slot < size; slot++) {
+    for (unsigned int slot = 0; slot < num_positions; slot++) {
         if (!(empty = empty || shifting_masks[slot] == BOMM_LETTERMASK_NONE)) {
             while ((shifting_masks[slot] & 0x1) == 0) {
                 shifting_masks[slot] = shifting_masks[slot] >> 1;
@@ -379,10 +380,10 @@ static inline bool bomm_key_iterator_positions_init(
 static inline bool bomm_key_iterator_positions_next(
     unsigned int* positions,
     bomm_lettermask_t* shifting_masks,
-    unsigned int size
+    unsigned int num_positions
 ) {
     bool carry = true;
-    int slot = size;
+    int slot = num_positions;
     while (carry && --slot >= 0) {
         // Optimization: If there's only one bit set on the mask we can skip the
         // loops and literally carry on to the next slot
@@ -413,9 +414,9 @@ static inline bool bomm_key_iterator_positions_next(
 static inline bool bomm_key_iterator_wheels_validate(
     bomm_key_iterator_t* iterator
 ) {
-    int slot_count = iterator->key_space->slot_count;
-    for (int i = 0; i < slot_count; i++) {
-        for (int j = i + 1; j < slot_count; j++) {
+    int num_slots = iterator->key_space->num_slots;
+    for (int i = 0; i < num_slots; i++) {
+        for (int j = i + 1; j < num_slots; j++) {
             if (strcmp(
                 iterator->key_space->wheel_sets[i][iterator->wheel_indices[i]].name,
                 iterator->key_space->wheel_sets[j][iterator->wheel_indices[j]].name
@@ -437,12 +438,12 @@ static inline bool bomm_key_iterator_wheels_next(
     bomm_key_iterator_t* iterator,
     bool increment
 ) {
-    unsigned int slot_count = iterator->key_space->slot_count;
+    unsigned int num_slots = iterator->key_space->num_slots;
     unsigned int revolutions = 0;
     while (revolutions < 2 && (!bomm_key_iterator_wheels_validate(iterator) || increment)) {
         increment = false;
         bool carry = true;
-        int slot = slot_count;
+        int slot = num_slots;
         while (carry && --slot >= 0) {
             iterator->wheel_indices[slot]++;
             if ((carry = (iterator->key_space->wheel_sets[slot][iterator->wheel_indices[slot]].name[0] == '\0'))) {
@@ -492,7 +493,7 @@ static inline __attribute__((always_inline)) bool bomm_key_iterator_next(
     bomm_key_iterator_t* iterator
 ) {
     bomm_key_t* key = &iterator->key;
-    unsigned int slot_count = key->slot_count;
+    unsigned int num_slots = key->num_slots;
     bool carry_out = false;
     bool scrambler_changed = false;
     do {
@@ -500,9 +501,9 @@ static inline __attribute__((always_inline)) bool bomm_key_iterator_next(
         bool carry =
             plugboard_carry &&
             bomm_key_iterator_positions_next(
-                key->positions, iterator->position_masks, slot_count) &&
+                key->positions, iterator->position_masks, num_slots) &&
             bomm_key_iterator_positions_next(
-                key->rings, iterator->ring_masks, slot_count) &&
+                key->rings, iterator->ring_masks, num_slots) &&
             bomm_key_iterator_wheels_next(
                 iterator, true);
         scrambler_changed = scrambler_changed || plugboard_carry;

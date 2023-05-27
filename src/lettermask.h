@@ -76,12 +76,12 @@ inline static unsigned int bomm_lettermask_count(
     const bomm_lettermask_t* mask
 ) {
     bomm_lettermask_t shifting_mask = *mask;
-    unsigned int count = 0;
+    unsigned int num_letters = 0;
     while (shifting_mask != BOMM_LETTERMASK_NONE) {
-        count += shifting_mask & 0x1;
+        num_letters += shifting_mask & 0x1;
         shifting_mask = shifting_mask >> 1;
     }
-    return count;
+    return num_letters;
 }
 
 /**

@@ -10,22 +10,22 @@
 bomm_key_space_t* bomm_key_space_init(
     bomm_key_space_t* key_space,
     bomm_mechanism_t mechanism,
-    unsigned int slot_count
+    unsigned int num_slots
 ) {
     if (!key_space && !(key_space = malloc(sizeof(bomm_key_space_t)))) {
         return NULL;
     }
 
     key_space->mechanism = mechanism;
-    key_space->slot_count = slot_count;
+    key_space->num_slots = num_slots;
     key_space->plug_mask = BOMM_LETTERMASK_NONE;
-    key_space->count = 0;
+    key_space->num_keys = 0;
     key_space->offset = 0;
     key_space->limit = LONG_MAX;
 
     memset(key_space->wheel_sets, 0, sizeof(key_space->wheel_sets));
 
-    for (unsigned int slot = 0; slot < slot_count; slot++) {
+    for (unsigned int slot = 0; slot < num_slots; slot++) {
         key_space->ring_masks[slot] = BOMM_LETTERMASK_FIRST;
         key_space->position_masks[slot] = BOMM_LETTERMASK_FIRST;
         key_space->rotating_slots[slot] = false;
@@ -74,7 +74,7 @@ bomm_key_space_t* bomm_key_space_init_with_json(
     bomm_key_space_t* key_space,
     json_t* key_space_json,
     bomm_wheel_t wheels[],
-    unsigned int wheel_count
+    unsigned int num_wheels
 ) {
     if (key_space_json->type != JSON_OBJECT) {
         return NULL;
@@ -88,23 +88,23 @@ bomm_key_space_t* bomm_key_space_init_with_json(
             bomm_key_mechanism_from_string(json_string_value(mechanism_json));
     }
 
-    // Read slot count
+    // Read the number of slots
     json_t* slots_json = json_object_get(key_space_json, "slots");
     if (slots_json->type != JSON_ARRAY) {
         return NULL;
     }
-    unsigned int slot_count = (unsigned int) json_array_size(slots_json);
-    if (slot_count > BOMM_MAX_SLOT_COUNT) {
+    unsigned int num_slots = (unsigned int) json_array_size(slots_json);
+    if (num_slots > BOMM_MAX_NUM_SLOTS) {
         return NULL;
     }
 
     // Init key space
     bool owning_key_space = key_space == NULL;
-    key_space = bomm_key_space_init(key_space, mechanism, slot_count);
+    key_space = bomm_key_space_init(key_space, mechanism, num_slots);
 
     bool error = false;
     unsigned int slot = 0;
-    while (!error && slot < slot_count) {
+    while (!error && slot < num_slots) {
         json_t* slot_json = json_array_get(slots_json, slot);
         if (slot_json->type == JSON_OBJECT) {
             // Read wheel set
@@ -114,7 +114,7 @@ bomm_key_space_t* bomm_key_space_init_with_json(
                 BOMM_MAX_WHEEL_SET_SIZE,
                 wheel_set_json,
                 wheels,
-                wheel_count
+                num_wheels
             )) {
                 error = true;
             }
@@ -213,7 +213,7 @@ bomm_key_space_t* bomm_key_space_init_with_json(
 void bomm_key_space_debug(const bomm_key_space_t* key_space) {
     printf("Debug key space %p:\n", (void*) key_space);
 
-    for (unsigned int slot = 0; slot < key_space->slot_count; slot++) {
+    for (unsigned int slot = 0; slot < key_space->num_slots; slot++) {
         printf(
             "  Slot %d%s:\n",
             slot + 1,
@@ -243,81 +243,81 @@ void bomm_key_space_destroy(bomm_key_space_t* key_space) {
 
 unsigned int bomm_key_space_slice(
     const bomm_key_space_t* key_space,
-    unsigned int split_count,
+    unsigned int num_slices,
     bomm_key_space_t* slices
 ) {
-    if (split_count == 0) {
+    if (num_slices == 0) {
         return 0;
     }
 
-    unsigned long key_count = bomm_key_space_count(key_space);
+    unsigned long num_keys = bomm_key_space_count(key_space);
 
     // Make sure every slice gets at least 1 key to work on
-    unsigned int actual_split_count =
-        key_count < (unsigned long) split_count
-            ? (unsigned int) key_count
-            : split_count;
+    unsigned int num_slices_used =
+        num_keys < (unsigned long) num_slices
+            ? (unsigned int) num_keys
+            : num_slices;
 
-    if (actual_split_count == 0) {
+    if (num_slices_used == 0) {
         return 0;
     }
 
-    unsigned long slice_count = key_count / actual_split_count;
+    unsigned long num_slice_keys = num_keys / num_slices_used;
     unsigned long offset = key_space->offset;
-    for (unsigned int i = 0; i < actual_split_count; i++) {
+    for (unsigned int i = 0; i < num_slices_used; i++) {
         memcpy(&slices[i], key_space, sizeof(bomm_key_space_t));
         slices[i].offset = offset;
-        if (i < actual_split_count - 1) {
-            slices[i].count = slices[i].limit = slice_count;
-            offset += slice_count;
+        if (i < num_slices_used - 1) {
+            slices[i].num_keys = slices[i].limit = num_slice_keys;
+            offset += num_slice_keys;
         } else {
-            slices[i].count = slices[i].limit = key_count - offset;
+            slices[i].num_keys = slices[i].limit = num_keys - offset;
         }
     }
 
-    return actual_split_count;
+    return num_slices_used;
 }
 
 unsigned long bomm_key_space_count(
     const bomm_key_space_t* key_space
 ) {
     // Return count if known
-    if (key_space->count != 0) {
-        return key_space->count;
+    if (key_space->num_keys != 0) {
+        return key_space->num_keys;
     }
 
     // Derive a key space without plug mask
-    bomm_key_space_t counting_key_space;
-    memcpy(&counting_key_space, key_space, sizeof(counting_key_space));
-    counting_key_space.plug_mask = BOMM_LETTERMASK_NONE;
+    bomm_key_space_t key_space_no_plugs;
+    memcpy(&key_space_no_plugs, key_space, sizeof(key_space_no_plugs));
+    key_space_no_plugs.plug_mask = BOMM_LETTERMASK_NONE;
 
     // Create a new iterator for it
     bomm_key_iterator_t key_iterator;
-    if (bomm_key_iterator_init(&key_iterator, &counting_key_space) == NULL) {
+    if (bomm_key_iterator_init(&key_iterator, &key_space_no_plugs) == NULL) {
         // The key space is empty
         return 0;
     }
 
     // Count scrambler keys
-    unsigned long count = 1;
+    unsigned long num_keys = 1;
     while (!bomm_key_iterator_next(&key_iterator)) {
-        count++;
+        num_keys++;
     }
 
     // Multiply the scrambler keys with the number of solo plugs
-    count *= bomm_key_space_plugboard_count(key_space);
+    num_keys *= bomm_key_space_plugboard_count(key_space);
 
-    if (count <= key_space->offset) {
+    if (num_keys <= key_space->offset) {
         return 0;
     }
 
-    count -= key_space->offset;
+    num_keys -= key_space->offset;
 
-    if (count > key_space->limit) {
+    if (num_keys > key_space->limit) {
         return key_space->limit;
     }
 
-    return count;
+    return num_keys;
 }
 
 bomm_key_t* bomm_key_init(bomm_key_t* key, const bomm_key_space_t* key_space) {
@@ -328,12 +328,12 @@ bomm_key_t* bomm_key_init(bomm_key_t* key, const bomm_key_space_t* key_space) {
 
     // Initialize key from key space meta data
     key->mechanism = key_space->mechanism;
-    key->slot_count = key_space->slot_count;
+    key->num_slots = key_space->num_slots;
     memcpy(&key->rotating_slots, &key_space->rotating_slots, sizeof(key->rotating_slots));
 
     // Stepping mechanism: Determine the fast rotor slot
     if (key->mechanism == BOMM_MECHANISM_STEPPING) {
-        key->fast_wheel_slot = key->slot_count - 1;
+        key->fast_wheel_slot = key->num_slots - 1;
         while (key->fast_wheel_slot > 0 && !key->rotating_slots[key->fast_wheel_slot]) {
             key->fast_wheel_slot--;
         }
@@ -352,10 +352,10 @@ bomm_key_t* bomm_key_init(bomm_key_t* key, const bomm_key_space_t* key_space) {
     // Reset the wheel order, ring settings, and start positions of all slots,
     // including the unused ones to remove undefined memory and thus make keys
     // comparable as a whole using `memcmp`.
-    for (unsigned int slot = 0; slot < BOMM_MAX_SLOT_COUNT; slot++) {
+    for (unsigned int slot = 0; slot < BOMM_MAX_NUM_SLOTS; slot++) {
         key->rings[slot] = 0;
         key->positions[slot] = 0;
-        if (slot < key_space->slot_count) {
+        if (slot < key_space->num_slots) {
             key->rotating_slots[slot] = key_space->rotating_slots[slot];
             memcpy(
                 &key->wheels[slot],
@@ -377,11 +377,11 @@ bomm_key_iterator_t* bomm_key_iterator_init(
     bomm_key_iterator_t* iterator,
     const bomm_key_space_t* key_space
 ) {
-    unsigned int slot_count = key_space->slot_count;
+    unsigned int num_slots = key_space->num_slots;
     bool empty = false;
 
     // Validate wheel sets are not empty
-    for (unsigned int slot = 0; slot < slot_count; slot++) {
+    for (unsigned int slot = 0; slot < num_slots; slot++) {
         empty = empty || key_space->wheel_sets[slot][0].name[0] == '\0';
     }
     if (empty) {
@@ -409,8 +409,8 @@ bomm_key_iterator_t* bomm_key_iterator_init(
     }
 
     // Reset wheels, ring masks, and position masks
-    size_t masks_size = sizeof(bomm_lettermask_t) * slot_count;
-    memset(&iterator->wheel_indices, 0, sizeof(unsigned int) * slot_count);
+    size_t masks_size = sizeof(bomm_lettermask_t) * num_slots;
+    memset(&iterator->wheel_indices, 0, sizeof(unsigned int) * num_slots);
     memcpy(&iterator->ring_masks, key_space->ring_masks, masks_size);
     memcpy(&iterator->position_masks, key_space->position_masks, masks_size);
     memset(&iterator->solo_plug, 0, sizeof(unsigned int) * 2);
@@ -421,9 +421,9 @@ bomm_key_iterator_t* bomm_key_iterator_init(
         bomm_key_iterator_wheels_next(
             iterator, false) ||
         bomm_key_iterator_positions_init(
-            iterator->key.rings, iterator->ring_masks, slot_count) ||
+            iterator->key.rings, iterator->ring_masks, num_slots) ||
         bomm_key_iterator_positions_init(
-            iterator->key.positions, iterator->position_masks, slot_count) ||
+            iterator->key.positions, iterator->position_masks, num_slots) ||
         !bomm_key_is_relevant(&iterator->key)
     );
 
@@ -473,7 +473,7 @@ void bomm_key_wheels_stringify(char* str, size_t size, bomm_key_t* key) {
     size_t name_len;
 
     while (
-        slot < key->slot_count &&
+        slot < key->num_slots &&
         (name = key->wheels[slot].name) &&
         (name_len = strlen(name)) > 0 &&
         i + (slot > 0 ? 1 : 0) + name_len < size - 1
@@ -493,7 +493,7 @@ void bomm_key_wheels_stringify(char* str, size_t size, bomm_key_t* key) {
 
 void bomm_key_rings_stringify(char* str, size_t size, bomm_key_t* key) {
     unsigned int i = 0;
-    while (i < key->slot_count && i < size - 1) {
+    while (i < key->num_slots && i < size - 1) {
         str[i] = bomm_message_letter_to_ascii(key->rings[i]);
         i++;
     }
@@ -502,7 +502,7 @@ void bomm_key_rings_stringify(char* str, size_t size, bomm_key_t* key) {
 
 void bomm_key_positions_stringify(char* str, size_t size, bomm_key_t* key) {
     unsigned int i = 0;
-    while (i < key->slot_count && i < size - 1) {
+    while (i < key->num_slots && i < size - 1) {
         str[i] = bomm_message_letter_to_ascii(key->positions[i]);
         i++;
     }
@@ -519,7 +519,7 @@ void bomm_key_debug(const bomm_key_t* key) {
 
     char wiring_string[128];
     char turnovers_string[128];
-    for (unsigned int slot = 0; slot < key->slot_count; slot++) {
+    for (unsigned int slot = 0; slot < key->num_slots; slot++) {
         const bomm_wheel_t* wheel = &key->wheels[slot];
         bomm_wiring_stringify(wiring_string, sizeof(wiring_string), &wheel->wiring);
         bomm_lettermask_stringify(turnovers_string, sizeof(turnovers_string), &wheel->turnovers);

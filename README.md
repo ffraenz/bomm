@@ -11,7 +11,7 @@ The following CLI options are available:
 
 - `-h`, `--help` - Display the help message
 - `-n`, `--num-hold` - Number of hold elements to collect
-- `-t`, `--num-threads` - Number of concurrent threads to use (defaults to the number of CPU cores available)
+- `-t`, `--num-threads` - Number of concurrent threads to use
 - `-q`, `--quiet` - Enable quiet mode
 - `-v`, `--verbose` - Enable verbose mode
 
@@ -50,7 +50,7 @@ This will result in the following view that is kept up-to-date while processing 
 └──────────────────────────────────────────────────────────────────────────────┘
 ```
 
-When the query completes or the program is terminated with `Ctrl+C`, the full hold is printed out before exiting.
+When the query completes or the program is terminated by the SIGINT  (pressing `Ctrl+C`) or SIGTERM signal, the full hold is printed out before exiting.
 
 ## Measures
 

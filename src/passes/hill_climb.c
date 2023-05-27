@@ -144,7 +144,7 @@ double bomm_pass_hill_climb_run(
 
             // TODO: Remove debugging code
             // bomm_wiring_plugboard_stringify(string, sizeof(string), plugboard);
-            // printf("Initial me.: %+016.12f '%s' (%d)\n", best_score, string, count);
+            // printf("Initial me.: %+016.12f '%s' (%d)\n", best_score, string, num_plugs);
         }
 
         // Enumerate all possible plugboard pairs
@@ -215,7 +215,7 @@ double bomm_pass_hill_climb_run(
 
                             // TODO: Remove debugging code
                             // bomm_wiring_plugboard_stringify(string, sizeof(string), plugboard);
-                            // printf("Measure:     %+016.12f '%s' (%d)\n", score, string, count);
+                            // printf("Measure:     %+016.12f '%s' (%d)\n", score, string, num_plugs);
 
                             // Store info necessary to reproduce best result
                             memcpy(best_plugs, plugs, sizeof(best_plugs));
@@ -244,7 +244,7 @@ double bomm_pass_hill_climb_run(
 
             // TODO: Remove debugging code
             // bomm_wiring_plugboard_stringify(string, sizeof(string), plugboard);
-            // printf("Apply best:  %+016.12f '%s' (%d)\n", best_score, string, count);
+            // printf("Apply best:  %+016.12f '%s' (%d)\n", best_score, string, num_plugs);
         }
     }
 
