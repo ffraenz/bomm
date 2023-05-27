@@ -45,19 +45,19 @@ bomm_key_space_t* bomm_key_space_init_enigma_i(bomm_key_space_t* key_space) {
     key_space->rotating_slots[3] = true;
 
     // Set of reflectors (in the order they are tested)
-    bomm_wheel_init_known(&key_space->wheel_sets[0][0], "UKW-B");
+    bomm_wheel_init_with_name(&key_space->wheel_sets[0][0], "UKW-B");
 
     // Wheel sets for slots 1, 2, and 3
     for (int slot = 1; slot <= 3; slot++) {
-        bomm_wheel_init_known(&key_space->wheel_sets[slot][0], "I");
-        bomm_wheel_init_known(&key_space->wheel_sets[slot][1], "II");
-        bomm_wheel_init_known(&key_space->wheel_sets[slot][2], "III");
-        bomm_wheel_init_known(&key_space->wheel_sets[slot][3], "IV");
-        bomm_wheel_init_known(&key_space->wheel_sets[slot][4], "V");
+        bomm_wheel_init_with_name(&key_space->wheel_sets[slot][0], "I");
+        bomm_wheel_init_with_name(&key_space->wheel_sets[slot][1], "II");
+        bomm_wheel_init_with_name(&key_space->wheel_sets[slot][2], "III");
+        bomm_wheel_init_with_name(&key_space->wheel_sets[slot][3], "IV");
+        bomm_wheel_init_with_name(&key_space->wheel_sets[slot][4], "V");
     }
 
     // Set of entry wheels
-    bomm_wheel_init_known(&key_space->wheel_sets[4][0], "ETW-ABC");
+    bomm_wheel_init_with_name(&key_space->wheel_sets[4][0], "ETW-ABC");
 
     // Ring settings to be enumerated
     key_space->ring_masks[3] = BOMM_LETTERMASK_ALL;

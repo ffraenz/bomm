@@ -29,7 +29,7 @@ bomm_wheel_t* bomm_wheel_init(
     return wheel;
 }
 
-bomm_wheel_t* bomm_wheel_init_known(bomm_wheel_t* wheel, const char* name) {
+bomm_wheel_t* bomm_wheel_init_with_name(bomm_wheel_t* wheel, const char* name) {
     unsigned int index = 0;
     unsigned int num_kown_wheels =
         sizeof(bomm_known_wheels) / sizeof(bomm_known_wheels[0]);
@@ -125,7 +125,7 @@ bool bomm_wheel_set_init_with_json(
 
         if (wheel != NULL) {
             memcpy(&wheel_set[i], wheel, sizeof(bomm_wheel_t));
-        } else if (!bomm_wheel_init_known(&wheel_set[i], name)) {
+        } else if (!bomm_wheel_init_with_name(&wheel_set[i], name)) {
             fprintf(
                 stderr,
                 "Error: The wheel with name '%s' cannot be found among " \
