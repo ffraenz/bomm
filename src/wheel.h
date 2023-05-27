@@ -38,6 +38,50 @@ typedef struct _bomm_wheel {
 } bomm_wheel_t;
 
 /**
+ * Struct describing a wheel with strings used to statically store known wheels
+ */
+typedef struct _bomm_wheel_spec {
+    /**
+     * Wheel name
+     */
+    const char* name;
+
+    /**
+     * Wheel wiring string
+     */
+    const char* wiring;
+
+    /**
+     * Turnover lettermask string
+     */
+    const char* turnovers;
+} bomm_wheel_spec_t;
+
+/**
+ * Set of known wheels that can be referenced by name; Known wheels include the
+ * ones used in Enigma models I, M1, M2, M3, and M4.
+ */
+static const bomm_wheel_spec_t bomm_known_wheels[] = {
+    { "ETW-ABC",    "abcdefghijklmnopqrstuvwxyz", ""   },
+    { "ETW-QWE",    "jwulcmnohpqzyxiradkegvbtsf", ""   },
+    { "I",          "ekmflgdqvzntowyhxuspaibrcj", "q"  },
+    { "II",         "ajdksiruxblhwtmcqgznpyfvoe", "e"  },
+    { "III",        "bdfhjlcprtxvznyeiwgakmusqo", "v"  },
+    { "IV",         "esovpzjayquirhxlnftgkdcmwb", "j"  },
+    { "V",          "vzbrgityupsdnhlxawmjqofeck", "z"  },
+    { "VI",         "jpgvoumfyqbenhzrdkasxlictw", "mz" },
+    { "VII",        "nzjhgrcxmyswboufaivlpekqdt", "mz" },
+    { "VIII",       "fkqhtlxocbjspdzramewniuygv", "mz" },
+    { "beta",       "leyjvcnixwpbqmdrtakzgfuhos", ""   },
+    { "gamma",      "fsokanuerhmbtiycwlqpzxvgjd", ""   },
+    { "UKW-A",      "ejmzalyxvbwfcrquontspikhgd", ""   },
+    { "UKW-B",      "yruhqsldpxngokmiebfzcwvjat", ""   },
+    { "UKW-C",      "fvpjiaoyedrzxwgctkuqsbnmhl", ""   },
+    { "UKW-B-thin", "enkqauywjicopblmdxzvfthrgs", ""   },
+    { "UKW-C-thin", "rdobjntkvehmlfcwzaxgyipsuq", ""   }
+};
+
+/**
  * Initialize a wheel with the given name, wiring, and turnovers.
  */
 bomm_wheel_t* bomm_wheel_init(

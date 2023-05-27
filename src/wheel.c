@@ -13,11 +13,8 @@ bomm_wheel_t* bomm_wheel_init(
     const char* wiring_string,
     const char* turnovers_string
 ) {
-    if (wheel == NULL) {
-        wheel = malloc(sizeof(bomm_wheel_t));
-        if (wheel == NULL) {
-            return NULL;
-        }
+    if (!wheel && !(wheel = malloc(sizeof(bomm_wheel_t)))) {
+        return NULL;
     }
 
     bomm_strncpy(wheel->name, name, BOMM_WHEEL_NAME_MAX_LENGTH);
@@ -32,28 +29,25 @@ bomm_wheel_t* bomm_wheel_init(
     return wheel;
 }
 
-bomm_wheel_t* bomm_wheel_init_with_name(bomm_wheel_t* wheel, const char* name) {
-    if (strcmp(name, "I") == 0) {
-        return bomm_wheel_init(wheel, name, "ekmflgdqvzntowyhxuspaibrcj", "q");
-    } else if (strcmp(name, "II") == 0) {
-        return bomm_wheel_init(wheel, name, "ajdksiruxblhwtmcqgznpyfvoe", "e");
-    } else if (strcmp(name, "III") == 0) {
-        return bomm_wheel_init(wheel, name, "bdfhjlcprtxvznyeiwgakmusqo", "v");
-    } else if (strcmp(name, "IV") == 0) {
-        return bomm_wheel_init(wheel, name, "esovpzjayquirhxlnftgkdcmwb", "j");
-    } else if (strcmp(name, "V") == 0) {
-        return bomm_wheel_init(wheel, name, "vzbrgityupsdnhlxawmjqofeck", "z");
-    } else if (strcmp(name, "ETW-ABC") == 0) {
-        return bomm_wheel_init(wheel, name, "abcdefghijklmnopqrstuvwxyz", "");
-    } else if (strcmp(name, "UKW-A") == 0) {
-        return bomm_wheel_init(wheel, name, "ejmzalyxvbwfcrquontspikhgd", "");
-    } else if (strcmp(name, "UKW-B") == 0) {
-        return bomm_wheel_init(wheel, name, "yruhqsldpxngokmiebfzcwvjat", "");
-    } else if (strcmp(name, "UKW-C") == 0) {
-        return bomm_wheel_init(wheel, name, "fvpjiaoyedrzxwgctkuqsbnmhl", "");
-    } else {
+bomm_wheel_t* bomm_wheel_init_known(bomm_wheel_t* wheel, const char* name) {
+    unsigned int index = 0;
+    unsigned int num_kown_wheels =
+        sizeof(bomm_known_wheels) / sizeof(bomm_known_wheels[0]);
+
+    const bomm_wheel_spec_t* wheel_spec = NULL;
+    while (!wheel_spec && index < num_kown_wheels) {
+        if (strcmp(bomm_known_wheels[index].name, name) == 0) {
+            wheel_spec = &bomm_known_wheels[index];
+        } else {
+            index++;
+        }
+    }
+
+    if (!wheel_spec) {
         return NULL;
     }
+
+    return bomm_wheel_init(wheel, name, wheel_spec->wiring, wheel_spec->turnovers);
 }
 
 bomm_wheel_t* bomm_wheel_init_with_json(bomm_wheel_t* wheel, json_t* wheel_json) {
@@ -131,7 +125,7 @@ bool bomm_wheel_set_init_with_json(
 
         if (wheel != NULL) {
             memcpy(&wheel_set[i], wheel, sizeof(bomm_wheel_t));
-        } else if (!bomm_wheel_init_with_name(&wheel_set[i], name)) {
+        } else if (!bomm_wheel_init_known(&wheel_set[i], name)) {
             fprintf(
                 stderr,
                 "Error: The wheel with name '%s' cannot be found among " \

@@ -9,6 +9,41 @@
 #include <jansson.h>
 #include "../src/wheel.h"
 
+Test(wiring, bomm_wheel_init_with_name) {
+    bomm_wheel_t wheel;
+    char string[BOMM_ALPHABET_SIZE + 1];
+
+    cr_assert_eq(bomm_wheel_init_known(&wheel, "ETW-ABC"), &wheel);
+    cr_assert_str_eq(wheel.name, "ETW-ABC");
+    bomm_wiring_stringify(string, sizeof(string), &wheel.wiring);
+    cr_assert_str_eq(string, "abcdefghijklmnopqrstuvwxyz");
+    bomm_lettermask_stringify(string, sizeof(string), &wheel.turnovers);
+    cr_assert_str_eq(string, "");
+
+    cr_assert_eq(bomm_wheel_init_known(&wheel, "I"), &wheel);
+    cr_assert_str_eq(wheel.name, "I");
+    bomm_wiring_stringify(string, sizeof(string), &wheel.wiring);
+    cr_assert_str_eq(string, "ekmflgdqvzntowyhxuspaibrcj");
+    bomm_lettermask_stringify(string, sizeof(string), &wheel.turnovers);
+    cr_assert_str_eq(string, "q");
+
+    cr_assert_eq(bomm_wheel_init_known(&wheel, "VIII"), &wheel);
+    cr_assert_str_eq(wheel.name, "VIII");
+    bomm_wiring_stringify(string, sizeof(string), &wheel.wiring);
+    cr_assert_str_eq(string, "fkqhtlxocbjspdzramewniuygv");
+    bomm_lettermask_stringify(string, sizeof(string), &wheel.turnovers);
+    cr_assert_str_eq(string, "mz");
+
+    cr_assert_eq(bomm_wheel_init_known(&wheel, "UKW-B"), &wheel);
+    cr_assert_str_eq(wheel.name, "UKW-B");
+    bomm_wiring_stringify(string, sizeof(string), &wheel.wiring);
+    cr_assert_str_eq(string, "yruhqsldpxngokmiebfzcwvjat");
+    bomm_lettermask_stringify(string, sizeof(string), &wheel.turnovers);
+    cr_assert_str_eq(string, "");
+
+    cr_assert_eq(bomm_wheel_init_known(&wheel, "unknown"), NULL);
+}
+
 Test(wiring, bomm_wheel_init_with_json) {
     const char* wheel_json_string =
         "{ \"name\": \"I\", \"wiring\": \"ekmflgdqvzntowyhxuspaibrcj\", " \
