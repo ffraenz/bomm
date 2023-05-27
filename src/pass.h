@@ -109,7 +109,7 @@ bomm_pass_t* bomm_pass_init(bomm_pass_t* pass);
 /**
  * Init a pass from the given JSON value
  */
-bomm_pass_t* bomm_pass_init_json(
+bomm_pass_t* bomm_pass_init_with_json(
     bomm_pass_t* pass,
     json_t* pass_json
 );

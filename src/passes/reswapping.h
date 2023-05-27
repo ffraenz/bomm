@@ -37,7 +37,7 @@ double bomm_pass_reswapping_run(
 /**
  * Init a pass config from the given JSON value
  */
-bomm_pass_reswapping_config_t* bomm_pass_reswapping_config_init_json(
+bomm_pass_reswapping_config_t* bomm_pass_reswapping_config_init_with_json(
     bomm_pass_reswapping_config_t* config,
     json_t* config_json
 );

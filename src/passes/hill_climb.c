@@ -261,7 +261,7 @@ double bomm_pass_hill_climb_run(
     );
 }
 
-bomm_pass_hill_climb_config_t* bomm_pass_hill_climb_config_init_json(
+bomm_pass_hill_climb_config_t* bomm_pass_hill_climb_config_init_with_json(
     bomm_pass_hill_climb_config_t* config,
     json_t* config_json
 ) {

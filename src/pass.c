@@ -19,7 +19,7 @@ bomm_pass_t* bomm_pass_init(bomm_pass_t* pass) {
     return pass;
 }
 
-bomm_pass_t* bomm_pass_init_json(
+bomm_pass_t* bomm_pass_init_with_json(
     bomm_pass_t* pass,
     json_t* pass_json
 ) {
@@ -40,13 +40,13 @@ bomm_pass_t* bomm_pass_init_json(
     bomm_pass_t new_pass;
     if (strcmp(type, "hillClimb") == 0) {
         new_pass.type = BOMM_PASS_HILL_CLIMB;
-        error = NULL == bomm_pass_hill_climb_config_init_json(
+        error = NULL == bomm_pass_hill_climb_config_init_with_json(
             &new_pass.config.hill_climb,
             pass_json
         );
     } else if (strcmp(type, "reswapping") == 0) {
         new_pass.type = BOMM_PASS_RESWAPPING;
-        error = NULL == bomm_pass_reswapping_config_init_json(
+        error = NULL == bomm_pass_reswapping_config_init_with_json(
             &new_pass.config.reswapping,
             pass_json
         );

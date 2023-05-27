@@ -23,7 +23,7 @@ Test(wiring, bomm_pass_init_json_hill_climb_1) {
     json_t* pass_json = json_loads(pass_json_string, 0, &error);
 
     bomm_pass_t pass;
-    cr_assert_eq(bomm_pass_init_json(&pass, pass_json), &pass);
+    cr_assert_eq(bomm_pass_init_with_json(&pass, pass_json), &pass);
 
     cr_assert_eq(pass.type, BOMM_PASS_HILL_CLIMB);
     cr_assert_eq(pass.config.hill_climb.measure, BOMM_MEASURE_IC);
@@ -44,7 +44,7 @@ Test(wiring, bomm_pass_init_json_hill_climb_2) {
     json_t* pass_json = json_loads(pass_json_string, 0, &error);
 
     bomm_pass_t pass;
-    cr_assert_eq(bomm_pass_init_json(&pass, pass_json), &pass);
+    cr_assert_eq(bomm_pass_init_with_json(&pass, pass_json), &pass);
 
     cr_assert_eq(pass.type, BOMM_PASS_HILL_CLIMB);
     cr_assert_eq(pass.config.hill_climb.measure, BOMM_MEASURE_SINKOV_TRIGRAM);
@@ -63,7 +63,7 @@ Test(wiring, bomm_pass_init_json_reswapping) {
     json_t* pass_json = json_loads(pass_json_string, 0, &error);
 
     bomm_pass_t pass;
-    cr_assert_eq(bomm_pass_init_json(&pass, pass_json), &pass);
+    cr_assert_eq(bomm_pass_init_with_json(&pass, pass_json), &pass);
 
     cr_assert_eq(pass.type, BOMM_PASS_RESWAPPING);
     cr_assert_eq(pass.config.reswapping.measure, BOMM_MEASURE_ENTROPY);
@@ -78,5 +78,5 @@ Test(wiring, bomm_pass_init_json_unknown) {
 
     json_error_t error;
     json_t* pass_json = json_loads(pass_json_string, 0, &error);
-    cr_assert_eq(bomm_pass_init_json(NULL, pass_json), NULL);
+    cr_assert_eq(bomm_pass_init_with_json(NULL, pass_json), NULL);
 }
