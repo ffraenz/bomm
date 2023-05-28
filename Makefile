@@ -49,21 +49,28 @@ $(TEST_BIN_PATH)/%: $(TEST_OBJ_PATH)/%.o $(filter-out $(RELEASE_OBJ_MAIN_PATH), 
 	mkdir -p $(dir $@)
 	$(LD) $^ -o $@ $(TEST_LDFLAGS)
 
-# Build program task
 build: $(TARGET_PATH)
 
-# Run program task
 run: $(TARGET_PATH)
 	./$^ || true
 
-# Run tests task
-test: $(TEST_BINS)
+test-criterion: $(TEST_BINS)
 	EXIT_CODE=0; \
 	for PATH in $^; do \
-		echo "Running tests in $$PATH"; \
+		echo "Test suite $$PATH"; \
 		./$$PATH || EXIT_CODE=$$?; \
 	done; \
 	exit $$EXIT_CODE;
+
+test-valgrind: $(TARGET_PATH)
+	if command -v /usr/bin/valgrind &> /dev/null; then \
+		nice -n 19 \
+		/usr/bin/valgrind --leak-check=full \
+		./$^ -q -n 1 -t 3 data/queries/test-valgrind.json \
+		|| exit $$?; \
+	fi;
+
+test: test-criterion test-valgrind
 
 # Clean task
 .PHONY: clean

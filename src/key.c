@@ -325,6 +325,7 @@ bomm_key_t* bomm_key_init(bomm_key_t* key, const bomm_key_space_t* key_space) {
     if (!key && !(key = malloc(sizeof(bomm_key_t)))) {
         return NULL;
     }
+    memset(key, 0, sizeof(bomm_key_t));
 
     // Initialize key from key space meta data
     key->mechanism = key_space->mechanism;
@@ -352,20 +353,13 @@ bomm_key_t* bomm_key_init(bomm_key_t* key, const bomm_key_space_t* key_space) {
     // Reset the wheel order, ring settings, and start positions of all slots,
     // including the unused ones to remove undefined memory and thus make keys
     // comparable as a whole using `memcmp`.
-    for (unsigned int slot = 0; slot < BOMM_MAX_NUM_SLOTS; slot++) {
-        key->rings[slot] = 0;
-        key->positions[slot] = 0;
-        if (slot < key_space->num_slots) {
-            key->rotating_slots[slot] = key_space->rotating_slots[slot];
-            memcpy(
-                &key->wheels[slot],
-                &key_space->wheel_sets[slot][0],
-                sizeof(bomm_wheel_t)
-            );
-        } else {
-            key->rotating_slots[slot] = false;
-            memset(&key->wheels[slot], 0, sizeof(bomm_wheel_t));
-        }
+    for (unsigned int slot = 0; slot < key_space->num_slots; slot++) {
+        key->rotating_slots[slot] = key_space->rotating_slots[slot];
+        memcpy(
+            &key->wheels[slot],
+            &key_space->wheel_sets[slot][0],
+            sizeof(bomm_wheel_t)
+        );
     }
 
     // Initialize the key with the identity plugboard

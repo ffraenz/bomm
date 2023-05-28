@@ -14,7 +14,7 @@
 #include <sys/types.h>
 #include "measure.h"
 
-const bomm_ngram_map_t* bomm_ngram_map[7] = {
+bomm_ngram_map_t* bomm_ngram_map[7] = {
     NULL, NULL, NULL, NULL, NULL, NULL, NULL
 };
 
@@ -31,7 +31,10 @@ const unsigned int bomm_pow_map[7] = {
     BOMM_ALPHABET_SIZE * BOMM_ALPHABET_SIZE * BOMM_ALPHABET_SIZE
 };
 
-bomm_ngram_map_t* bomm_measure_ngram_map_init(unsigned char n, const char* filename) {
+bomm_ngram_map_t* bomm_measure_ngram_map_init(
+    unsigned char n,
+    const char* filename
+) {
     // Open file in reading mode
     FILE* file = fopen(filename, "r");
     if (!file) {
@@ -39,38 +42,33 @@ bomm_ngram_map_t* bomm_measure_ngram_map_init(unsigned char n, const char* filen
         return NULL;
     }
 
-    // Allocate map
+    // Initialize empty map
     unsigned int map_size = bomm_pow_map[n];
-    size_t ngram_map_size = sizeof(bomm_ngram_map_t) + map_size * sizeof(bomm_ngram_map_entry);
-    bomm_ngram_map_t* ngram_map = malloc(ngram_map_size);
+    size_t ngram_map_size =
+        sizeof(bomm_ngram_map_t) + map_size * sizeof(bomm_ngram_map_entry);
+    bomm_ngram_map_t* ngram_map = calloc(1, ngram_map_size);
     if (!ngram_map) {
         fprintf(stderr, "Out of memory while loading %d-gram map\n", n);
         return NULL;
     }
+    ngram_map->n = n;
 
+    // Parse file
     size_t line_restrict = 32;
     ssize_t line_size;
     char line[line_restrict];
     char* line_buffer = (char*) &line;
-    unsigned int state, map_index, line_index;
-    double frequency, frequency_sum, frequency_min;
     char ascii;
     bomm_letter_t letter;
-
-    // Reset
-    ngram_map->n = n;
-    memset(ngram_map->map, 0, map_size);
-
-    // Parse file
-    frequency_sum = 0;
-    frequency_min = INFINITY;
-    state = 0;
+    double frequency_sum = 0;
+    double frequency_min = INFINITY;
+    unsigned int state = 0;
     while (state == 0 && (line_size = getline(&line_buffer, &line_restrict, file)) != -1) {
         // Reset state
         state = 0;
-        map_index = 0;
-        frequency = 0;
-        line_index = 0;
+        unsigned int map_index = 0;
+        double frequency = 0;
+        unsigned int line_index = 0;
 
         // Parse line
         while (state != 255 && line_index < line_size) {
@@ -121,7 +119,7 @@ bomm_ngram_map_t* bomm_measure_ngram_map_init(unsigned char n, const char* filen
 
     // Turn frequencies into log probabilities
     double probability;
-    for (map_index = 0; map_index < map_size; map_index++) {
+    for (unsigned int map_index = 0; map_index < map_size; map_index++) {
         probability = ngram_map->map[map_index] / frequency_sum;
         ngram_map->map[map_index] =
             (bomm_ngram_map_entry)
@@ -130,4 +128,20 @@ bomm_ngram_map_t* bomm_measure_ngram_map_init(unsigned char n, const char* filen
 
     bomm_ngram_map[n] = ngram_map;
     return ngram_map;
+}
+
+void bomm_measure_ngram_map_destroy(bomm_ngram_map_t* ngram_map) {
+    if (!ngram_map) {
+        unsigned int num_elements =
+            sizeof(bomm_ngram_map) / sizeof(bomm_ngram_map[0]);
+        for (unsigned int i = 0; i < num_elements; i++) {
+            if (bomm_ngram_map[i] != NULL) {
+                bomm_measure_ngram_map_destroy(bomm_ngram_map[i]);
+                bomm_ngram_map[i] = NULL;
+            }
+        }
+        return;
+    }
+
+    free(ngram_map);
 }

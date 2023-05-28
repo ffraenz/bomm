@@ -85,7 +85,7 @@ typedef struct _bomm_ngram_map_t {
  * Global variable storing pointers to n-gram maps that have been initialized
  * previously. The array index specifies the n in n-gram.
  */
-extern const bomm_ngram_map_t* bomm_ngram_map[7];
+extern bomm_ngram_map_t* bomm_ngram_map[7];
 
 /**
  * Global variable storing pre-calculated `pow(BOMM_ALPHABET_SIZE, index)` for
@@ -98,7 +98,16 @@ extern const unsigned int bomm_pow_map[7];
  * parsed from the given file.
  * Stores the pointer to the global variable `bomm_ngram_map[n]`.
  */
-bomm_ngram_map_t* bomm_measure_ngram_map_init(unsigned char n, const char* filename);
+bomm_ngram_map_t* bomm_measure_ngram_map_init(
+    unsigned char n,
+    const char* filename
+);
+
+/**
+ * Free the given n-gram frequency map. If NULL is given, all elements in
+ * `bomm_ngram_map` are freed.
+ */
+void bomm_measure_ngram_map_destroy(bomm_ngram_map_t* ngram_map);
 
 /**
  * Measure the n-gram score of a message put through the given

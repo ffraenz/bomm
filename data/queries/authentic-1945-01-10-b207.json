@@ -1,6 +1,6 @@
 {
   "$schema": "../schemas/query.json",
-  "ciphertext": "tsunq rtlia bftqr nuwlq vnitr sctnq ipklm aheef dcabc uworu bswyr bggfd txcbx dvduc ezgfb kyilx aunpq rtuvs wm",
+  "ciphertext": "hitlu tsunq rtlia bftqr nuwlq vnitr sctnq ipklm aheef dcabc uworu bswyr bggfd txcbx dvduc ezgfb kyilx aunpq rtuvs wm",
   "space": {
     "plugs": "e",
     "slots": [
@@ -8,14 +8,17 @@
         "wheels": ["B207-UKW"]
       },
       {
+        "rotating": true,
         "wheels": ["B207-I", "B207-II", "B207-III"],
         "positions": "*"
       },
       {
+        "rotating": true,
         "wheels": ["B207-I", "B207-II", "B207-III"],
         "positions": "*"
       },
       {
+        "rotating": true,
         "wheels": ["B207-I", "B207-II", "B207-III"],
         "rings": "*",
         "positions": "*"

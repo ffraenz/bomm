@@ -91,7 +91,7 @@ bomm_pass_reswapping_config_t* bomm_pass_reswapping_config_init_with_json(
 
     // Config defaults
     bomm_pass_reswapping_config_t working_config;
-    working_config.measure = BOMM_MEASURE_IC;
+    working_config.measure = BOMM_MEASURE_SINKOV_TRIGRAM;
 
     if (config_json->type != JSON_OBJECT) {
         return NULL;
