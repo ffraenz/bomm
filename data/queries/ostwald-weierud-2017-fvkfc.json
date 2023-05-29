@@ -1,0 +1,50 @@
+{
+  "$schema": "../schemas/query.json",
+  "sources": [
+    "OstwaldWeierud2017, 9"
+  ],
+  "ciphertext": "fvkfc dwrii cyfav skqow qtta",
+  "space": {
+    "slots": [
+      {
+        "wheels": ["UKW-B"]
+      },
+      {
+        "rotating": true,
+        "wheels": ["IV"],
+        "rings": "r",
+        "positions": "v"
+      },
+      {
+        "rotating": true,
+        "wheels": ["III"],
+        "rings": "i",
+        "positions": "o"
+      },
+      {
+        "rotating": true,
+        "wheels": ["II"],
+        "rings": "t",
+        "positions": "r"
+      }
+    ]
+  },
+  "passes": [
+    {
+      "type": "hill_climb",
+      "measure": "sinkov_trigram",
+      "backtrackingMinNumPlugs": 5
+    },
+    {
+      "type": "trie",
+      "words": [
+        { "word": "eins", "value": 1.0 },
+        { "word": "null", "value": 1.0 }
+      ]
+    }
+  ],
+  "frequencies": {
+    "bigram": "./data/frequencies/enigma1941-bigram.txt",
+    "trigram": "./data/frequencies/enigma1941-trigram.txt"
+  }
+}

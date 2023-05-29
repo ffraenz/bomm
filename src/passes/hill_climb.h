@@ -5,8 +5,8 @@
 //  Created by Fränz Friederes on 23/05/2023.
 //
 
-#ifndef hill_climb_h
-#define hill_climb_h
+#ifndef passes_hill_climb_h
+#define passes_hill_climb_h
 
 #include <jansson.h>
 #include "../measure.h"
@@ -58,4 +58,4 @@ bomm_pass_hill_climb_config_t* bomm_pass_hill_climb_config_init_with_json(
     json_t* config_json
 );
 
-#endif /* hill_climb_h */
+#endif /* passes_hill_climb_h */

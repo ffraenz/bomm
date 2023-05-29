@@ -5,6 +5,7 @@
   ],
   "ciphertext": "weklm uerds evhlc jsqqk vldes anevt yedgi zqdod rmdkg sxgsq shdqp vieap ienli clzcl lagwc bjzd",
   "space": {
+    "plugs": "enrx",
     "slots": [
       {
         "wheels": ["UKW-B"]
@@ -30,8 +31,7 @@
   "passes": [
     {
       "type": "hill_climb",
-      "measure": "sinkov_trigram",
-      "backtrackingMinNumPlugs": 5
+      "measure": "sinkov_trigram"
     }
   ],
   "frequencies": {

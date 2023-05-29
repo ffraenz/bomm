@@ -194,7 +194,11 @@ bomm_query_t* bomm_query_init(int argc, char *argv[]) {
     query->num_attacks = num_threads;
 
     // Use the measure of the last pass as the query measure
-    query->measure = bomm_pass_result_measure(&passes[num_passes - 1]);
+    unsigned int j = num_passes;
+    while (
+        j > 0 &&
+        (query->measure = bomm_pass_result_measure(&passes[--j])) == BOMM_MEASURE_NONE
+    );
 
     // Read ciphertext
     json_t* ciphertext_json = json_object_get(query_json, "ciphertext");

@@ -5,8 +5,8 @@
 //  Created by Fränz Friederes on 23/05/2023.
 //
 
-#ifndef reswapping_h
-#define reswapping_h
+#ifndef passes_reswapping_h
+#define passes_reswapping_h
 
 #include "../measure.h"
 #include "../message.h"
@@ -42,4 +42,4 @@ bomm_pass_reswapping_config_t* bomm_pass_reswapping_config_init_with_json(
     json_t* config_json
 );
 
-#endif /* reswapping_h */
+#endif /* passes_reswapping_h */

@@ -8,6 +8,7 @@
 #ifndef pass_h
 #define pass_h
 
+#include "passes/trie.h"
 #include "passes/hill_climb.h"
 #include "passes/reswapping.h"
 
@@ -24,6 +25,11 @@ typedef union _bomm_pass_config {
      * Reswapping pass config
      */
     bomm_pass_reswapping_config_t reswapping;
+
+    /**
+     * Trie pass config
+     */
+    bomm_pass_trie_config_t trie;
 } bomm_pass_config_t;
 
 /**
@@ -32,7 +38,8 @@ typedef union _bomm_pass_config {
 typedef enum {
     BOMM_PASS_NONE = 0,
     BOMM_PASS_HILL_CLIMB,
-    BOMM_PASS_RESWAPPING
+    BOMM_PASS_RESWAPPING,
+    BOMM_PASS_TRIE
 } bomm_pass_type_t;
 
 /**
@@ -57,7 +64,8 @@ inline static double bomm_pass_run(
     bomm_pass_t* pass,
     unsigned int* plugboard,
     bomm_scrambler_t* scrambler,
-    bomm_message_t* ciphertext
+    bomm_message_t* ciphertext,
+    double score
 ) {
     switch (pass->type) {
         case BOMM_PASS_HILL_CLIMB: {
@@ -76,6 +84,15 @@ inline static double bomm_pass_run(
                 ciphertext
             );
         }
+        case BOMM_PASS_TRIE: {
+            return bomm_pass_trie_climb_run(
+                &pass->config.trie,
+                plugboard,
+                scrambler,
+                ciphertext,
+                score
+            );
+        }
         default: {
             return 0;
         }
@@ -92,6 +109,11 @@ inline static bomm_measure_t bomm_pass_result_measure(bomm_pass_t* pass) {
         }
         case BOMM_PASS_RESWAPPING: {
             return pass->config.reswapping.measure;
+        }
+        case BOMM_PASS_TRIE: {
+            // The trie pass alters the previous measure depending on the word
+            // values specified
+            return BOMM_MEASURE_NONE;
         }
         default: {
             return BOMM_MEASURE_NONE;
@@ -113,5 +135,11 @@ bomm_pass_t* bomm_pass_init_with_json(
     bomm_pass_t* pass,
     json_t* pass_json
 );
+
+/**
+ * Destroy the given pass instance by freeing its dependencies.
+ * The given instance itself is not be freed.
+ */
+void bomm_pass_destroy(bomm_pass_t* pass);
 
 #endif /* pass_h */

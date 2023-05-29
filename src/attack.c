@@ -77,14 +77,15 @@ void bomm_attack_key_space(bomm_attack_t* attack) {
         memcpy(plugboard, key_iterator.key.plugboard, sizeof(plugboard));
 
         // Iterate over passes
+        score = 0;
         for (i = 0; i < num_passes; i++) {
             score = bomm_pass_run(
                 &passes[i],
                 plugboard,
                 scrambler,
-                ciphertext
+                ciphertext,
+                score
             );
-
             if (score > min_score) {
                 bomm_scrambler_encrypt(scrambler, plugboard, ciphertext, plaintext);
                 bomm_message_stringify(hold_preview, sizeof(hold_preview), plaintext);

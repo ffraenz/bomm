@@ -69,6 +69,38 @@ Test(wiring, bomm_pass_init_json_reswapping) {
     cr_assert_eq(pass.config.reswapping.measure, BOMM_MEASURE_ENTROPY);
 }
 
+Test(wiring, bomm_pass_init_json_trie) {
+    const char* pass_json_string =
+        "{ " \
+        "\"type\": \"trie\", " \
+        "\"words\": [" \
+        "{ \"word\": \"foo\", \"value\": 1.0 }, " \
+        "{ \"word\": \"bar\", \"value\": 100.0 }, " \
+        "{ \"word\": \"foobar\", \"value\": 10000.0 }" \
+        "]" \
+        "}";
+
+    json_error_t error;
+    json_t* pass_json = json_loads(pass_json_string, 0, &error);
+
+    bomm_letter_t f = bomm_message_letter_from_ascii('f');
+    bomm_letter_t o = bomm_message_letter_from_ascii('o');
+
+    bomm_pass_t pass;
+    cr_assert_eq(bomm_pass_init_with_json(&pass, pass_json), &pass);
+    cr_assert_eq(pass.type, BOMM_PASS_TRIE);
+    cr_assert_neq(pass.config.trie.trie, NULL);
+
+    cr_assert_neq(pass.config.trie.trie->children[f], NULL);
+    cr_assert_neq(pass.config.trie.trie->children[f]->children[o], NULL);
+
+    bomm_trie_t* trie_foo = pass.config.trie.trie->children[f]->children[o]->children[o];
+    cr_assert_neq(trie_foo, NULL);
+    cr_assert_eq(trie_foo->value, 1.0);
+
+    bomm_pass_destroy(&pass);
+}
+
 Test(wiring, bomm_pass_init_json_unknown) {
     const char* pass_json_string =
         "{ " \

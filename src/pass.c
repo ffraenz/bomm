@@ -50,6 +50,12 @@ bomm_pass_t* bomm_pass_init_with_json(
             &new_pass.config.reswapping,
             pass_json
         );
+    } else if (strcmp(type, "trie") == 0) {
+        new_pass.type = BOMM_PASS_TRIE;
+        error = NULL == bomm_pass_trie_config_init_with_json(
+            &new_pass.config.trie,
+            pass_json
+        );
     } else {
         error = true;
     }
@@ -64,4 +70,16 @@ bomm_pass_t* bomm_pass_init_with_json(
 
     memcpy(pass, &new_pass, sizeof(new_pass));
     return pass;
+}
+
+void bomm_pass_destroy(bomm_pass_t* pass) {
+    switch (pass->type) {
+        case BOMM_PASS_TRIE: {
+            bomm_pass_trie_config_destroy(&pass->config.trie);
+            break;
+        }
+        default: {
+            break;
+        }
+    }
 }
