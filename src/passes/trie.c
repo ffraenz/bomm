@@ -5,6 +5,10 @@
 //  Created by Fränz Friederes on 29/05/2023.
 //
 
+#define _GNU_SOURCE
+#include <stdio.h>
+#undef _GNU_SOURCE
+
 #include "trie.h"
 
 double bomm_pass_trie_climb_run(
