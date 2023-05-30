@@ -32,7 +32,8 @@
         "sinkov_trigram",
         "sinkov_quadgram",
         "sinkov_pentagram",
-        "sinkov_hexagram"
+        "sinkov_hexagram",
+        "trie"
       ]
     },
     "mechanism": {
@@ -41,6 +42,26 @@
         "odometer",
         "none"
       ]
+    },
+    "trie": {
+      "type": "object",
+      "properties": {
+        "words": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "properties": {
+              "word": {
+                "type": "string"
+              },
+              "value": {
+                "type": "number"
+              }
+            }
+          }
+        }
+      }
     }
   },
   "type": "object",
@@ -167,25 +188,16 @@
               "type": {
                 "enum": ["trie"]
               },
-              "words": {
-                "type": "array",
-                "minItems": 1,
-                "items": {
-                  "type": "object",
-                  "properties": {
-                    "word": {
-                      "type": "string"
-                    },
-                    "value": {
-                      "type": "number"
-                    }
-                  }
-                }
+              "baseMeasure": {
+                "$ref": "#/definitions/measure"
+              },
+              "trie": {
+                "$ref": "#/definitions/trie"
               }
             },
             "required": [
               "type",
-              "words"
+              "trie"
             ]
           }
         ]
@@ -211,6 +223,27 @@
           "name",
           "wiring"
         ]
+      }
+    },
+    "measures": {
+      "type": "object",
+      "description": "Global configuration options for measures",
+      "properties": {
+        "trie": {
+          "type": "object",
+          "description": "Configuration options for the 'trie' measure",
+          "properties": {
+            "baseMeasure": {
+              "$ref": "#/definitions/measure"
+            },
+            "trie": {
+              "$ref": "#/definitions/trie"
+            }
+          },
+          "required": [
+            "trie"
+          ]
+        }
       }
     },
     "frequencies": {

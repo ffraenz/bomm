@@ -11,6 +11,7 @@
 #include <jansson.h>
 #include "message.h"
 #include "wiring.h"
+#include "trie.h"
 
 /**
  * Enum identifying a measure
@@ -34,6 +35,7 @@ typedef enum {
     BOMM_MEASURE_ENTROPY_QUADGRAM  = 0x24,
     BOMM_MEASURE_ENTROPY_PENTAGRAM = 0x25,
     BOMM_MEASURE_ENTROPY_HEXAGRAM  = 0x26,
+    BOMM_MEASURE_TRIE              = 0xf0,
     BOMM_MEASURE_NONE              = 0xff
 } bomm_measure_t;
 
@@ -64,12 +66,13 @@ static const bomm_measure_string_mapping_t bomm_measure_string_map[] = {
     { BOMM_MEASURE_SINKOV_QUADGRAM,   "sinkov_quadgram" },
     { BOMM_MEASURE_SINKOV_PENTAGRAM,  "sinkov_pentagram" },
     { BOMM_MEASURE_SINKOV_HEXAGRAM,   "sinkov_hexagram" },
+    { BOMM_MEASURE_TRIE,              "trie" },
     { BOMM_MEASURE_NONE,              "none" }
 };
 
 typedef float bomm_ngram_map_entry;
 
-typedef struct _bomm_ngram_map_t {
+typedef struct _bomm_ngram_map {
     /**
      * The n in n-gram
      */
@@ -88,6 +91,19 @@ typedef struct _bomm_ngram_map_t {
 extern bomm_ngram_map_t* bomm_ngram_map[7];
 
 /**
+ * Set of configuration options for the trie measure.
+ */
+typedef struct _bomm_measure_trie_config {
+    bomm_trie_t* trie;
+    bomm_measure_t base_measure;
+} bomm_measure_trie_config_t;
+
+/**
+ * Global variable storing the trie measure config.
+ */
+extern bomm_measure_trie_config_t* bomm_measure_trie_config;
+
+/**
  * Global variable storing pre-calculated `pow(BOMM_ALPHABET_SIZE, index)` for
  * each index to reuse these values.
  */
@@ -104,10 +120,9 @@ bomm_ngram_map_t* bomm_measure_ngram_map_init(
 );
 
 /**
- * Free the given n-gram frequency map. If NULL is given, all elements in
- * `bomm_ngram_map` are freed.
+ * Destroy and free global measure config values.
  */
-void bomm_measure_ngram_map_destroy(bomm_ngram_map_t* ngram_map);
+void bomm_measure_config_destroy(void);
 
 /**
  * Measure the n-gram score of a message put through the given
@@ -305,7 +320,7 @@ static inline bomm_measure_t bomm_measure_from_string(
 static inline bomm_measure_t bomm_measure_from_json(
     const json_t* measure_json
 ) {
-    if (measure_json->type != JSON_STRING) {
+    if (!json_is_string(measure_json)) {
         return BOMM_MEASURE_NONE;
     } else {
         return bomm_measure_from_string(json_string_value(measure_json));
@@ -350,9 +365,17 @@ static inline __attribute__((always_inline)) double bomm_measure_message(
         unsigned int frequencies[bomm_pow_map[n]];
         bomm_measure_message_frequency(n, frequencies, message);
         return bomm_measure_frequency_entropy(n, frequencies);
-    } else {
-        return 0;
+    } else if (measure == BOMM_MEASURE_TRIE && bomm_measure_trie_config != NULL) {
+        bomm_measure_t base_measure = bomm_measure_trie_config->base_measure;
+        double score = 0;
+        if (base_measure != BOMM_MEASURE_NONE) {
+            score = bomm_measure_message(base_measure, message);
+        }
+        score += bomm_trie_measure_message(
+            bomm_measure_trie_config->trie, message);
+        return score;
     }
+    return 0;
 }
 
 /**
@@ -377,9 +400,23 @@ static inline __attribute__((always_inline)) double bomm_measure_scrambler(
         unsigned int frequencies[bomm_pow_map[n]];
         bomm_measure_scrambler_frequency(n, frequencies, scrambler, plugboard, message);
         return bomm_measure_frequency_entropy(n, frequencies);
-    } else {
-        return 0;
+    } else if (measure == BOMM_MEASURE_TRIE && bomm_measure_trie_config != NULL) {
+        size_t message_size = bomm_message_size_for_length(message->length);
+        bomm_message_t* plaintext = malloc(message_size);
+        if (plaintext != NULL) {
+            bomm_scrambler_encrypt(scrambler, plugboard, message, plaintext);
+            bomm_measure_t base_measure = bomm_measure_trie_config->base_measure;
+            double score = 0;
+            if (base_measure != BOMM_MEASURE_NONE) {
+                score = bomm_measure_message(base_measure, plaintext);
+            }
+            score += bomm_trie_measure_message(
+                bomm_measure_trie_config->trie, plaintext);
+            free(plaintext);
+            return score;
+        }
     }
+    return 0;
 }
 
 #endif /* measure_h */

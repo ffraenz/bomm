@@ -147,6 +147,45 @@ bomm_query_t* bomm_query_init(int argc, char *argv[]) {
         }
     }
 
+    // Read measure config
+    json_t* measures_json = json_object_get(query_json, "measures");
+    if (measures_json != NULL) {
+        if (!json_is_object(measures_json)) {
+            json_decref(query_json);
+            return NULL;
+        }
+
+        // TODO: Move this logic to a better place
+        json_t* trie_measure_config = json_object_get(measures_json, "trie");
+        if (trie_measure_config != NULL) {
+            if (!json_is_object(trie_measure_config)) {
+                json_decref(query_json);
+                return NULL;
+            }
+
+            json_t* base_measure_json = json_object_get(trie_measure_config, "baseMeasure");
+            bomm_measure_t base_measure = bomm_measure_from_json(base_measure_json);
+
+            json_t* trie_json = json_object_get(trie_measure_config, "trie");
+            bomm_trie_t* trie = bomm_trie_init_with_json(NULL, trie_json);
+
+            bomm_measure_trie_config = malloc(sizeof(bomm_measure_trie_config_t));
+            if (bomm_measure_trie_config == NULL) {
+                json_decref(query_json);
+                return NULL;
+            }
+
+            if (trie == NULL) {
+                free(bomm_measure_trie_config);
+                json_decref(query_json);
+                return NULL;
+            }
+
+            bomm_measure_trie_config->base_measure = base_measure;
+            bomm_measure_trie_config->trie = trie;
+        }
+    }
+
     // Read passes
     unsigned int num_passes = 0;
     bomm_pass_t passes[BOMM_MAX_NUM_PASSES];

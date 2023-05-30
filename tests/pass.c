@@ -73,11 +73,13 @@ Test(wiring, bomm_pass_init_json_trie) {
     const char* pass_json_string =
         "{ " \
         "\"type\": \"trie\", " \
+        "\"trie\": { " \
         "\"words\": [" \
         "{ \"word\": \"foo\", \"value\": 1.0 }, " \
         "{ \"word\": \"bar\", \"value\": 100.0 }, " \
         "{ \"word\": \"foobar\", \"value\": 10000.0 }" \
-        "]" \
+        "] " \
+        "} " \
         "}";
 
     json_error_t error;

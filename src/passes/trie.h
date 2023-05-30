@@ -12,6 +12,7 @@
 #include "../message.h"
 #include "../wiring.h"
 #include "../trie.h"
+#include "../measure.h"
 
 /**
  * Struct representing a set of values configuring a trie pass
@@ -21,6 +22,11 @@ typedef struct _bomm_pass_trie_config {
      * Trie root node
      */
     bomm_trie_t* trie;
+
+    /**
+     * Base measure
+     */
+    bomm_measure_t base_measure;
 } bomm_pass_trie_config_t;
 
 /**

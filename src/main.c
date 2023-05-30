@@ -83,7 +83,7 @@ int main(int argc, char *argv[]) {
     // Clean up
     bomm_query_destroy(bomm_query_main);
     bomm_query_main = NULL;
-    bomm_measure_ngram_map_destroy(NULL);
+    bomm_measure_config_destroy();
 
     return 0;
 }

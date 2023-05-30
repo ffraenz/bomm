@@ -8,13 +8,6 @@
 #ifndef attack_h
 #define attack_h
 
-#include <time.h>
-#include <math.h>
-#include "enigma.h"
-#include "key.h"
-#include "measure.h"
-#include "wiring.h"
-
 typedef struct _bomm_attack bomm_attack_t;
 
 #include "query.h"

@@ -9,8 +9,11 @@
 #include <stdio.h>
 #undef _GNU_SOURCE
 
+#include <math.h>
 #include "attack.h"
 #include "pass.h"
+#include "key.h"
+#include "enigma.h"
 
 void* bomm_attack_thread(void* arg) {
     // The argument is assumed to be an attack

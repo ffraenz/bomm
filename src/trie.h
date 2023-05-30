@@ -8,6 +8,7 @@
 #ifndef trie_h
 #define trie_h
 
+#include <jansson.h>
 #include <stdbool.h>
 #include "message.h"
 
@@ -52,6 +53,11 @@ static inline bomm_trie_t* bomm_trie_insert(
     }
     return node;
 }
+
+/**
+ * Init a trie from the given JSON value
+ */
+bomm_trie_t* bomm_trie_init_with_json(bomm_trie_t* trie, json_t* trie_json);
 
 /**
  * Score a message using the given trie.

@@ -5,6 +5,7 @@
   ],
   "ciphertext": "fvkfc dwrii cyfav skqow qtta",
   "space": {
+    "plugs": "*",
     "slots": [
       {
         "wheels": ["UKW-B"]
@@ -32,17 +33,22 @@
   "passes": [
     {
       "type": "hill_climb",
-      "measure": "sinkov_trigram",
-      "backtrackingMinNumPlugs": 5
-    },
-    {
-      "type": "trie",
-      "words": [
-        { "word": "eins", "value": 1.0 },
-        { "word": "null", "value": 1.0 }
-      ]
+      "measure": "trie",
+      "backtrackingMinNumPlugs": 0
     }
   ],
+  "measures": {
+    "trie": {
+      "baseMeasure": "sinkov_trigram",
+      "trie": {
+        "words": [
+          { "word": "eins", "value": 2.0 },
+          { "word": "null", "value": 2.0 },
+          { "word": "vier", "value": 2.0 }
+        ]
+      }
+    }
+  },
   "frequencies": {
     "bigram": "./data/frequencies/enigma1941-bigram.txt",
     "trigram": "./data/frequencies/enigma1941-trigram.txt"

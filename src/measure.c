@@ -18,6 +18,8 @@ bomm_ngram_map_t* bomm_ngram_map[7] = {
     NULL, NULL, NULL, NULL, NULL, NULL, NULL
 };
 
+bomm_measure_trie_config_t* bomm_measure_trie_config = NULL;
+
 const unsigned int bomm_pow_map[7] = {
     1,
     BOMM_ALPHABET_SIZE,
@@ -130,18 +132,21 @@ bomm_ngram_map_t* bomm_measure_ngram_map_init(
     return ngram_map;
 }
 
-void bomm_measure_ngram_map_destroy(bomm_ngram_map_t* ngram_map) {
-    if (!ngram_map) {
-        unsigned int num_elements =
-            sizeof(bomm_ngram_map) / sizeof(bomm_ngram_map[0]);
-        for (unsigned int i = 0; i < num_elements; i++) {
-            if (bomm_ngram_map[i] != NULL) {
-                bomm_measure_ngram_map_destroy(bomm_ngram_map[i]);
-                bomm_ngram_map[i] = NULL;
-            }
+void bomm_measure_config_destroy(void) {
+    // Frequency n-gram maps
+    unsigned int num_ngram_maps =
+        sizeof(bomm_ngram_map) / sizeof(bomm_ngram_map[0]);
+    for (unsigned int i = 0; i < num_ngram_maps; i++) {
+        if (bomm_ngram_map[i] != NULL) {
+            free(bomm_ngram_map[i]);
+            bomm_ngram_map[i] = NULL;
         }
-        return;
     }
 
-    free(ngram_map);
+    // Trie measure config
+    if (bomm_measure_trie_config != NULL) {
+        bomm_trie_destroy(bomm_measure_trie_config->trie);
+        free(bomm_measure_trie_config->trie);
+        free(bomm_measure_trie_config);
+    }
 }
