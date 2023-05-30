@@ -348,7 +348,7 @@ static inline const char* bomm_measure_to_string(bomm_measure_t measure) {
 /**
  * Measure a message
  */
-static inline __attribute__((always_inline)) double bomm_measure_message(
+static inline double bomm_measure_message(
     bomm_measure_t measure,
     bomm_message_t* message
 ) {
