@@ -175,6 +175,7 @@ Test(key, bomm_key_space_slice) {
         for (unsigned int i = 0; i < num_slices; i++) {
             bomm_key_iterator_t slice_iterator;
             bomm_key_iterator_init(&slice_iterator, &key_space_slices[i]);
+            cr_assert_eq(slice_iterator.scrambler_changed, true);
 
             do {
                 // Iterating the elements of each slice is expected to be

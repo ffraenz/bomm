@@ -5,7 +5,9 @@
 //  Created by Fränz Friederes on 13/03/2023.
 //
 
+#include <math.h>
 #include "key.h"
+#include "utility.h"
 
 bomm_key_space_t* bomm_key_space_init(
     bomm_key_space_t* key_space,
@@ -389,7 +391,6 @@ bomm_key_iterator_t* bomm_key_iterator_init(
 
     // Reference key space
     iterator->key_space = key_space;
-    iterator->scrambler_changed = true;
     iterator->index = 0;
 
     // Init key
@@ -444,6 +445,9 @@ bomm_key_iterator_t* bomm_key_iterator_init(
         return NULL;
     }
 
+    // As `scrambler_changed` is influenced by `bomm_key_iterator_next` it needs
+    // to be set here
+    iterator->scrambler_changed = true;
     return iterator;
 }
 

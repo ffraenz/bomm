@@ -8,13 +8,11 @@
 #ifndef key_h
 #define key_h
 
-#include <math.h>
 #include <stdio.h>
 #include "hold.h"
 #include "wheel.h"
 #include "wiring.h"
 #include "lettermask.h"
-#include "utility.h"
 
 #define BOMM_MAX_NUM_SLOTS 6
 #define BOMM_MAX_WHEEL_SET_SIZE 15
