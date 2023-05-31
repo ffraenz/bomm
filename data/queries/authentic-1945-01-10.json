@@ -2,7 +2,6 @@
   "$schema": "../schemas/query.json",
   "ciphertext": "hitlu tsunq rtlia bftqr nuwlq vnitr sctnq ipklm aheef dcabc uworu bswyr bggfd txcbx dvduc ezgfb kyilx aunpq rtuvs wm",
   "space": {
-    "plugs": "e",
     "slots": [
       {
         "wheels": ["UKW-B"]
@@ -24,6 +23,30 @@
         "positions": "*"
       }
     ]
+  },
+  "passes": [
+    {
+      "type": "hill_climb",
+      "measure": "ic",
+      "finalMeasure": "sinkov_trigram",
+      "finalMeasureMinNumPlugs": 5,
+      "backtrackingMinNumPlugs": 5
+    }
+  ],
+  "measures": {
+    "trie": {
+      "baseMeasure": "sinkov_trigram",
+      "trie": {
+        "words": [
+          { "word": "sieben", "value": 1 },
+          { "word": "siegfried", "value": 5, "garbles": 2 },
+          { "word": "toni", "value": 1 },
+          { "word": "wilhelm", "value": 4, "garbles": 2 },
+          { "word": "null", "value": 1 },
+          { "word": "eins", "value": 1 }
+        ]
+      }
+    }
   },
   "frequencies": {
     "bigram": "./data/frequencies/enigma1941-bigram.txt",

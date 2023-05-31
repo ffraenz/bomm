@@ -57,8 +57,15 @@
               },
               "value": {
                 "type": "number"
+              },
+              "garbles": {
+                "type": "integer"
               }
-            }
+            },
+            "required": [
+              "word",
+              "value"
+            ]
           }
         }
       }

@@ -32,27 +32,14 @@ static inline bomm_trie_t* bomm_trie_init(bomm_trie_t* node) {
 }
 
 /**
- * Insert a word in the given trie root node
+ * Insert a word in the given trie
  */
-static inline bomm_trie_t* bomm_trie_insert(
-    bomm_trie_t* root,
+bool bomm_trie_insert(
+    bomm_trie_t* trie,
     bomm_message_t* word,
+    unsigned int num_garbles,
     double value
-) {
-    bomm_trie_t* node = root;
-    unsigned int i = 0;
-    while (node && i < word->length) {
-        if (!(node->children[word->letters[i]])) {
-            node->children[word->letters[i]] = bomm_trie_init(NULL);
-        }
-        node = node->children[word->letters[i]];
-        i++;
-    }
-    if (node) {
-        node->value = value;
-    }
-    return node;
-}
+);
 
 /**
  * Init a trie from the given JSON value
@@ -83,6 +70,11 @@ static inline double bomm_trie_measure_message(
     }
     return score;
 }
+
+/**
+ * Print the contents of the given trie to stdout. Useful for debugging.
+ */
+void bomm_trie_debug(bomm_trie_t* trie);
 
 /**
  * Destroy the given node by freeing its dependencies.
