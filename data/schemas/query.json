@@ -159,7 +159,7 @@
               "finalMeasureMinNumPlugs": {
                 "type": "integer",
                 "description": "Minimum number of plugs that need to be assigned before switching from the initial measure to the final measure",
-                "default": 5,
+                "default": 7,
                 "minimum": 0
               },
               "backtrackingMinNumPlugs": {
