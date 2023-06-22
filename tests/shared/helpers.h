@@ -9,6 +9,9 @@
 #define helpers_h
 
 #define BOMM_TEST_DISABLE_FOR_NON_LATIN_ALPHABET \
-    .disabled = (strcmp(BOMM_ALPHABET, BOMM_ALPHABET_LATIN) != 0)
+    .disabled = ( \
+        sizeof BOMM_ALPHABET - 1 != sizeof BOMM_ALPHABET_LATIN - 1 || \
+        strncmp(BOMM_ALPHABET, BOMM_ALPHABET_LATIN, sizeof BOMM_ALPHABET - 1) != 0 \
+    )
 
 #endif /* helpers_h */
