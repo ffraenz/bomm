@@ -19,7 +19,8 @@ Test(key, bomm_key_mechanism_from_string) {
     cr_assert_eq(actual_mechanism, BOMM_MECHANISM_NONE);
 }
 
-Test(key, bomm_key_iterator_init_empty_wheel_order, BOMM_TEST_DISABLE_FOR_NON_LATIN_ALPHABET) {
+Test(key, bomm_key_iterator_init_empty_wheel_order) {
+    bomm_test_skip_if_non_latin_alphabet;
     bomm_key_space_t key_space;
     bomm_key_space_init_enigma_i(&key_space);
     bomm_key_iterator_t key_iterator;
@@ -28,7 +29,8 @@ Test(key, bomm_key_iterator_init_empty_wheel_order, BOMM_TEST_DISABLE_FOR_NON_LA
     cr_assert_eq(bomm_key_iterator_init(&key_iterator, &key_space), NULL);
 }
 
-Test(key, bomm_key_iterator_init_empty_wheel_set, BOMM_TEST_DISABLE_FOR_NON_LATIN_ALPHABET) {
+Test(key, bomm_key_iterator_init_empty_wheel_set) {
+    bomm_test_skip_if_non_latin_alphabet;
     bomm_key_space_t key_space;
     bomm_key_space_init_enigma_i(&key_space);
     bomm_key_iterator_t key_iterator;
@@ -36,7 +38,8 @@ Test(key, bomm_key_iterator_init_empty_wheel_set, BOMM_TEST_DISABLE_FOR_NON_LATI
     cr_assert_eq(bomm_key_iterator_init(&key_iterator, &key_space), NULL);
 }
 
-Test(key, bomm_key_iterator_init_empty_position_mask, BOMM_TEST_DISABLE_FOR_NON_LATIN_ALPHABET) {
+Test(key, bomm_key_iterator_init_empty_position_mask) {
+    bomm_test_skip_if_non_latin_alphabet;
     bomm_key_space_t key_space;
     bomm_key_space_init_enigma_i(&key_space);
     bomm_key_iterator_t key_iterator;
@@ -44,7 +47,8 @@ Test(key, bomm_key_iterator_init_empty_position_mask, BOMM_TEST_DISABLE_FOR_NON_
     cr_assert_eq(bomm_key_iterator_init(&key_iterator, &key_space), NULL);
 }
 
-Test(key, bomm_key_iterator_next, BOMM_TEST_DISABLE_FOR_NON_LATIN_ALPHABET) {
+Test(key, bomm_key_iterator_next) {
+    bomm_test_skip_if_non_latin_alphabet;
     bomm_key_space_t key_space;
     bomm_key_space_init_enigma_i(&key_space);
     key_space.plug_mask = BOMM_LETTERMASK_NONE;
@@ -63,7 +67,8 @@ Test(key, bomm_key_iterator_next, BOMM_TEST_DISABLE_FOR_NON_LATIN_ALPHABET) {
     cr_assert_arr_eq(&key_iterator, &expected_key_iterator, sizeof(key_iterator));
 }
 
-Test(key, bomm_key_iterator_plugboard_next_r_stecker, BOMM_TEST_DISABLE_FOR_NON_LATIN_ALPHABET) {
+Test(key, bomm_key_iterator_plugboard_next_r_stecker) {
+    bomm_test_skip_if_non_latin_alphabet;
     bomm_key_space_t key_space;
     bomm_key_space_init_enigma_i(&key_space);
     bomm_key_iterator_t iterator, initial_iterator;
@@ -111,7 +116,8 @@ Test(key, bomm_key_iterator_plugboard_next_r_stecker, BOMM_TEST_DISABLE_FOR_NON_
     cr_assert_arr_eq(&iterator, &initial_iterator, sizeof(iterator));
 }
 
-Test(key, bomm_key_space_plugboard_count, BOMM_TEST_DISABLE_FOR_NON_LATIN_ALPHABET) {
+Test(key, bomm_key_space_plugboard_count) {
+    bomm_test_skip_if_non_latin_alphabet;
     bomm_key_space_t key_space;
     bomm_key_space_init_enigma_i(&key_space);
 
@@ -136,7 +142,8 @@ Test(key, bomm_key_space_plugboard_count, BOMM_TEST_DISABLE_FOR_NON_LATIN_ALPHAB
     cr_assert_eq(bomm_key_space_plugboard_count(&key_space), 326);
 }
 
-Test(key, bomm_key_space_count, BOMM_TEST_DISABLE_FOR_NON_LATIN_ALPHABET) {
+Test(key, bomm_key_space_count) {
+    bomm_test_skip_if_non_latin_alphabet;
     bomm_key_space_t key_space;
     bomm_key_space_init_enigma_i(&key_space);
 
@@ -150,7 +157,8 @@ Test(key, bomm_key_space_count, BOMM_TEST_DISABLE_FOR_NON_LATIN_ALPHABET) {
     cr_assert_eq(bomm_key_space_count(&key_space), 8594664000);
 }
 
-Test(key, bomm_key_space_slice, BOMM_TEST_DISABLE_FOR_NON_LATIN_ALPHABET) {
+Test(key, bomm_key_space_slice) {
+    bomm_test_skip_if_non_latin_alphabet;
     bomm_key_space_t key_space;
     bomm_key_space_init_enigma_i(&key_space);
 

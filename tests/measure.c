@@ -32,7 +32,8 @@ Test(message, bomm_measure_to_string) {
     cr_assert_str_eq(bomm_measure_to_string(BOMM_MEASURE_NONE), "none");
 }
 
-Test(message, bomm_measure_message_frequency, BOMM_TEST_DISABLE_FOR_NON_LATIN_ALPHABET) {
+Test(message, bomm_measure_message_frequency) {
+    bomm_test_skip_if_non_latin_alphabet;
     bomm_message_t *message;
     unsigned int frequencies[BOMM_ALPHABET_SIZE];
 
@@ -79,7 +80,8 @@ Test(message, bomm_measure_message_frequency, BOMM_TEST_DISABLE_FOR_NON_LATIN_AL
     free(message);
 }
 
-Test(measure, bomm_measure_ngram_map_init, BOMM_TEST_DISABLE_FOR_NON_LATIN_ALPHABET) {
+Test(measure, bomm_measure_ngram_map_init) {
+    bomm_test_skip_if_non_latin_alphabet;
     bomm_message_t *message;
     bomm_ngram_map_t* trigram_map = bomm_measure_ngram_map_init(3, "./data/frequencies/enigma1941-trigram.txt");
 

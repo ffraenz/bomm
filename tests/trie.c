@@ -26,7 +26,8 @@ Test(trie, bomm_trie_init) {
     free(heap_trie);
 }
 
-Test(trie, bomm_trie_insert, BOMM_TEST_DISABLE_FOR_NON_LATIN_ALPHABET) {
+Test(trie, bomm_trie_insert) {
+    bomm_test_skip_if_non_latin_alphabet;
     bomm_trie_t trie;
     bomm_trie_init(&trie);
 
@@ -72,7 +73,8 @@ Test(trie, bomm_trie_insert, BOMM_TEST_DISABLE_FOR_NON_LATIN_ALPHABET) {
     cr_assert_eq(trie_foobar->value, 3.0);
 }
 
-Test(trie, bomm_trie_insert_garbled, BOMM_TEST_DISABLE_FOR_NON_LATIN_ALPHABET) {
+Test(trie, bomm_trie_insert_garbled) {
+    bomm_test_skip_if_non_latin_alphabet;
     bomm_trie_t* trie = bomm_trie_init(NULL);
 
     bomm_message_t* siegfried = bomm_message_init("siegfried");
@@ -91,7 +93,8 @@ Test(trie, bomm_trie_insert_garbled, BOMM_TEST_DISABLE_FOR_NON_LATIN_ALPHABET) {
     free(trie);
 }
 
-Test(trie, bomm_trie_measure_message, BOMM_TEST_DISABLE_FOR_NON_LATIN_ALPHABET) {
+Test(trie, bomm_trie_measure_message) {
+    bomm_test_skip_if_non_latin_alphabet;
     bomm_message_t* message;
     bomm_trie_t* trie = bomm_trie_init(NULL);
 

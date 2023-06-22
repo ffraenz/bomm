@@ -76,7 +76,8 @@ Test(wiring, bomm_pass_init_json_reswapping) {
     cr_assert_eq(pass.config.reswapping.measure, BOMM_MEASURE_ENTROPY);
 }
 
-Test(wiring, bomm_pass_init_json_trie, BOMM_TEST_DISABLE_FOR_NON_LATIN_ALPHABET) {
+Test(wiring, bomm_pass_init_json_trie) {
+    bomm_test_skip_if_non_latin_alphabet;
     const char* pass_json_string =
         "{ " \
         "\"type\": \"trie\", " \

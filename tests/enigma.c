@@ -24,7 +24,8 @@ void _load_test_key(bomm_key_t* key) {
     key->positions[3] = 20;
 }
 
-Test(enigma, bomm_enigma_encrypt, BOMM_TEST_DISABLE_FOR_NON_LATIN_ALPHABET) {
+Test(enigma, bomm_enigma_encrypt) {
+    bomm_test_skip_if_non_latin_alphabet;
     bomm_key_t key, original_key;
     _load_test_key(&key);
     memcpy(&original_key, &key, sizeof(original_key));
@@ -47,7 +48,8 @@ Test(enigma, bomm_enigma_encrypt, BOMM_TEST_DISABLE_FOR_NON_LATIN_ALPHABET) {
     free(plaintext);
 }
 
-Test(enigma, bomm_enigma_generate_scrambler, BOMM_TEST_DISABLE_FOR_NON_LATIN_ALPHABET) {
+Test(enigma, bomm_enigma_generate_scrambler) {
+    bomm_test_skip_if_non_latin_alphabet;
     char expected_scrambler_ascii[5][27] = {
         "gmixryalcwzhbvstueopqnjdfk",
         "dsnalzyomrxeichtvjbpwqukgf",

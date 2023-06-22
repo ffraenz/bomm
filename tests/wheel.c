@@ -10,8 +10,8 @@
 #include "shared/helpers.h"
 #include "../src/wheel.h"
 
-Test(wiring, bomm_wheel_init_with_name, BOMM_TEST_DISABLE_FOR_NON_LATIN_ALPHABET) {
-    printf("Alphabet used: %s (%d)\n", BOMM_ALPHABET, BOMM_ALPHABET_SIZE);
+Test(wiring, bomm_wheel_init_with_name) {
+    bomm_test_skip_if_non_latin_alphabet;
 
     bomm_wheel_t wheel;
     char string[BOMM_ALPHABET_SIZE + 1];
@@ -47,7 +47,8 @@ Test(wiring, bomm_wheel_init_with_name, BOMM_TEST_DISABLE_FOR_NON_LATIN_ALPHABET
     cr_assert_eq(bomm_wheel_init_with_name(&wheel, "unknown"), NULL);
 }
 
-Test(wiring, bomm_wheel_init_with_json, BOMM_TEST_DISABLE_FOR_NON_LATIN_ALPHABET) {
+Test(wiring, bomm_wheel_init_with_json) {
+    bomm_test_skip_if_non_latin_alphabet;
     const char* wheel_json_string =
         "{ \"name\": \"I\", \"wiring\": \"ekmflgdqvzntowyhxuspaibrcj\", " \
         "\"turnovers\": \"q\" }";
@@ -68,7 +69,8 @@ Test(wiring, bomm_wheel_init_with_json, BOMM_TEST_DISABLE_FOR_NON_LATIN_ALPHABET
     cr_assert_str_eq(actual_string, "q");
 }
 
-Test(wiring, bomm_wheel_set_init_with_json, BOMM_TEST_DISABLE_FOR_NON_LATIN_ALPHABET) {
+Test(wiring, bomm_wheel_set_init_with_json) {
+    bomm_test_skip_if_non_latin_alphabet;
     unsigned int num_wheels = 3;
     bomm_wheel_t wheels[num_wheels];
     bomm_wheel_init(&wheels[0], "I",   "ekmflgdqvzntowyhxuspaibrcj", "q");

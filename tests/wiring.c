@@ -10,7 +10,8 @@
 #include "../src/wiring.h"
 #include "../src/utility.h"
 
-Test(wiring, bomm_wiring_init, BOMM_TEST_DISABLE_FOR_NON_LATIN_ALPHABET) {
+Test(wiring, bomm_wiring_init) {
+    bomm_test_skip_if_non_latin_alphabet;
     char* expected_wiring_string = "ekmflgdqvzntowyhxuspaibrcj";
     char actual_string[BOMM_ALPHABET_SIZE + 1];
     bomm_wiring_t* wiring = malloc(sizeof(bomm_wiring_t));
@@ -20,7 +21,8 @@ Test(wiring, bomm_wiring_init, BOMM_TEST_DISABLE_FOR_NON_LATIN_ALPHABET) {
     free(wiring);
 }
 
-Test(wiring, bomm_wiring_plugboard_init_identity, BOMM_TEST_DISABLE_FOR_NON_LATIN_ALPHABET) {
+Test(wiring, bomm_wiring_plugboard_init_identity) {
+    bomm_test_skip_if_non_latin_alphabet;
     unsigned int plugboard[BOMM_ALPHABET_SIZE];
     bomm_wiring_plugboard_init_identity(plugboard);
     const unsigned int expected_plugboard[] = {
@@ -58,7 +60,8 @@ Test(key, bomm_wiring_plugboard_validate) {
     cr_assert_eq(bomm_wiring_plugboard_validate(plugboard), false);
 }
 
-Test(key, bomm_wiring_plugboard_stringify, BOMM_TEST_DISABLE_FOR_NON_LATIN_ALPHABET) {
+Test(key, bomm_wiring_plugboard_stringify) {
+    bomm_test_skip_if_non_latin_alphabet;
     char actual_string[128];
 
     // Identity plugboard

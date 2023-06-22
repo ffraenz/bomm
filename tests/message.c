@@ -36,7 +36,8 @@ Test(message, bomm_message_init) {
     free(message);
 }
 
-Test(message, bomm_message_the_quick_brown_fox, BOMM_TEST_DISABLE_FOR_NON_LATIN_ALPHABET) {
+Test(message, bomm_message_the_quick_brown_fox) {
+    bomm_test_skip_if_non_latin_alphabet;
     char* input_string = "the quick brown fox jumps over the lazy dog";
     char* expected_string = "thequickbrownfoxjumpsoverthelazydog";
     bomm_message_t* message = bomm_message_init(input_string);

@@ -14,7 +14,8 @@ Test(message, bomm_lettermask_t) {
         "The alphabet must fit into the bomm_lettermask_t type");
 }
 
-Test(lettermask, bomm_lettermask_from_string, BOMM_TEST_DISABLE_FOR_NON_LATIN_ALPHABET) {
+Test(lettermask, bomm_lettermask_from_string) {
+    bomm_test_skip_if_non_latin_alphabet;
     bomm_lettermask_t lettermask;
 
     bomm_lettermask_from_string(&lettermask, "");
@@ -42,7 +43,8 @@ Test(lettermask, bomm_lettermask_from_string, BOMM_TEST_DISABLE_FOR_NON_LATIN_AL
     cr_assert_eq(lettermask, BOMM_LETTERMASK_ALL);
 }
 
-Test(lettermask, bomm_lettermask_stringify, BOMM_TEST_DISABLE_FOR_NON_LATIN_ALPHABET) {
+Test(lettermask, bomm_lettermask_stringify) {
+    bomm_test_skip_if_non_latin_alphabet;
     bomm_lettermask_t lettermask;
     char actual_string[BOMM_ALPHABET_SIZE + 1];
 
@@ -59,7 +61,8 @@ Test(lettermask, bomm_lettermask_stringify, BOMM_TEST_DISABLE_FOR_NON_LATIN_ALPH
     cr_assert_str_eq(actual_string, "abcdefghijklmnopqrstuvwxyz");
 }
 
-Test(lettermask, bomm_lettermask_set, BOMM_TEST_DISABLE_FOR_NON_LATIN_ALPHABET) {
+Test(lettermask, bomm_lettermask_set) {
+    bomm_test_skip_if_non_latin_alphabet;
     bomm_lettermask_t lettermask = BOMM_LETTERMASK_NONE;
 
     bomm_lettermask_set(&lettermask, 0);
@@ -72,7 +75,8 @@ Test(lettermask, bomm_lettermask_set, BOMM_TEST_DISABLE_FOR_NON_LATIN_ALPHABET) 
     cr_assert_eq(lettermask, 0x02000801);
 }
 
-Test(lettermask, bomm_lettermask_clear, BOMM_TEST_DISABLE_FOR_NON_LATIN_ALPHABET) {
+Test(lettermask, bomm_lettermask_clear) {
+    bomm_test_skip_if_non_latin_alphabet;
     bomm_lettermask_t lettermask = BOMM_LETTERMASK_ALL;
 
     bomm_lettermask_clear(&lettermask, 0);
@@ -85,7 +89,8 @@ Test(lettermask, bomm_lettermask_clear, BOMM_TEST_DISABLE_FOR_NON_LATIN_ALPHABET
     cr_assert_eq(lettermask, 0x01fff7fe);
 }
 
-Test(lettermask, bomm_lettermask_count, BOMM_TEST_DISABLE_FOR_NON_LATIN_ALPHABET) {
+Test(lettermask, bomm_lettermask_count) {
+    bomm_test_skip_if_non_latin_alphabet;
     bomm_lettermask_t lettermask;
 
     lettermask = BOMM_LETTERMASK_NONE;
