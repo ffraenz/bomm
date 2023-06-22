@@ -1,6 +1,7 @@
 {
   "$schema": "../schemas/query.json",
-  "ciphertext": "hitlu tsunq rtlia bftqr nuwlq vnitr sctnq ipklm aheef dcabc uworu bswyr bggfd txcbx dvduc ezgfb kyilx aunpq rtuvs wm",
+  "alphabet": "abcdefghijklmnopqrstuvwxyz",
+  "ciphertext": "hitlu tsunq rtlia bftqr nuwlq vnitr sctnq ipklm aheef dcabc uworu bswyr bggfd txcbx dvduc ezgfb kyilx ahnpq rtuvs wm",
   "space": {
     "plugs": "e",
     "slots": [

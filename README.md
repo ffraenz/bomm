@@ -18,7 +18,7 @@ The following CLI options are available:
 To run a query, simply provide its path as the only argument when executing the binary:
 
 ```bash
-./build/bomm ./data/queries/authentic-1945-01-10.json
+./build/bomm ./data/queries/hitlu97.json
 ```
 
 This will result in the following view that is kept up-to-date while processing the query:
@@ -73,8 +73,18 @@ First, make sure the libraries [jansson](https://github.com/akheron/jansson) and
 Build and test the program using make:
 
 ```bash
-make clean && make test && make build
+make clean && make test
+# Creates build/bomm
 ```
+
+A non-Latin alphabet may be used with an especially compiled version of the program:
+
+```bash
+make clean && make test ALPHABET=0123456789
+# Creates build/bomm-0123456789
+```
+
+Note, that as of now, only path-safe ASCII alphabets are allowed here.
 
 ## Sources and References
 

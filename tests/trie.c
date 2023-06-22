@@ -6,8 +6,8 @@
 //
 
 #include <stdio.h>
-
 #include <criterion/criterion.h>
+#include "shared/helpers.h"
 #include "../src/trie.h"
 
 Test(trie, bomm_trie_init) {
@@ -26,7 +26,7 @@ Test(trie, bomm_trie_init) {
     free(heap_trie);
 }
 
-Test(trie, bomm_trie_insert) {
+Test(trie, bomm_trie_insert, BOMM_TEST_DISABLE_FOR_NON_LATIN_ALPHABET) {
     bomm_trie_t trie;
     bomm_trie_init(&trie);
 
@@ -72,7 +72,7 @@ Test(trie, bomm_trie_insert) {
     cr_assert_eq(trie_foobar->value, 3.0);
 }
 
-Test(trie, bomm_trie_insert_garbled) {
+Test(trie, bomm_trie_insert_garbled, BOMM_TEST_DISABLE_FOR_NON_LATIN_ALPHABET) {
     bomm_trie_t* trie = bomm_trie_init(NULL);
 
     bomm_message_t* siegfried = bomm_message_init("siegfried");
@@ -91,7 +91,7 @@ Test(trie, bomm_trie_insert_garbled) {
     free(trie);
 }
 
-Test(trie, bomm_trie_measure_message) {
+Test(trie, bomm_trie_measure_message, BOMM_TEST_DISABLE_FOR_NON_LATIN_ALPHABET) {
     bomm_message_t* message;
     bomm_trie_t* trie = bomm_trie_init(NULL);
 

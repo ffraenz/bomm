@@ -6,6 +6,7 @@
 //
 
 #include <criterion/criterion.h>
+#include "shared/helpers.h"
 #include "../src/measure.h"
 
 #define epsilon 0.00000000000000000001
@@ -31,7 +32,7 @@ Test(message, bomm_measure_to_string) {
     cr_assert_str_eq(bomm_measure_to_string(BOMM_MEASURE_NONE), "none");
 }
 
-Test(message, bomm_measure_message_frequency) {
+Test(message, bomm_measure_message_frequency, BOMM_TEST_DISABLE_FOR_NON_LATIN_ALPHABET) {
     bomm_message_t *message;
     unsigned int frequencies[BOMM_ALPHABET_SIZE];
 
@@ -53,7 +54,7 @@ Test(message, bomm_measure_message_frequency) {
 
     message = bomm_message_init("the quick brown fox jumps over the lazy dog");
     bomm_measure_message_frequency(1, frequencies, message);
-    unsigned int expected_frequencies[BOMM_ALPHABET_SIZE] = {
+    unsigned int expected_frequencies[26] = {
         1, 1, 1, 1, 3, 1, 1, 2, 1, 1,
         1, 1, 1, 1, 4, 1, 1, 2, 1, 2,
         2, 1, 1, 1, 1, 1
@@ -78,7 +79,7 @@ Test(message, bomm_measure_message_frequency) {
     free(message);
 }
 
-Test(measure, bomm_measure_ngram_map_init) {
+Test(measure, bomm_measure_ngram_map_init, BOMM_TEST_DISABLE_FOR_NON_LATIN_ALPHABET) {
     bomm_message_t *message;
     bomm_ngram_map_t* trigram_map = bomm_measure_ngram_map_init(3, "./data/frequencies/enigma1941-trigram.txt");
 

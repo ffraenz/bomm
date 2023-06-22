@@ -6,6 +6,7 @@
 //
 
 #include <criterion/criterion.h>
+#include "shared/helpers.h"
 #include "../src/enigma.h"
 
 void _load_test_key(bomm_key_t* key) {
@@ -23,7 +24,7 @@ void _load_test_key(bomm_key_t* key) {
     key->positions[3] = 20;
 }
 
-Test(enigma, bomm_enigma_encrypt) {
+Test(enigma, bomm_enigma_encrypt, BOMM_TEST_DISABLE_FOR_NON_LATIN_ALPHABET) {
     bomm_key_t key, original_key;
     _load_test_key(&key);
     memcpy(&original_key, &key, sizeof(original_key));
@@ -46,7 +47,7 @@ Test(enigma, bomm_enigma_encrypt) {
     free(plaintext);
 }
 
-Test(enigma, bomm_enigma_generate_scrambler) {
+Test(enigma, bomm_enigma_generate_scrambler, BOMM_TEST_DISABLE_FOR_NON_LATIN_ALPHABET) {
     char expected_scrambler_ascii[5][27] = {
         "gmixryalcwzhbvstueopqnjdfk",
         "dsnalzyomrxeichtvjbpwqukgf",

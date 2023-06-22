@@ -6,12 +6,21 @@
 //
 
 #include <criterion/criterion.h>
+#include "shared/helpers.h"
 #include "../src/message.h"
 #include "../src/measure.h"
+#include "../src/utility.h"
+
+Test(message, test_alphabet) {
+    cr_expect_eq(BOMM_ALPHABET_SIZE % 2, 0,
+        "The alphabet must contain an even number of letters");
+    cr_expect_eq(bomm_str_unique(BOMM_ALPHABET), true,
+        "The alphabet must not contain duplicate letters");
+}
 
 Test(message, bomm_letter_t) {
-    cr_assert_geq((bomm_letter_t)~0, BOMM_ALPHABET_SIZE,
-        "The alphabet is expected to fit into a single letter");
+    cr_expect_gt((bomm_letter_t)~0, BOMM_ALPHABET_SIZE,
+        "Letters of the alphabet must fit into the bomm_letter_t type");
 }
 
 Test(message, bomm_message_init) {
@@ -27,7 +36,7 @@ Test(message, bomm_message_init) {
     free(message);
 }
 
-Test(message, bomm_message_the_quick_brown_fox) {
+Test(message, bomm_message_the_quick_brown_fox, BOMM_TEST_DISABLE_FOR_NON_LATIN_ALPHABET) {
     char* input_string = "the quick brown fox jumps over the lazy dog";
     char* expected_string = "thequickbrownfoxjumpsoverthelazydog";
     bomm_message_t* message = bomm_message_init(input_string);

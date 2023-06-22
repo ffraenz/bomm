@@ -15,8 +15,6 @@
 #include "lettermask.h"
 #include "wiring.h"
 
-#define BOMM_WIRING_IDENTITY BOMM_ALPHABET
-
 /**
  * Struct representing wheel, reflector, and plugboard wirings in
  * memory, providing a forward and backward map for efficient mapping.

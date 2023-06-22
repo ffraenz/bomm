@@ -271,8 +271,10 @@ bomm_pass_hill_climb_config_t* bomm_pass_hill_climb_config_init_with_json(
     bomm_pass_hill_climb_config_t working_config;
     working_config.measure = BOMM_MEASURE_IC;
     working_config.final_measure = BOMM_MEASURE_SINKOV_TRIGRAM;
-    working_config.final_measure_min_num_plugs = 7;
-    working_config.backtracking_min_num_plugs = 5;
+    working_config.final_measure_min_num_plugs =
+        (unsigned int) floor(BOMM_ALPHABET_SIZE * 0.3);
+    working_config.backtracking_min_num_plugs =
+        (unsigned int) floor(BOMM_ALPHABET_SIZE * 0.2);
 
     if (config_json->type != JSON_OBJECT) {
         return NULL;

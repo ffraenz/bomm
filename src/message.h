@@ -11,9 +11,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <math.h>
-
-#define BOMM_ALPHABET "abcdefghijklmnopqrstuvwxyz"
-#define BOMM_ALPHABET_SIZE 26
+#include "config.h"
 
 /**
  * Type representing an Enigma message letter. Its values range from `0`,
@@ -67,15 +65,10 @@ static inline size_t bomm_message_size_for_length(unsigned int length) {
  * Turn the given ASCII code point to a message letter.
  * If no mapping exists, 255 is returned.
  */
-static inline unsigned char bomm_message_letter_from_ascii(char code_point) {
-    if (code_point >= 97 && code_point <= 122) {
-        // Read lowercase ASCII a-z
-        return code_point - 97;
-    } else if (code_point >= 65 && code_point <= 90) {
-        // Read uppercase ASCII A-Z
-        return code_point - 65;
-    }
-    return 255;
+static inline unsigned char bomm_message_letter_from_ascii(char char_code) {
+    unsigned char letter = 0;
+    while (BOMM_ALPHABET[letter] != char_code && ++letter < BOMM_ALPHABET_SIZE);
+    return letter < BOMM_ALPHABET_SIZE ? letter : 255;
 }
 
 /**
@@ -83,7 +76,7 @@ static inline unsigned char bomm_message_letter_from_ascii(char code_point) {
  * Uses the lowercase alphabet.
  */
 static inline char bomm_message_letter_to_ascii(unsigned char letter) {
-    return letter + 97;
+    return BOMM_ALPHABET[letter];
 }
 
 /**

@@ -6,14 +6,15 @@
 //
 
 #include <criterion/criterion.h>
+#include "shared/helpers.h"
 #include "../src/lettermask.h"
 
 Test(message, bomm_lettermask_t) {
-    cr_assert_geq(sizeof(bomm_lettermask_t) * 8, BOMM_ALPHABET_SIZE,
-        "The alphabet is expected to fit into a lettermask");
+    cr_expect_geq(sizeof(bomm_lettermask_t) * 8, BOMM_ALPHABET_SIZE,
+        "The alphabet must fit into the bomm_lettermask_t type");
 }
 
-Test(lettermask, bomm_lettermask_from_string) {
+Test(lettermask, bomm_lettermask_from_string, BOMM_TEST_DISABLE_FOR_NON_LATIN_ALPHABET) {
     bomm_lettermask_t lettermask;
 
     bomm_lettermask_from_string(&lettermask, "");
@@ -41,7 +42,7 @@ Test(lettermask, bomm_lettermask_from_string) {
     cr_assert_eq(lettermask, BOMM_LETTERMASK_ALL);
 }
 
-Test(lettermask, bomm_lettermask_stringify) {
+Test(lettermask, bomm_lettermask_stringify, BOMM_TEST_DISABLE_FOR_NON_LATIN_ALPHABET) {
     bomm_lettermask_t lettermask;
     char actual_string[BOMM_ALPHABET_SIZE + 1];
 
@@ -58,7 +59,7 @@ Test(lettermask, bomm_lettermask_stringify) {
     cr_assert_str_eq(actual_string, "abcdefghijklmnopqrstuvwxyz");
 }
 
-Test(lettermask, bomm_lettermask_set) {
+Test(lettermask, bomm_lettermask_set, BOMM_TEST_DISABLE_FOR_NON_LATIN_ALPHABET) {
     bomm_lettermask_t lettermask = BOMM_LETTERMASK_NONE;
 
     bomm_lettermask_set(&lettermask, 0);
@@ -71,7 +72,7 @@ Test(lettermask, bomm_lettermask_set) {
     cr_assert_eq(lettermask, 0x02000801);
 }
 
-Test(lettermask, bomm_lettermask_clear) {
+Test(lettermask, bomm_lettermask_clear, BOMM_TEST_DISABLE_FOR_NON_LATIN_ALPHABET) {
     bomm_lettermask_t lettermask = BOMM_LETTERMASK_ALL;
 
     bomm_lettermask_clear(&lettermask, 0);
@@ -84,7 +85,7 @@ Test(lettermask, bomm_lettermask_clear) {
     cr_assert_eq(lettermask, 0x01fff7fe);
 }
 
-Test(lettermask, bomm_lettermask_count) {
+Test(lettermask, bomm_lettermask_count, BOMM_TEST_DISABLE_FOR_NON_LATIN_ALPHABET) {
     bomm_lettermask_t lettermask;
 
     lettermask = BOMM_LETTERMASK_NONE;

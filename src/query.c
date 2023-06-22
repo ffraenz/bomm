@@ -122,6 +122,21 @@ bomm_query_t* bomm_query_init(int argc, char *argv[]) {
         fprintf(stderr, "Error: The query is expected to be an object\n");
         return NULL;
     }
+    
+    // Validate alphabet
+    json_t* alphabet_json = json_object_get(query_json, "alphabet");
+    if (alphabet_json != NULL) {
+        if (alphabet_json->type != JSON_STRING) {
+            json_decref(query_json);
+            fprintf(stderr, "Error: The query field 'alphabet' is expected to be a string\n");
+            return NULL;
+        }
+        if (strcmp(json_string_value(alphabet_json), BOMM_ALPHABET) != 0) {
+            json_decref(query_json);
+            fprintf(stderr, "Error: The query alphabet does not match the alphabet bomm was compiled with\n");
+            return NULL;
+        }
+    }
 
     // Read frequencies
     json_t* frequencies_json = json_object_get(query_json, "frequencies");

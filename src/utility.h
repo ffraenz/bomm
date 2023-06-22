@@ -10,6 +10,7 @@
 
 #include <limits.h>
 #include <stdio.h>
+#include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/time.h>
@@ -29,6 +30,20 @@ inline static char* bomm_strncpy(char* dest, const char* src, size_t n) {
         dest[i] = '\0';
     }
     return dest;
+}
+
+/**
+ * Return true, if the given string contains no duplicate characters.
+ */
+inline static bool bomm_str_unique(const char* str) {
+    bool unique = true;
+    size_t length = strlen(str);
+    for (unsigned int i = 0; unique && i < length; i++) {
+        for (unsigned int j = i + 1; unique && j < length; j++) {
+            unique = str[i] != str[j];
+        }
+    }
+    return unique;
 }
 
 /**

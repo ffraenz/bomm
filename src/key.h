@@ -18,7 +18,7 @@
 #define BOMM_MAX_WHEEL_SET_SIZE 15
 
 /**
- * Rotation mechanism options
+ * Stepping mechanism options
  */
 typedef enum {
     /**
@@ -71,121 +71,129 @@ static inline char* bomm_key_mechanism_string(bomm_mechanism_t mechanism) {
 
 /**
  * Struct representing a key space, from which a set of keys can be derived.
- * It can be traversed using an `bomm_key_iterator_t` and related functions.
+ * It can be traversed using a `bomm_key_iterator_t` and related functions.
  */
 typedef struct _bomm_key_space {
     /**
-     * Rotation mechanism
-     */
-    bomm_mechanism_t mechanism;
-
-    /**
      * Number of wheel slots; The first slot represents the reflector, the last
-     * slot represents the entry wheel.
+     * slot represents the entry wheel (if present).
      */
     unsigned int num_slots;
 
     /**
+     * Stepping mechanism
+     */
+    bomm_mechanism_t mechanism;
+
+    /**
+     * Array of booleans describing for each slot whether the contained wheel
+     * can rotate or not. This detail is part of the stepping mechanism.
+     */
+    bool rotating_slots[BOMM_MAX_NUM_SLOTS];
+
+    /**
      * Set of wheels per slot.
-     * Each set is terminated with a null pointer.
+     * Each set is terminated with a wheel having the first byte set to null.
      */
     bomm_wheel_t wheel_sets[BOMM_MAX_NUM_SLOTS]
         [BOMM_MAX_WHEEL_SET_SIZE + 1];
 
     /**
-     * Whether a wheel is rotating for each slot
-     */
-    bool rotating_slots[BOMM_MAX_NUM_SLOTS];
-
-    /**
-     * Possible ring settings for each slot.
-     * Must not be empty (equal to 0).
+     * Set of letters to be used as ring settings per slot.
+     * If a mask for one or more slots is empty, the key space is empty.
      */
     bomm_lettermask_t ring_masks[BOMM_MAX_NUM_SLOTS];
 
     /**
-     * Possible start positions for each slot.
-     * Must not be empty (equal to 0).
+     * Set of letters to be used as wheel positions per slot.
+     * If a mask for one or more slots is empty, the key space is empty.
      */
     bomm_lettermask_t position_masks[BOMM_MAX_NUM_SLOTS];
 
     /**
-     * Mask containing plugs to be exhausted.
+     * Set of letters for which all possible single stecker pairings should be
+     * enumerated on the plugboard.
      * Example: The I-Stecker with letters E, N, R, X, S, or I: `0x862110`
      */
     bomm_lettermask_t plug_mask;
 
     /**
-     * Number of elements contained. Set to 0 if unknown.
+     * Cached number of elements contained in the key space. Set to 0 if not
+     * calculated, yet. Use `bomm_key_space_count` to lazily retrieve the
+     * number of keys.
      */
     unsigned long num_keys;
 
     /**
-     * The number of keys to be skipped at the beginning of the key space
+     * The number of keys to be skipped at the beginning of the key space;
+     * Used to split the key space; Used to split the key space in slices.
      */
     unsigned long offset;
 
     /**
      * The maximum number of keys to be enumerated in this key space (not
-     * including the offset)
+     * including the offset); Used to split the key space in slices.
      */
     unsigned long limit;
 } bomm_key_space_t;
 
 /**
- * Struct describing a single location in a search space.
- * Struct is optimized to being used in-place.
+ * Struct describing a single key drawn from a key space.
+ * Optimized for CPU efficiency, not for memory.
  */
 typedef struct _bomm_key {
     /**
-     * Rotation mechanism
+     * Number of wheel slots; The first slot represents the reflector, the last
+     * slot represents the entry wheel (if present).
+     */
+    unsigned int num_slots;
+
+    /**
+     * Rotation mechanism; Included in the key struct to avoid memory lookups.
      */
     bomm_mechanism_t mechanism;
 
     /**
      * Index of the fast wheel slot when using the stepping mechanism.
      * Undefined, when the mechanism is not set to `BOMM_MECHANISM_STEPPING`.
+     * Included in the key struct to avoid memory lookups.
      */
     unsigned int fast_wheel_slot;
 
     /**
-     * Number of wheel slots; The first slot represents the reflector, the last
-     * slot represents the entry wheel.
-     */
-    unsigned int num_slots;
-
-    /**
-     * Wheel instances matching the wheels of the key
-     */
-    bomm_wheel_t wheels[BOMM_MAX_NUM_SLOTS];
-
-    /**
-     * Whether wheel is rotating for each slot
+     * Array of booleans describing for each slot whether the contained wheel
+     * can rotate or not. This detail is part of the stepping mechanism.
+     * Included in the key struct to avoid memory lookups.
      */
     bool rotating_slots[BOMM_MAX_NUM_SLOTS];
 
     /**
-     * Ring setting (Ringstellung): Ring position of the wheel in each slot
+     * Wheel instances matching the wheel order of the key
+     */
+    bomm_wheel_t wheels[BOMM_MAX_NUM_SLOTS];
+
+    /**
+     * Ring setting (Ringstellung) of the wheel in each slot
      */
     unsigned int rings[BOMM_MAX_NUM_SLOTS];
 
     /**
-     * Start position (Walzenstellung): Start position of the wheel in each slot
+     * Wheel position (Walzenstellung) of the wheel in each slot
      */
     unsigned int positions[BOMM_MAX_NUM_SLOTS];
 
     /**
-     * Plugboard setting (Steckerverbindungen) to be used
+     * Plugboard wiring (Steckerverbindungen)
      */
     unsigned int plugboard[BOMM_ALPHABET_SIZE];
 } bomm_key_t;
 
 /**
- * Iterator struct that enables traversing a key space.
+ * Iterator struct facilitating enumerating keys in a key space.
  */
 typedef struct _bomm_key_iterator {
     /**
-     * Key space iterator was created for
+     * Pointer to the key space the iterator was created for
      */
     const bomm_key_space_t* key_space;
 
@@ -200,9 +208,10 @@ typedef struct _bomm_key_iterator {
     bomm_key_t key;
 
     /**
-     * Whether the scrambler portion of the key has changed during the last
-     * `bomm_key_iterator_next` call (wheel indices, rings, positions).
-     * Initially set to `true`.
+     * Flag signifying whether the scrambler location (wheel order,
+     * ring setting, or wheel positions) of the key has changed during the last
+     * `bomm_key_iterator_next` call. Initially set to `true`. Used to decide
+     * on whether the scrambler wiring of the last key can be reused.
      */
     bool scrambler_changed;
 
@@ -212,12 +221,16 @@ typedef struct _bomm_key_iterator {
     unsigned int wheel_indices[BOMM_MAX_NUM_SLOTS];
 
     /**
-     * Shifting ring mask per slot
+     * Shifting ring mask per slot; Mask that is shifted around every time the
+     * ring setting is incremented to efficiently check whether the current ring
+     * setting should be considered or not.
      */
     bomm_lettermask_t ring_masks[BOMM_MAX_NUM_SLOTS];
 
     /**
-     * Shifting position mask per slot
+     * Shifting position mask per slot; Mask that is shifted around every time
+     * the wheel positions are incremented to efficiently check whether the
+     * current set of wheel positions should be considered or not.
      */
     bomm_lettermask_t position_masks[BOMM_MAX_NUM_SLOTS];
 

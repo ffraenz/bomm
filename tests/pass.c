@@ -7,6 +7,7 @@
 
 #include <criterion/criterion.h>
 #include <jansson.h>
+#include "shared/helpers.h"
 #include "../src/pass.h"
 
 Test(wiring, bomm_pass_init_json_hill_climb_1) {
@@ -15,8 +16,7 @@ Test(wiring, bomm_pass_init_json_hill_climb_1) {
         "\"type\": \"hill_climb\", " \
         "\"measure\": \"ic\", " \
         "\"finalMeasure\": \"sinkov_trigram\", " \
-        "\"finalMeasureMinNumPlugs\": 4, " \
-        "\"backtrackingMinNumPlugs\": 6 " \
+        "\"finalMeasureMinNumPlugs\": 1 " \
         "}";
 
     json_error_t error;
@@ -28,8 +28,11 @@ Test(wiring, bomm_pass_init_json_hill_climb_1) {
     cr_assert_eq(pass.type, BOMM_PASS_HILL_CLIMB);
     cr_assert_eq(pass.config.hill_climb.measure, BOMM_MEASURE_IC);
     cr_assert_eq(pass.config.hill_climb.final_measure, BOMM_MEASURE_SINKOV_TRIGRAM);
-    cr_assert_eq(pass.config.hill_climb.final_measure_min_num_plugs, 4);
-    cr_assert_eq(pass.config.hill_climb.backtracking_min_num_plugs, 6);
+    cr_assert_eq(pass.config.hill_climb.final_measure_min_num_plugs, 1);
+
+    if (BOMM_ALPHABET_SIZE == 26) {
+        cr_assert_eq(pass.config.hill_climb.backtracking_min_num_plugs, 5);
+    }
 }
 
 Test(wiring, bomm_pass_init_json_hill_climb_2) {
@@ -37,7 +40,7 @@ Test(wiring, bomm_pass_init_json_hill_climb_2) {
         "{ " \
         "\"type\": \"hill_climb\", " \
         "\"measure\": \"sinkov_trigram\", " \
-        "\"backtrackingMinNumPlugs\": 3 " \
+        "\"backtrackingMinNumPlugs\": 1 " \
         "}";
 
     json_error_t error;
@@ -49,7 +52,11 @@ Test(wiring, bomm_pass_init_json_hill_climb_2) {
     cr_assert_eq(pass.type, BOMM_PASS_HILL_CLIMB);
     cr_assert_eq(pass.config.hill_climb.measure, BOMM_MEASURE_SINKOV_TRIGRAM);
     cr_assert_eq(pass.config.hill_climb.final_measure, BOMM_MEASURE_SINKOV_TRIGRAM);
-    cr_assert_eq(pass.config.hill_climb.backtracking_min_num_plugs, 3);
+    cr_assert_eq(pass.config.hill_climb.backtracking_min_num_plugs, 1);
+
+    if (BOMM_ALPHABET_SIZE == 26) {
+        cr_assert_eq(pass.config.hill_climb.final_measure_min_num_plugs, 7);
+    }
 }
 
 Test(wiring, bomm_pass_init_json_reswapping) {
@@ -69,7 +76,7 @@ Test(wiring, bomm_pass_init_json_reswapping) {
     cr_assert_eq(pass.config.reswapping.measure, BOMM_MEASURE_ENTROPY);
 }
 
-Test(wiring, bomm_pass_init_json_trie) {
+Test(wiring, bomm_pass_init_json_trie, BOMM_TEST_DISABLE_FOR_NON_LATIN_ALPHABET) {
     const char* pass_json_string =
         "{ " \
         "\"type\": \"trie\", " \

@@ -73,6 +73,10 @@
   },
   "type": "object",
   "properties": {
+    "alphabet": {
+      "type": "string",
+      "description": "Alphabet expected when running this query. When set this alphabet will be matched against the alphabet bomm was compiled with before continuing."
+    },
     "ciphertext": {
       "type": "string"
     },
@@ -159,13 +163,11 @@
               "finalMeasureMinNumPlugs": {
                 "type": "integer",
                 "description": "Minimum number of plugs that need to be assigned before switching from the initial measure to the final measure",
-                "default": 7,
                 "minimum": 0
               },
               "backtrackingMinNumPlugs": {
                 "type": "integer",
                 "description": "Minimum number of plugs that need to be assigned before evaluating backtracking steps (i.e. removing plugs)",
-                "default": 5,
                 "minimum": 0
               }
             },

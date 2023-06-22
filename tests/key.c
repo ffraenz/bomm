@@ -6,6 +6,7 @@
 //
 
 #include <criterion/criterion.h>
+#include "shared/helpers.h"
 #include "../src/key.h"
 
 Test(key, bomm_key_mechanism_from_string) {
@@ -18,7 +19,7 @@ Test(key, bomm_key_mechanism_from_string) {
     cr_assert_eq(actual_mechanism, BOMM_MECHANISM_NONE);
 }
 
-Test(key, bomm_key_iterator_init_empty_wheel_order) {
+Test(key, bomm_key_iterator_init_empty_wheel_order, BOMM_TEST_DISABLE_FOR_NON_LATIN_ALPHABET) {
     bomm_key_space_t key_space;
     bomm_key_space_init_enigma_i(&key_space);
     bomm_key_iterator_t key_iterator;
@@ -27,7 +28,7 @@ Test(key, bomm_key_iterator_init_empty_wheel_order) {
     cr_assert_eq(bomm_key_iterator_init(&key_iterator, &key_space), NULL);
 }
 
-Test(key, bomm_key_iterator_init_empty_wheel_set) {
+Test(key, bomm_key_iterator_init_empty_wheel_set, BOMM_TEST_DISABLE_FOR_NON_LATIN_ALPHABET) {
     bomm_key_space_t key_space;
     bomm_key_space_init_enigma_i(&key_space);
     bomm_key_iterator_t key_iterator;
@@ -35,7 +36,7 @@ Test(key, bomm_key_iterator_init_empty_wheel_set) {
     cr_assert_eq(bomm_key_iterator_init(&key_iterator, &key_space), NULL);
 }
 
-Test(key, bomm_key_iterator_init_empty_position_mask) {
+Test(key, bomm_key_iterator_init_empty_position_mask, BOMM_TEST_DISABLE_FOR_NON_LATIN_ALPHABET) {
     bomm_key_space_t key_space;
     bomm_key_space_init_enigma_i(&key_space);
     bomm_key_iterator_t key_iterator;
@@ -43,7 +44,7 @@ Test(key, bomm_key_iterator_init_empty_position_mask) {
     cr_assert_eq(bomm_key_iterator_init(&key_iterator, &key_space), NULL);
 }
 
-Test(key, bomm_key_iterator_next) {
+Test(key, bomm_key_iterator_next, BOMM_TEST_DISABLE_FOR_NON_LATIN_ALPHABET) {
     bomm_key_space_t key_space;
     bomm_key_space_init_enigma_i(&key_space);
     key_space.plug_mask = BOMM_LETTERMASK_NONE;
@@ -62,7 +63,7 @@ Test(key, bomm_key_iterator_next) {
     cr_assert_arr_eq(&key_iterator, &expected_key_iterator, sizeof(key_iterator));
 }
 
-Test(key, bomm_key_iterator_plugboard_next_r_stecker) {
+Test(key, bomm_key_iterator_plugboard_next_r_stecker, BOMM_TEST_DISABLE_FOR_NON_LATIN_ALPHABET) {
     bomm_key_space_t key_space;
     bomm_key_space_init_enigma_i(&key_space);
     bomm_key_iterator_t iterator, initial_iterator;
@@ -110,7 +111,7 @@ Test(key, bomm_key_iterator_plugboard_next_r_stecker) {
     cr_assert_arr_eq(&iterator, &initial_iterator, sizeof(iterator));
 }
 
-Test(key, bomm_key_space_plugboard_count) {
+Test(key, bomm_key_space_plugboard_count, BOMM_TEST_DISABLE_FOR_NON_LATIN_ALPHABET) {
     bomm_key_space_t key_space;
     bomm_key_space_init_enigma_i(&key_space);
 
@@ -135,7 +136,7 @@ Test(key, bomm_key_space_plugboard_count) {
     cr_assert_eq(bomm_key_space_plugboard_count(&key_space), 326);
 }
 
-Test(key, bomm_key_space_count) {
+Test(key, bomm_key_space_count, BOMM_TEST_DISABLE_FOR_NON_LATIN_ALPHABET) {
     bomm_key_space_t key_space;
     bomm_key_space_init_enigma_i(&key_space);
 
@@ -149,7 +150,7 @@ Test(key, bomm_key_space_count) {
     cr_assert_eq(bomm_key_space_count(&key_space), 8594664000);
 }
 
-Test(key, bomm_key_space_slice) {
+Test(key, bomm_key_space_slice, BOMM_TEST_DISABLE_FOR_NON_LATIN_ALPHABET) {
     bomm_key_space_t key_space;
     bomm_key_space_init_enigma_i(&key_space);
 

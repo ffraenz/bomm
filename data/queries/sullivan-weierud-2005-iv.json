@@ -1,11 +1,12 @@
 {
   "$schema": "../schemas/query.json",
+  "alphabet": "abcdefghijklmnopqrstuvwxyz",
   "sources": [
     "https://cryptocellar.org/bgac/keyofE.html"
   ],
   "ciphertext": "weklm uerds evhlc jsqqk vldes anevt yedgi zqdod rmdkg sxgsq shdqp vieap ienli clzcl lagwc bjzd",
   "space": {
-    "plugs": "enrx",
+    "plugs": "e",
     "slots": [
       {
         "wheels": ["UKW-B"]
@@ -31,9 +32,31 @@
   "passes": [
     {
       "type": "hill_climb",
-      "measure": "sinkov_trigram"
+      "measure": "ic",
+      "finalMeasure": "trie",
+      "finalMeasureMinNumPlugs": 5,
+      "backtrackingMinNumPlugs": 5
     }
   ],
+  "measures": {
+    "trie": {
+      "baseMeasure": "sinkov_trigram",
+      "trie": {
+        "words": [
+          { "word": "siegfried", "value": 1, "garbles": 1 },
+          { "word": "sieben", "value": 0.67 },
+          { "word": "frage", "value": 0.56 },
+          { "word": "roem", "value": 0.44 },
+          { "word": "toni", "value": 0.44 },
+          { "word": "eins", "value": 0.44 },
+          { "word": "drei", "value": 0.44 },
+          { "word": "vier", "value": 0.44 },
+          { "word": "seqs", "value": 0.44 },
+          { "word": "neun", "value": 0.44 }
+        ]
+      }
+    }
+  },
   "frequencies": {
     "bigram": "./data/frequencies/enigma1941-bigram.txt",
     "trigram": "./data/frequencies/enigma1941-trigram.txt"

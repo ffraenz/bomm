@@ -1,5 +1,6 @@
 {
   "$schema": "../schemas/query.json",
+  "alphabet": "abcdefghijklmnopqrstuvwxyz",
   "sources": [
     "https://cryptocellar.org/bgac/keyofE.html"
   ],
