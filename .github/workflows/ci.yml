@@ -18,9 +18,9 @@ jobs:
         build-essential
         libcriterion-dev
         libjansson-dev
-    - name: configure
+    - name: Run configure script
       run: ./configure
-    - name: make test
+    - name: Build and test the program
       run: make test
-    - name: make test ALPHABET=0123456789
+    - name: Build and test the program variant for the alphabet '0123456789'
       run: make test
