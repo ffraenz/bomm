@@ -419,7 +419,7 @@ bomm_key_iterator_t* bomm_key_iterator_init(
             iterator->key.rings, iterator->ring_masks, num_slots) ||
         bomm_key_iterator_positions_init(
             iterator->key.positions, iterator->position_masks, num_slots) ||
-        !bomm_key_is_relevant(&iterator->key)
+        bomm_key_is_redundant(&iterator->key)
     );
 
     if (empty) {

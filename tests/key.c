@@ -63,7 +63,7 @@ Test(key, bomm_key_iterator_next) {
         num_keys++;
     }
 
-    cr_assert_eq(num_keys, 26364000);
+    cr_assert_eq(num_keys, 27418560);
     cr_assert_arr_eq(&key_iterator, &expected_key_iterator, sizeof(key_iterator));
 }
 
@@ -148,13 +148,13 @@ Test(key, bomm_key_space_count) {
     bomm_key_space_init_enigma_i(&key_space);
 
     key_space.plug_mask = BOMM_LETTERMASK_NONE;
-    cr_assert_eq(bomm_key_space_count(&key_space), 26364000);
+    cr_assert_eq(bomm_key_space_count(&key_space), 27418560);
 
     key_space.plug_mask = 0x862110;
-    cr_assert_eq(bomm_key_space_count(&key_space), 3585504000);
+    cr_assert_eq(bomm_key_space_count(&key_space), 3728924160);
 
     key_space.plug_mask = BOMM_LETTERMASK_ALL;
-    cr_assert_eq(bomm_key_space_count(&key_space), 8594664000);
+    cr_assert_eq(bomm_key_space_count(&key_space), 8938450560);
 }
 
 Test(key, bomm_key_space_slice) {

@@ -485,15 +485,15 @@ bomm_key_iterator_t* bomm_key_iterator_init(
 
 /**
  * Determine the relevancy of the given key. An irrelevant key is one that is
- * equivalent to a canonicalized version of itself. Right now, keys equivalent
- * due to the double stepping anomaly are flagged as irrelevant.
+ * redundant, equivalent to a canonicalized version of itself.
  */
-static inline bool bomm_key_is_relevant(bomm_key_t* key) {
-    // TODO: Make ready for 4 rotor machines like M4
-    return (
-        key->mechanism != BOMM_MECHANISM_STEPPING ||
-        !bomm_lettermask_has(&key->wheels[2].turnovers, key->positions[2])
-    );
+static inline bool bomm_key_is_redundant(bomm_key_t* key) {
+    // TODO: The double stepping anomaly caused by the stepping mechanism is
+    // likely to cause such redundant keys. However, they are not trivial to
+    // identify (e.g. ignoring one middle wheel position). This needs further
+    // research and proof before it can safely be implemented.
+    (void) key;
+    return false;
 }
 
 /**
@@ -519,7 +519,7 @@ static inline __attribute__((always_inline)) bool bomm_key_iterator_next(
                 iterator, true);
         scrambler_changed = scrambler_changed || plugboard_carry;
         carry_out = carry_out || carry;
-    } while (!bomm_key_is_relevant(key));
+    } while (bomm_key_is_redundant(key));
 
     iterator->index++;
     iterator->scrambler_changed = scrambler_changed;
