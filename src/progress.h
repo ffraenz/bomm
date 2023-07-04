@@ -33,7 +33,7 @@ typedef struct _bomm_progress {
     /**
      * Number of decrypts evaluated
      */
-    unsigned long num_decrypts;
+    unsigned long long num_decrypts;
 
     /**
      * Number of seconds elapsed so far.

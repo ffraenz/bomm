@@ -81,7 +81,7 @@ int main(int argc, char *argv[]) {
     bomm_query_print(bomm_query_main, bomm_query_main->hold->size);
     printf("Concurrent attacks: %d\n", bomm_query_main->num_attacks);
     printf("Number of units: %lu\n", bomm_query_main->joint_progress.num_units);
-    printf("Number of decrypts: %lu\n", bomm_query_main->joint_progress.num_decrypts);
+    printf("Number of decrypts: %llu\n", bomm_query_main->joint_progress.num_decrypts);
 
     // Clean up
     bomm_query_destroy(bomm_query_main);
