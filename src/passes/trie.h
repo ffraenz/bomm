@@ -37,7 +37,8 @@ double bomm_pass_trie_climb_run(
     unsigned int* plugboard,
     bomm_scrambler_t* scrambler,
     bomm_message_t* ciphertext,
-    double score
+    double score,
+    unsigned int* num_decrypts
 );
 
 /**

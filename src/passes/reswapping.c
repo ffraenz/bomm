@@ -12,9 +12,12 @@ double bomm_pass_reswapping_run(
     bomm_pass_reswapping_config_t* config,
     unsigned int* plugboard,
     bomm_scrambler_t* scrambler,
-    bomm_message_t* ciphertext
+    bomm_message_t* ciphertext,
+    unsigned int* num_decrypts
 ) {
     bomm_measure_t measure = config->measure;
+
+    (*num_decrypts)++;
 
     double score;
     double best_score = bomm_measure_scrambler(
@@ -40,6 +43,7 @@ double bomm_pass_reswapping_run(
                     if (plugboard[x] == x) {
                         // Measure stecker i, x
                         bomm_swap(&plugboard[i], &plugboard[x]);
+                        (*num_decrypts)++;
                         score = bomm_measure_scrambler(
                             measure, scrambler, plugboard, ciphertext);
                         if (score > best_score) {
@@ -54,6 +58,7 @@ double bomm_pass_reswapping_run(
 
                         // Measure stecker k, x
                         bomm_swap(&plugboard[k], &plugboard[x]);
+                        (*num_decrypts)++;
                         score = bomm_measure_scrambler(
                             measure, scrambler, plugboard, ciphertext);
                         if (score > best_score) {

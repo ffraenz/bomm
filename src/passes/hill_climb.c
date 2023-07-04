@@ -12,7 +12,8 @@ double bomm_pass_hill_climb_run(
     bomm_pass_hill_climb_config_t* config,
     unsigned int* plugboard,
     bomm_scrambler_t* scrambler,
-    bomm_message_t* ciphertext
+    bomm_message_t* ciphertext,
+    unsigned int* num_decrypts
 ) {
     // Action values encode swap operations that can be applied to a set of
     // 4 plugs (the chosen pair and up to two letters that may be connected to
@@ -104,9 +105,6 @@ double bomm_pass_hill_climb_run(
     const unsigned char* action;
     const unsigned char* actions_begin;
 
-    // TODO: Remove debugging code
-    // char string[128];
-
     // Set of plugs and set of actions needed to recreate the best result
     unsigned int* best_plugs[4];
     const unsigned char* best_actions_begin;
@@ -133,18 +131,13 @@ double bomm_pass_hill_climb_run(
         // Take an initial measurement, if the measure changes
         if (measure != last_measure) {
             last_measure = measure;
+            (*num_decrypts)++;
             best_score = bomm_measure_scrambler(
                 measure,
                 scrambler,
                 plugboard,
                 ciphertext
             );
-
-            // printf("Switch to measure %d\n", measure);
-
-            // TODO: Remove debugging code
-            // bomm_wiring_plugboard_stringify(string, sizeof(string), plugboard);
-            // printf("Initial me.: %+016.12f '%s' (%d)\n", best_score, string, num_plugs);
         }
 
         // Enumerate all possible plugboard pairs
@@ -189,10 +182,6 @@ double bomm_pass_hill_climb_run(
                     actions_begin = case_3_actions;
                 }
 
-                // TODO: Remove debugging code
-                // unsigned int original_plugboard[BOMM_ALPHABET_SIZE];
-                // memcpy(original_plugboard, plugboard, sizeof(original_plugboard));
-
                 // Enumerate the set of actions
                 for (action = actions_begin; *action != 0x00; action++) {
                     // The two least significant bits signify the first plug
@@ -202,6 +191,7 @@ double bomm_pass_hill_climb_run(
 
                     if (*action == 0x0f) {
                         // Take a measurement and compare it
+                        (*num_decrypts)++;
                         score = bomm_measure_scrambler(
                             measure,
                             scrambler,
@@ -213,10 +203,6 @@ double bomm_pass_hill_climb_run(
                             best_score = score;
                             found_improvement = true;
 
-                            // TODO: Remove debugging code
-                            // bomm_wiring_plugboard_stringify(string, sizeof(string), plugboard);
-                            // printf("Measure:     %+016.12f '%s' (%d)\n", score, string, num_plugs);
-
                             // Store info necessary to reproduce best result
                             memcpy(best_plugs, plugs, sizeof(best_plugs));
                             best_actions_begin = actions_begin;
@@ -224,12 +210,6 @@ double bomm_pass_hill_climb_run(
                         }
                     }
                 }
-
-                // TODO: Remove debugging code
-                // if (memcmp(plugboard, original_plugboard, sizeof(original_plugboard)) != 0) {
-                //     printf("Action set is not restoring original plugboard!\n");
-                //     exit(1);
-                // }
             }
         } // End: Enumerate all possible plugboard pairs
 
@@ -241,10 +221,6 @@ double bomm_pass_hill_climb_run(
             }
             best_actions_begin = NULL;
             best_actions_end = NULL;
-
-            // TODO: Remove debugging code
-            // bomm_wiring_plugboard_stringify(string, sizeof(string), plugboard);
-            // printf("Apply best:  %+016.12f '%s' (%d)\n", best_score, string, num_plugs);
         }
     }
 
@@ -253,6 +229,7 @@ double bomm_pass_hill_climb_run(
     }
 
     // The threshold for the final measure may not be reached
+    (*num_decrypts)++;
     return bomm_measure_scrambler(
         config->final_measure,
         scrambler,

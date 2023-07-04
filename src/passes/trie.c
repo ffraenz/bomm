@@ -16,12 +16,14 @@ double bomm_pass_trie_climb_run(
     unsigned int* plugboard,
     bomm_scrambler_t* scrambler,
     bomm_message_t* ciphertext,
-    double score
+    double score,
+    unsigned int* num_decrypts
 ) {
     size_t message_size = bomm_message_size_for_length(ciphertext->length);
     bomm_message_t* plaintext = malloc(message_size);
     if (plaintext) {
         bomm_scrambler_encrypt(scrambler, plugboard, ciphertext, plaintext);
+        (*num_decrypts)++;
         if (config->base_measure != BOMM_MEASURE_NONE) {
             score = bomm_measure_message(config->base_measure, plaintext);
         }

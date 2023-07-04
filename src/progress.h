@@ -31,6 +31,11 @@ typedef struct _bomm_progress {
     unsigned long num_units_completed;
 
     /**
+     * Number of decrypts evaluated
+     */
+    unsigned long num_decrypts;
+
+    /**
      * Number of seconds elapsed so far.
      */
     double duration_sec;
@@ -52,6 +57,7 @@ static inline void bomm_progress_parallel(
 ) {
     progress->num_units = 0;
     progress->num_units_completed = 0;
+    progress->num_decrypts = 0;
     progress->duration_sec = 0;
     progress->batch_duration_sec = 0;
 
@@ -60,6 +66,7 @@ static inline void bomm_progress_parallel(
 
         progress->num_units += child->num_units;
         progress->num_units_completed += child->num_units_completed;
+        progress->num_decrypts += child->num_decrypts;
 
         if (child->duration_sec > progress->duration_sec) {
             progress->duration_sec = child->duration_sec;
@@ -94,33 +101,6 @@ static inline double bomm_progress_time_remaining_sec(bomm_progress_t* progress)
     double batches_remaining =
         (double) num_units_remaining / progress->num_batch_units;
     return progress->batch_duration_sec * batches_remaining;
-}
-
-/**
- * Export the given progress to a string.
- */
-static inline void bomm_progress_stringify(
-    char* str,
-    size_t size,
-    bomm_progress_t* progress
-) {
-    double percentage = bomm_progress_percentage(progress);
-
-    char duration_string[16];
-    bomm_duration_stringify(duration_string, 16, progress->duration_sec);
-
-    char time_remaining_string[16];
-    double time_remaining_sec = bomm_progress_time_remaining_sec(progress);
-    bomm_duration_stringify(time_remaining_string, 16, time_remaining_sec);
-
-    snprintf(
-        str,
-        size,
-        "[Progress: %.2f%%] [Elapsed: %s] [Remaining: %s]",
-        percentage * 100.0,
-        duration_string,
-        time_remaining_string
-    );
 }
 
 #endif /* progress_h */

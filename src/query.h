@@ -148,6 +148,12 @@ typedef struct _bomm_query {
     bool verbose;
 
     /**
+     * Joint progress of the embedded attacks;
+     * Updated by calling `bomm_query_print`.
+     */
+    bomm_progress_t joint_progress;
+
+    /**
      * Number of attacks executed for this query
      */
     unsigned int num_attacks;

@@ -246,6 +246,12 @@ bomm_query_t* bomm_query_init(int argc, char *argv[]) {
     query->quiet = quiet;
     query->verbose = verbose;
     query->num_attacks = num_threads;
+    query->joint_progress.batch_duration_sec = 0;
+    query->joint_progress.duration_sec = 0;
+    query->joint_progress.num_batch_units = 26;
+    query->joint_progress.num_decrypts = 0;
+    query->joint_progress.num_units = 0;
+    query->joint_progress.num_units_completed = 0;
 
     // Use the measure of the last pass as the query measure
     unsigned int j = num_passes;
@@ -428,8 +434,6 @@ void bomm_query_join(bomm_query_t* query) {
 }
 
 void bomm_query_print(bomm_query_t* query, unsigned int num_elements) {
-    bomm_progress_t joint_progress;
-    joint_progress.num_batch_units = 26;
     bomm_progress_t* attack_progress[query->num_attacks];
     for (unsigned int i = 0; i < query->num_attacks; i++) {
         attack_progress[i] = &query->attacks[i].progress;
@@ -447,16 +451,16 @@ void bomm_query_print(bomm_query_t* query, unsigned int num_elements) {
     }
 
     // Calculate joint progress
-    bomm_progress_parallel(&joint_progress, attack_progress, query->num_attacks);
+    bomm_progress_parallel(&query->joint_progress, attack_progress, query->num_attacks);
 
     // Unlock progress updates
     for (unsigned int i = 0; i < query->num_attacks; i++) {
         pthread_mutex_unlock(&query->attacks[i].mutex);
     }
 
-    double percentage = bomm_progress_percentage(&joint_progress);
-    bomm_duration_stringify(duration_string, 16, joint_progress.duration_sec);
-    double time_remaining_sec = bomm_progress_time_remaining_sec(&joint_progress);
+    double percentage = bomm_progress_percentage(&query->joint_progress);
+    bomm_duration_stringify(duration_string, 16, query->joint_progress.duration_sec);
+    double time_remaining_sec = bomm_progress_time_remaining_sec(&query->joint_progress);
     bomm_duration_stringify(time_remaining_string, 16, time_remaining_sec);
 
     // Lock hold mutex while printing

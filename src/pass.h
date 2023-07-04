@@ -65,7 +65,8 @@ inline static double bomm_pass_run(
     unsigned int* plugboard,
     bomm_scrambler_t* scrambler,
     bomm_message_t* ciphertext,
-    double score
+    double score,
+    unsigned int* num_decrypts
 ) {
     switch (pass->type) {
         case BOMM_PASS_HILL_CLIMB: {
@@ -73,7 +74,8 @@ inline static double bomm_pass_run(
                 &pass->config.hill_climb,
                 plugboard,
                 scrambler,
-                ciphertext
+                ciphertext,
+                num_decrypts
             );
         }
         case BOMM_PASS_RESWAPPING: {
@@ -81,7 +83,8 @@ inline static double bomm_pass_run(
                 &pass->config.reswapping,
                 plugboard,
                 scrambler,
-                ciphertext
+                ciphertext,
+                num_decrypts
             );
         }
         case BOMM_PASS_TRIE: {
@@ -90,7 +93,8 @@ inline static double bomm_pass_run(
                 plugboard,
                 scrambler,
                 ciphertext,
-                score
+                score,
+                num_decrypts
             );
         }
         default: {

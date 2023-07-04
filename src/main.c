@@ -67,7 +67,7 @@ int main(int argc, char *argv[]) {
             if (initial_view) {
                 initial_view = false;
             } else {
-                sleep(2);
+                sleep(5);
             }
         } while (bomm_query_is_pending(bomm_query_main));
     }
@@ -79,6 +79,9 @@ int main(int argc, char *argv[]) {
     // Print final view
     printf("Final query results:\n");
     bomm_query_print(bomm_query_main, bomm_query_main->hold->size);
+    printf("Concurrent attacks: %d\n", bomm_query_main->num_attacks);
+    printf("Number of units: %lu\n", bomm_query_main->joint_progress.num_units);
+    printf("Number of decrypts: %lu\n", bomm_query_main->joint_progress.num_decrypts);
 
     // Clean up
     bomm_query_destroy(bomm_query_main);

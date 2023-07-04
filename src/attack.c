@@ -51,6 +51,7 @@ void bomm_attack_key_space(bomm_attack_t* attack) {
     unsigned long num_keys = bomm_key_space_count(&attack->key_space);
     unsigned int num_batch_keys = 26 * 26 * 8;
     unsigned int num_batch_keys_completed = 0;
+    unsigned int num_batch_decrypts = 0;
 
     bomm_key_iterator_t key_iterator;
     if (bomm_key_iterator_init(&key_iterator, &attack->key_space) == NULL) {
@@ -63,6 +64,7 @@ void bomm_attack_key_space(bomm_attack_t* attack) {
     attack->progress.num_batch_units = num_batch_keys;
     attack->progress.num_units = num_keys;
     attack->progress.num_units_completed = 0;
+    attack->progress.num_decrypts = 0;
     attack->progress.batch_duration_sec = 0;
     attack->progress.duration_sec = 0;
     pthread_mutex_unlock(&attack->mutex);
@@ -71,9 +73,6 @@ void bomm_attack_key_space(bomm_attack_t* attack) {
     do {
         if (key_iterator.scrambler_changed) {
             bomm_enigma_generate_scrambler(scrambler, &key_iterator.key);
-
-            // TODO: Remove debugging code
-            // bomm_key_debug(&key_iterator.key);
         }
 
         // Make a working copy of the plugboard
@@ -87,7 +86,8 @@ void bomm_attack_key_space(bomm_attack_t* attack) {
                 plugboard,
                 scrambler,
                 ciphertext,
-                score
+                score,
+                &num_batch_decrypts
             );
             if (score > min_score) {
                 bomm_scrambler_encrypt(scrambler, plugboard, ciphertext, plaintext);
@@ -110,6 +110,7 @@ void bomm_attack_key_space(bomm_attack_t* attack) {
             // Intermediate progress update
             pthread_mutex_lock(&attack->mutex);
             attack->progress.num_units_completed += num_batch_keys_completed;
+            attack->progress.num_decrypts += num_batch_decrypts;
             attack->progress.duration_sec = batch_start_timestamp - start_timestamp;
             attack->progress.batch_duration_sec = batch_duration_sec;
             cancelling = attack->state == BOMM_ATTACK_STATE_CANCELLING;
@@ -117,12 +118,14 @@ void bomm_attack_key_space(bomm_attack_t* attack) {
 
             // Reset counter
             num_batch_keys_completed = 0;
+            num_batch_decrypts = 0;
         }
     } while (!cancelling && !bomm_key_iterator_next(&key_iterator));
 
     // Final progress update
     pthread_mutex_lock(&attack->mutex);
     attack->progress.num_units_completed += num_batch_keys_completed;
+    attack->progress.num_decrypts += num_batch_decrypts;
     attack->state = cancelling ? BOMM_ATTACK_STATE_CANCELLED : BOMM_ATTACK_STATE_COMPLETED;
     pthread_mutex_unlock(&attack->mutex);
 }
