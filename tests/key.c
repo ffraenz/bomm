@@ -77,10 +77,9 @@ Test(key, bomm_key_iterator_plugboard_next_r_stecker) {
     // Configure the key space with no plugboard exhaustion
     key_space.plug_mask = BOMM_LETTERMASK_NONE;
 
-    // Such a plugboard iterator must yield the empty plugboard only
     cr_assert_eq(bomm_key_iterator_init(&iterator, &key_space), &iterator);
     memcpy(&initial_iterator, &iterator, sizeof(iterator));
-    bomm_wiring_plugboard_stringify(string, sizeof(string), iterator.key.plugboard);
+    bomm_plugboard_stringify(string, sizeof(string), &iterator.key.plugboard);
     cr_assert_str_eq(string, "");
     cr_assert_eq(bomm_key_iterator_plugboard_next(&iterator), true);
     cr_assert_arr_eq(&iterator, &initial_iterator, sizeof(iterator));
@@ -103,13 +102,13 @@ Test(key, bomm_key_iterator_plugboard_next_r_stecker) {
     cr_assert_eq(bomm_key_iterator_init(&iterator, &key_space), &iterator);
     memcpy(&initial_iterator, &iterator, sizeof(iterator));
 
-    bomm_wiring_plugboard_stringify(string, sizeof(string), iterator.key.plugboard);
+    bomm_plugboard_stringify(string, sizeof(string), &iterator.key.plugboard);
     cr_assert_str_eq(string, "");
 
     for (unsigned int i = 0; i < 72; i++) {
         cr_assert_eq(bomm_key_iterator_plugboard_next(&iterator), false);
-        bomm_wiring_plugboard_stringify(string, sizeof(string), iterator.key.plugboard);
-        cr_assert_str_eq(string, expected_strings[i]);
+        bomm_plugboard_stringify(string, sizeof(string), &iterator.key.plugboard);
+        cr_expect_str_eq(string, expected_strings[i]);
     }
 
     cr_assert_eq(bomm_key_iterator_plugboard_next(&iterator), true);

@@ -62,7 +62,7 @@ typedef struct _bomm_pass {
  */
 inline static double bomm_pass_run(
     bomm_pass_t* pass,
-    unsigned int* plugboard,
+    bomm_plugboard_t* plugboard,
     bomm_scrambler_t* scrambler,
     bomm_message_t* ciphertext,
     double score,

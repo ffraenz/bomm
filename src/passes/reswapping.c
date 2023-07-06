@@ -10,7 +10,7 @@
 
 double bomm_pass_reswapping_run(
     bomm_pass_reswapping_config_t* config,
-    unsigned int* plugboard,
+    bomm_plugboard_t* plugboard,
     bomm_scrambler_t* scrambler,
     bomm_message_t* ciphertext,
     unsigned int* num_decrypts
@@ -32,17 +32,17 @@ double bomm_pass_reswapping_run(
 
         // Enumerate unique steckered pairs i, k in the plugboard
         for (i = 0; i < BOMM_ALPHABET_SIZE; i++) {
-            if (plugboard[i] > i) {
-                k = plugboard[i];
+            if (plugboard->map[i] > i) {
+                k = plugboard->map[i];
 
                 // Remove stecker i, k
-                bomm_swap(&plugboard[i], &plugboard[k]);
+                bomm_swap(&plugboard->map[i], &plugboard->map[k]);
 
                 // Enumerate self-steckered letters x
                 for (x = 0; x < BOMM_ALPHABET_SIZE; x++) {
-                    if (plugboard[x] == x) {
+                    if (plugboard->map[x] == x) {
                         // Measure stecker i, x
-                        bomm_swap(&plugboard[i], &plugboard[x]);
+                        bomm_swap(&plugboard->map[i], &plugboard->map[x]);
                         (*num_decrypts)++;
                         score = bomm_measure_scrambler(
                             measure, scrambler, plugboard, ciphertext);
@@ -54,10 +54,10 @@ double bomm_pass_reswapping_run(
                             best_reswap[3] = x;
                             found_improvement = true;
                         }
-                        bomm_swap(&plugboard[i], &plugboard[x]);
+                        bomm_swap(&plugboard->map[i], &plugboard->map[x]);
 
                         // Measure stecker k, x
-                        bomm_swap(&plugboard[k], &plugboard[x]);
+                        bomm_swap(&plugboard->map[k], &plugboard->map[x]);
                         (*num_decrypts)++;
                         score = bomm_measure_scrambler(
                             measure, scrambler, plugboard, ciphertext);
@@ -69,19 +69,25 @@ double bomm_pass_reswapping_run(
                             best_reswap[3] = x;
                             found_improvement = true;
                         }
-                        bomm_swap(&plugboard[k], &plugboard[x]);
+                        bomm_swap(&plugboard->map[k], &plugboard->map[x]);
                     }
                 }
 
                 // Add stecker i, k
-                bomm_swap(&plugboard[i], &plugboard[k]);
+                bomm_swap(&plugboard->map[i], &plugboard->map[k]);
             }
         }
 
         // Apply best scoring reswap, if any
         if (found_improvement) {
-            bomm_swap(&plugboard[best_reswap[0]], &plugboard[best_reswap[1]]);
-            bomm_swap(&plugboard[best_reswap[2]], &plugboard[best_reswap[3]]);
+            bomm_swap(
+                &plugboard->map[best_reswap[0]],
+                &plugboard->map[best_reswap[1]]
+            );
+            bomm_swap(
+                &plugboard->map[best_reswap[2]],
+                &plugboard->map[best_reswap[3]]
+            );
         }
     }
 

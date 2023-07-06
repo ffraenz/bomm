@@ -33,6 +33,7 @@ bomm_key_space_t* bomm_key_space_init(
         key_space->rotating_slots[slot] = false;
     }
 
+    bomm_plugboard_init_identity(&key_space->plugboard);
     return key_space;
 }
 
@@ -165,6 +166,21 @@ bomm_key_space_t* bomm_key_space_init_with_json(
         }
 
         slot++;
+    }
+
+    // Read plugboard
+    json_t* plugboard_json = json_object_get(key_space_json, "plugboard");
+    if (plugboard_json != NULL) {
+        if (plugboard_json->type == JSON_STRING) {
+            if (bomm_plugboard_init(
+                &key_space->plugboard,
+                json_string_value(plugboard_json)
+            ) == NULL) {
+                error = true;
+            }
+        } else {
+            error = true;
+        }
     }
 
     // Read plug mask
@@ -364,8 +380,7 @@ bomm_key_t* bomm_key_init(bomm_key_t* key, const bomm_key_space_t* key_space) {
         );
     }
 
-    // Initialize the key with the identity plugboard
-    bomm_wiring_plugboard_init_identity(key->plugboard);
+    memcpy(&key->plugboard, &key_space->plugboard, sizeof(bomm_plugboard_t));
     return key;
 }
 
@@ -459,7 +474,7 @@ void bomm_key_stringify(char* str, size_t size, bomm_key_t* key) {
     char positions_string[size];
     bomm_key_positions_stringify(positions_string, size, key);
     char plugboard_string[size];
-    bomm_wiring_plugboard_stringify(plugboard_string, size, key->plugboard);
+    bomm_plugboard_stringify(plugboard_string, size, &key->plugboard);
     snprintf(str, size, "%s %s %s %s", wheel_order_string, rings_string, positions_string, plugboard_string);
 }
 
@@ -511,7 +526,7 @@ void bomm_key_debug(const bomm_key_t* key) {
     printf("Debug key %p:\n", (void*) key);
 
     char plugboard_string[128];
-    bomm_wiring_plugboard_stringify(plugboard_string, sizeof(plugboard_string), key->plugboard);
+    bomm_plugboard_stringify(plugboard_string, sizeof(plugboard_string), &key->plugboard);
     printf("  Mechanism: %s\n", bomm_key_mechanism_string(key->mechanism));
     printf("  Plugboard: '%s'\n", plugboard_string);
 

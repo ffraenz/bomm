@@ -38,9 +38,9 @@ inline static void bomm_enigma_encrypt(
         bomm_enigma_engage_mechanism(key);
 
         letter = message->letters[index];
-        letter = key->plugboard[letter];
+        letter = key->plugboard.map[letter];
         letter = bomm_enigma_scramble_letter(letter, key);
-        letter = key->plugboard[letter];
+        letter = key->plugboard.map[letter];
 
         result->letters[index] = letter;
     }

@@ -25,7 +25,7 @@ void* bomm_attack_thread(void* arg) {
 void bomm_attack_key_space(bomm_attack_t* attack) {
     double score;
     double min_score = -INFINITY;
-    unsigned int plugboard[BOMM_ALPHABET_SIZE];
+    bomm_plugboard_t plugboard;
     char hold_preview[BOMM_HOLD_PREVIEW_SIZE];
     unsigned int i;
 
@@ -76,26 +76,26 @@ void bomm_attack_key_space(bomm_attack_t* attack) {
         }
 
         // Make a working copy of the plugboard
-        memcpy(plugboard, key_iterator.key.plugboard, sizeof(plugboard));
+        memcpy(&plugboard, &key_iterator.key.plugboard, sizeof(plugboard));
 
         // Iterate over passes
         score = 0;
         for (i = 0; i < num_passes; i++) {
             score = bomm_pass_run(
                 &passes[i],
-                plugboard,
+                &plugboard,
                 scrambler,
                 ciphertext,
                 score,
                 &num_batch_decrypts
             );
             if (score > min_score) {
-                bomm_scrambler_encrypt(scrambler, plugboard, ciphertext, plaintext);
+                bomm_scrambler_encrypt(scrambler, &plugboard, ciphertext, plaintext);
                 bomm_message_stringify(hold_preview, sizeof(hold_preview), plaintext);
 
                 bomm_key_t key;
                 memcpy(&key, &key_iterator.key, sizeof(key));
-                memcpy(key.plugboard, plugboard, sizeof(plugboard));
+                memcpy(&key.plugboard, &plugboard, sizeof(plugboard));
                 min_score = bomm_hold_add(attack->query->hold, score, &key, hold_preview);
             }
         }

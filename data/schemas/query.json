@@ -2,7 +2,12 @@
   "title": "Bomm query schema",
   "definitions": {
     "wiring": {
-      "type": "string"
+      "type": "string",
+      "description": "Wiring specified as permutation of the base alphabet"
+    },
+    "plugboard": {
+      "type": "string",
+      "description": "Plugboard wiring specified as pairs of letters to be swapped"
     },
     "lettermask": {
       "type": "string",
@@ -120,6 +125,9 @@
               "wheels"
             ]
           }
+        },
+        "plugboard": {
+          "$ref": "#/definitions/plugboard"
         },
         "plugs": {
           "$ref": "#/definitions/lettermask"

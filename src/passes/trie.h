@@ -34,7 +34,7 @@ typedef struct _bomm_pass_trie_config {
  */
 double bomm_pass_trie_climb_run(
     bomm_pass_trie_config_t* config,
-    unsigned int* plugboard,
+    bomm_plugboard_t* plugboard,
     bomm_scrambler_t* scrambler,
     bomm_message_t* ciphertext,
     double score,

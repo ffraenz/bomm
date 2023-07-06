@@ -10,7 +10,7 @@
 
 double bomm_pass_hill_climb_run(
     bomm_pass_hill_climb_config_t* config,
-    unsigned int* plugboard,
+    bomm_plugboard_t* plugboard,
     bomm_scrambler_t* scrambler,
     bomm_message_t* ciphertext,
     unsigned int* num_decrypts
@@ -152,10 +152,10 @@ double bomm_pass_hill_climb_run(
 
                 // Selected plugs 4-tuple (`i` partner, `i`, `k`, `k` partner)
                 unsigned int* plugs[4] = {
-                    &plugboard[plugboard[i]],
-                    &plugboard[i],
-                    &plugboard[k],
-                    &plugboard[plugboard[k]]
+                    &plugboard->map[plugboard->map[i]],
+                    &plugboard->map[i],
+                    &plugboard->map[k],
+                    &plugboard->map[plugboard->map[k]]
                 };
 
                 // Determine the set of actions applicable to the selected plugs

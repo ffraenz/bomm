@@ -56,6 +56,60 @@ bomm_wiring_t* bomm_wiring_init(bomm_wiring_t* wiring, const char* string) {
     return wiring;
 }
 
+bomm_plugboard_t* bomm_plugboard_init_identity(bomm_plugboard_t* plugboard) {
+    if (!plugboard && !(plugboard = malloc(sizeof(bomm_plugboard_t)))) {
+        return NULL;
+    }
+    for (unsigned int i = 0; i < BOMM_ALPHABET_SIZE; i++) {
+        plugboard->map[i] = i;
+    }
+    return plugboard;
+}
+
+bomm_plugboard_t* bomm_plugboard_init(
+    bomm_plugboard_t* plugboard,
+    const char* string
+) {
+    bomm_message_t* message;
+    if (!(message = bomm_message_init(string))) {
+        return NULL;
+    }
+
+    if (message->length % 2 != 0) {
+        // A plugboard string having an odd number of letters (whitespaces
+        // removed) is invalid
+        free(message);
+        return NULL;
+    }
+
+    bool owning = plugboard == NULL;
+    plugboard = bomm_plugboard_init_identity(plugboard);
+    if (!plugboard) {
+        free(message);
+        return NULL;
+    }
+
+    bomm_letter_t a, b;
+    bool valid = true;
+    for (unsigned int i = 0; i < message->length; i += 2) {
+        a = message->letters[i];
+        b = message->letters[i + 1];
+        // Only self-steckered letters may be swapped to form steckered pairs
+        valid = valid && plugboard->map[a] == a && plugboard->map[b] == b;
+        bomm_swap(&plugboard->map[a], &plugboard->map[b]);
+    }
+    free(message);
+
+    if (!valid) {
+        if (owning) {
+            free(plugboard);
+        }
+        return NULL;
+    }
+
+    return plugboard;
+}
+
 void bomm_wiring_stringify(
     char* str,
     size_t size,
@@ -69,30 +123,14 @@ void bomm_wiring_stringify(
     str[i] = '\0';
 }
 
-unsigned int* bomm_wiring_plugboard_init_identity(unsigned int* plugboard) {
-    // Allocate plugboard
-    if (plugboard == NULL) {
-        plugboard = malloc(sizeof(unsigned int) * BOMM_ALPHABET_SIZE);
-        if (plugboard == NULL) {
-            return NULL;
-        }
-    }
-
-    // Load identity plugboard
-    for (unsigned int i = 0; i < BOMM_ALPHABET_SIZE; i++) {
-        plugboard[i] = i;
-    }
-    return plugboard;
-}
-
-void bomm_wiring_plugboard_stringify(
+void bomm_plugboard_stringify(
     char* str,
     size_t size,
-    const unsigned int* plugboard
+    const bomm_plugboard_t* plugboard
 ) {
     unsigned long j = 0;
 
-    if (!bomm_wiring_plugboard_validate(plugboard)) {
+    if (!bomm_plugboard_validate(plugboard)) {
         bomm_strncpy(str, "(invalid)", size);
         j = strlen(str);
     }
@@ -101,13 +139,13 @@ void bomm_wiring_plugboard_stringify(
 
     unsigned int i = 0;
     while (i < BOMM_ALPHABET_SIZE && j + 3 < size - 1) {
-        if (plugboard[i] != i && !bomm_lettermask_has(&used_letters, i)) {
+        if (plugboard->map[i] != i && !bomm_lettermask_has(&used_letters, i)) {
             if (j > 0) {
                 str[j++] = ' ';
             }
-            bomm_lettermask_set(&used_letters, plugboard[i]);
+            bomm_lettermask_set(&used_letters, plugboard->map[i]);
             str[j++] = bomm_message_letter_to_ascii(i);
-            str[j++] = bomm_message_letter_to_ascii(plugboard[i]);
+            str[j++] = bomm_message_letter_to_ascii(plugboard->map[i]);
         }
         i++;
     }

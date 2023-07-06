@@ -29,7 +29,7 @@ typedef struct _bomm_pass_reswapping_config {
  */
 double bomm_pass_reswapping_run(
     bomm_pass_reswapping_config_t* config,
-    unsigned int* plugboard,
+    bomm_plugboard_t* plugboard,
     bomm_scrambler_t* scrambler,
     bomm_message_t* ciphertext,
     unsigned int* num_decrypts

@@ -132,7 +132,7 @@ void bomm_measure_config_destroy(void);
 static inline double bomm_measure_scrambler_sinkov(
     unsigned int n,
     bomm_scrambler_t* scrambler,
-    unsigned int* plugboard,
+    bomm_plugboard_t* plugboard,
     bomm_message_t* message
 ) {
     unsigned int map_size = bomm_pow_map[n];
@@ -144,9 +144,9 @@ static inline double bomm_measure_scrambler_sinkov(
 
     for (index = 0; index < message->length; index++) {
         letter = message->letters[index];
-        letter = plugboard[letter];
+        letter = plugboard->map[letter];
         letter = scrambler->map[index][letter];
-        letter = plugboard[letter];
+        letter = plugboard->map[letter];
 
         map_index = (map_index * BOMM_ALPHABET_SIZE + letter) % map_size;
 
@@ -194,7 +194,7 @@ static inline void bomm_measure_scrambler_frequency(
     unsigned int n,
     unsigned int* frequencies,
     bomm_scrambler_t* scrambler,
-    unsigned int* plugboard,
+    bomm_plugboard_t* plugboard,
     bomm_message_t* message
 ) {
     unsigned int num_frequencies = bomm_pow_map[n];
@@ -204,9 +204,9 @@ static inline void bomm_measure_scrambler_frequency(
     unsigned int map_index = 0;
     for (unsigned int index = 0; index < message->length; index++) {
         letter = message->letters[index];
-        letter = plugboard[letter];
+        letter = plugboard->map[letter];
         letter = scrambler->map[index][letter];
-        letter = plugboard[letter];
+        letter = plugboard->map[letter];
 
         map_index = (map_index * BOMM_ALPHABET_SIZE + letter) % num_frequencies;
         if (index >= n - 1) {
@@ -384,7 +384,7 @@ static inline double bomm_measure_message(
 static inline __attribute__((always_inline)) double bomm_measure_scrambler(
     bomm_measure_t measure,
     bomm_scrambler_t* scrambler,
-    unsigned int* plugboard,
+    bomm_plugboard_t* plugboard,
     bomm_message_t* message
 ) {
     if (measure < 0x10) {

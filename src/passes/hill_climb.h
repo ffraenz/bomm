@@ -45,7 +45,7 @@ typedef struct _bomm_pass_hill_climb_config {
  */
 double bomm_pass_hill_climb_run(
     bomm_pass_hill_climb_config_t* config,
-    unsigned int* plugboard,
+    bomm_plugboard_t* plugboard,
     bomm_scrambler_t* scrambler,
     bomm_message_t* ciphertext,
     unsigned int* num_decrypts

@@ -111,6 +111,11 @@ typedef struct _bomm_key_space {
     bomm_lettermask_t position_masks[BOMM_MAX_NUM_SLOTS];
 
     /**
+     * Plugboard wiring (static, not enumerated)
+     */
+    bomm_plugboard_t plugboard;
+
+    /**
      * Set of letters for which all possible single stecker pairings should be
      * enumerated on the plugboard.
      * Example: The I-Stecker with letters E, N, R, X, S, or I: `0x862110`
@@ -185,7 +190,7 @@ typedef struct _bomm_key {
     /**
      * Plugboard wiring (Steckerverbindungen)
      */
-    unsigned int plugboard[BOMM_ALPHABET_SIZE];
+    bomm_plugboard_t plugboard;
 } bomm_key_t;
 
 /**
@@ -331,8 +336,8 @@ static inline bool bomm_key_iterator_plugboard_next(
 
     // Unplug previous solo
     bomm_swap(
-        &iterator->key.plugboard[iterator->solo_plug[0]],
-        &iterator->key.plugboard[iterator->solo_plug[1]]
+        &iterator->key.plugboard.map[iterator->solo_plug[0]],
+        &iterator->key.plugboard.map[iterator->solo_plug[1]]
     );
 
     // Iterate to next relevant solo
@@ -347,16 +352,21 @@ static inline bool bomm_key_iterator_plugboard_next(
                 iterator->solo_plug[1] = iterator->solo_plug[0] + 1;
             }
         }
-    } while (
-        !bomm_lettermask_has(&mask, iterator->solo_plug[0]) &&
-        !bomm_lettermask_has(&mask, iterator->solo_plug[1]) &&
-        !carry
-    );
+    } while (!carry && (
+        (
+            !bomm_lettermask_has(&mask, iterator->solo_plug[0]) &&
+            !bomm_lettermask_has(&mask, iterator->solo_plug[1])
+        ) ||
+        !bomm_plugboard_is_self_steckered(
+            &iterator->key.plugboard, iterator->solo_plug[0]) ||
+        !bomm_plugboard_is_self_steckered(
+            &iterator->key.plugboard, iterator->solo_plug[1])
+    ));
 
     // Plug new solo
     bomm_swap(
-        &iterator->key.plugboard[iterator->solo_plug[0]],
-        &iterator->key.plugboard[iterator->solo_plug[1]]
+        &iterator->key.plugboard.map[iterator->solo_plug[0]],
+        &iterator->key.plugboard.map[iterator->solo_plug[1]]
     );
 
     return carry;
