@@ -135,6 +135,9 @@ inline static bomm_measure_t bomm_pass_result_measure(bomm_pass_t* pass) {
             // values specified
             return BOMM_MEASURE_NONE;
         }
+        case BOMM_PASS_MEASURE: {
+            return pass->config.measure.measure;
+        }
         default: {
             return BOMM_MEASURE_NONE;
         }
