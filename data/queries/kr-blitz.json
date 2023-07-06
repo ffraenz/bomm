@@ -1,8 +1,9 @@
 {
   "$schema": "../schemas/query.json",
   "alphabet": "abcdefghijklmnopqrstuvwxyz",
-  "ciphertext": "nzcmy cjjvp vdlxg vvkyw fmihg hzwsj ggagz tbjha yqisl vqizi hmxwu itufh vvccs vwbrp kjlbw kcpen rlhab pmlmg mjrvs brwjs bamez qzyrb ijzlj xnnsq wpahl unlon qdgsb vodzj ujhds rzmlv foivz qqpgy yvsba jxzuw lukyl ishup ofkb",
+  "ciphertext": "hitlu tsunq rtlia bftqr nuwlq vnitr sctnq ipklm aheef dcabc uworu bswyr bggfd txcbx dvduc ezgfb kyilx ahnpq rtuvs wm",
   "space": {
+    "plugs": "e",
     "slots": [
       {
         "wheels": ["UKW-B"]
@@ -25,8 +26,16 @@
       }
     ]
   },
+  "passes": [
+    {
+      "type": "hill_climb",
+      "measure": "ic",
+      "finalMeasure": "sinkov_trigram",
+      "finalMeasureMinNumPlugs": 7,
+      "backtrackingMinNumPlugs": 5
+    }
+  ],
   "frequencies": {
-    "bigram": "./data/frequencies/en-bigram.txt",
-    "trigram": "./data/frequencies/en-trigram.txt"
+    "trigram": "./data/frequencies/enigma1941-trigram.txt"
   }
 }

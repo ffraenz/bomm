@@ -1,9 +1,8 @@
 {
   "$schema": "../schemas/query.json",
   "alphabet": "abcdefghijklmnopqrstuvwxyz",
-  "ciphertext": "hitlu tsunq rtlia bftqr nuwlq vnitr sctnq ipklm aheef dcabc uworu bswyr bggfd txcbx dvduc ezgfb kyilx ahnpq rtuvs wm",
+  "ciphertext": "qkrqwuqtzkfxzomjfoyrhyzwvbxysiwmmvwblebdmwuwbtvhmrflksdccexiypahrmpziovbbrvlnhzuposyeipwjtugyoslaoxrhkvchqosvdtrbpdjeuksbbkhttgvhgficacvguvoqfaqwbkxzjsqjfzpevjrojtoeslbohotraahxvyauhtnbgibvclblxcybdmortvpykffzxnddpccjbhofdkxeeywpbyowdxdrdhnigdxeujjpymhukpcfhllferazhzohxdgbkoqxktldvdcwkaedhcphjiwzmmtuamqennfchviawcchncfypwuarbbniephddkmdqlmsnmtwohmauhrhgcumqpkqrkdvswvmtynffddskiisxonxohhliyqsdfhencmcomrezodrpbmrvpotvrswzpglpitrvibpxxhprfisztpueplkottxnazmhtjpchaasfzlefcezutpybaoskpzcjcyzovapzzyelbllzevdchrmioyepfvugndlenisxychksjuwvxusbitdeqtcnkrlsnxmxyzgcupawfultzzsfahmpxglinzrxyinskynoamzbugfzjcurwgtozctlloiekaoiskhaaqfopfuzirtlwevywmdn",
   "space": {
-    "plugs": "e",
     "slots": [
       {
         "wheels": ["UKW-B"]
@@ -36,7 +35,6 @@
     }
   ],
   "frequencies": {
-    "bigram": "./data/frequencies/enigma1941-bigram.txt",
     "trigram": "./data/frequencies/enigma1941-trigram.txt"
   }
 }

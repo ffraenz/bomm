@@ -11,11 +11,8 @@ bomm_pass_t* bomm_pass_init(bomm_pass_t* pass) {
     if (!pass && !(pass = malloc(sizeof(bomm_pass_t)))) {
         return NULL;
     }
-    pass->type = BOMM_PASS_HILL_CLIMB;
-    pass->config.hill_climb.measure = BOMM_MEASURE_IC;
-    pass->config.hill_climb.final_measure = BOMM_MEASURE_SINKOV_TRIGRAM;
-    pass->config.hill_climb.final_measure_min_num_plugs = 5;
-    pass->config.hill_climb.backtracking_min_num_plugs = 5;
+    pass->type = BOMM_PASS_MEASURE;
+    pass->config.measure.measure = BOMM_MEASURE_IC;
     return pass;
 }
 
@@ -54,6 +51,12 @@ bomm_pass_t* bomm_pass_init_with_json(
         new_pass.type = BOMM_PASS_TRIE;
         error = NULL == bomm_pass_trie_config_init_with_json(
             &new_pass.config.trie,
+            pass_json
+        );
+    } else if (strcmp(type, "measure") == 0) {
+        new_pass.type = BOMM_PASS_MEASURE;
+        error = NULL == bomm_pass_measure_config_init_with_json(
+            &new_pass.config.measure,
             pass_json
         );
     } else {

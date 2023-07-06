@@ -162,10 +162,12 @@
               },
               "measure": {
                 "$ref": "#/definitions/measure",
+                "default": "ic",
                 "description": "Measure to be used to evaluate the first plugs"
               },
               "finalMeasure": {
                 "$ref": "#/definitions/measure",
+                "default": "sinkov_trigram",
                 "description": "Measure to be used to evaluate the last plugs"
               },
               "finalMeasureMinNumPlugs": {
@@ -215,6 +217,21 @@
             "required": [
               "type",
               "trie"
+            ]
+          },
+          {
+            "type": "object",
+            "description": "Single measurement",
+            "properties": {
+              "type": {
+                "enum": ["measure"]
+              },
+              "measure": {
+                "$ref": "#/definitions/measure"
+              }
+            },
+            "required": [
+              "type"
             ]
           }
         ]

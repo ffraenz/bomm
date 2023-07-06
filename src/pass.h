@@ -11,6 +11,7 @@
 #include "passes/trie.h"
 #include "passes/hill_climb.h"
 #include "passes/reswapping.h"
+#include "passes/measure.h"
 
 /**
  * Union of all possible pass config structs
@@ -30,6 +31,11 @@ typedef union _bomm_pass_config {
      * Trie pass config
      */
     bomm_pass_trie_config_t trie;
+
+    /**
+     * Measure pass config
+     */
+    bomm_pass_measure_config_t measure;
 } bomm_pass_config_t;
 
 /**
@@ -39,7 +45,8 @@ typedef enum {
     BOMM_PASS_NONE = 0,
     BOMM_PASS_HILL_CLIMB,
     BOMM_PASS_RESWAPPING,
-    BOMM_PASS_TRIE
+    BOMM_PASS_TRIE,
+    BOMM_PASS_MEASURE
 } bomm_pass_type_t;
 
 /**
@@ -94,6 +101,15 @@ inline static double bomm_pass_run(
                 scrambler,
                 ciphertext,
                 score,
+                num_decrypts
+            );
+        }
+        case BOMM_PASS_MEASURE: {
+            return bomm_pass_measure_climb_run(
+                &pass->config.measure,
+                plugboard,
+                scrambler,
+                ciphertext,
                 num_decrypts
             );
         }

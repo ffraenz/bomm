@@ -98,7 +98,11 @@ bomm_query_t* bomm_query_init(int argc, char *argv[]) {
         hold_size = 100;
     }
     if (num_threads == 0) {
-        num_threads = bomm_hardware_concurrency();
+        // By default, occupy half the number of available CPU cores
+        num_threads = bomm_hardware_concurrency() / 2;
+        if (num_threads < 1) {
+            num_threads = 1;
+        }
     }
 
     // Read the query
@@ -122,7 +126,7 @@ bomm_query_t* bomm_query_init(int argc, char *argv[]) {
         fprintf(stderr, "Error: The query is expected to be an object\n");
         return NULL;
     }
-    
+
     // Validate alphabet
     json_t* alphabet_json = json_object_get(query_json, "alphabet");
     if (alphabet_json != NULL) {

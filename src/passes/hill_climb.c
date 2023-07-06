@@ -269,8 +269,6 @@ bomm_pass_hill_climb_config_t* bomm_pass_hill_climb_config_init_with_json(
         if (working_config.final_measure == BOMM_MEASURE_NONE) {
             return NULL;
         }
-    } else {
-        working_config.final_measure = working_config.measure;
     }
 
     if ((val_json = json_object_get(config_json, "finalMeasureMinNumPlugs"))) {

@@ -29,8 +29,16 @@
       }
     ]
   },
+  "passes": [
+    {
+      "type": "hill_climb",
+      "measure": "ic",
+      "finalMeasure": "sinkov_trigram",
+      "finalMeasureMinNumPlugs": 7,
+      "backtrackingMinNumPlugs": 5
+    }
+  ],
   "frequencies": {
-    "bigram": "./data/frequencies/enigma1941-bigram.txt",
     "trigram": "./data/frequencies/enigma1941-trigram.txt"
   }
 }

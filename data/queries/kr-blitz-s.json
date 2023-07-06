@@ -6,40 +6,49 @@
     "plugs": "e",
     "slots": [
       {
-        "wheels": ["B207-UKW"]
+        "wheels": ["S-UKW"]
       },
       {
         "rotating": true,
-        "wheels": ["B207-I", "B207-II", "B207-III"],
+        "wheels": ["S-I", "S-II", "S-III"],
         "positions": "*"
       },
       {
         "rotating": true,
-        "wheels": ["B207-I", "B207-II", "B207-III"],
+        "wheels": ["S-I", "S-II", "S-III"],
         "positions": "*"
       },
       {
         "rotating": true,
-        "wheels": ["B207-I", "B207-II", "B207-III"],
+        "wheels": ["S-I", "S-II", "S-III"],
         "rings": "*",
         "positions": "*"
       }
     ]
   },
+  "passes": [
+    {
+      "type": "hill_climb",
+      "measure": "ic",
+      "finalMeasure": "sinkov_trigram",
+      "finalMeasureMinNumPlugs": 7,
+      "backtrackingMinNumPlugs": 5
+    }
+  ],
   "wheels": [
     {
-      "name": "B207-I",
-      "wiring": "iqynwgavkozscpfbumlextjdhr",
+      "name": "S-I",
+      "wiring": "veosirzujdqckgwypnxaflthmb",
       "turnovers": "q"
     },
     {
-      "name": "B207-II",
-      "wiring": "ngsymwdjcboavzrlxfkuetqiph",
+      "name": "S-II",
+      "wiring": "uemoatqlshpkcyfwjzbgvxidnr",
       "turnovers": "e"
     },
     {
-      "name": "B207-III",
-      "wiring": "rheitxmofkduyqbzlwgscpanjv",
+      "name": "S-III",
+      "wiring": "tzhxmbsipnurjfdkeqvcwglaoy",
       "turnovers": "v"
     },
     {
@@ -47,12 +56,11 @@
       "wiring": "abcdefghijklmnopqrstuvwxyz"
     },
     {
-      "name": "B207-UKW",
-      "wiring": "nmiedvhgcryubaqzojxwlftskp"
+      "name": "S-UKW",
+      "wiring": "ciagsndrbytpzfulvhekoqxwjm"
     }
   ],
   "frequencies": {
-    "bigram": "./data/frequencies/enigma1941-bigram.txt",
     "trigram": "./data/frequencies/enigma1941-trigram.txt"
   }
 }
