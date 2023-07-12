@@ -3,24 +3,24 @@
   "alphabet": "abcdefghijklmnopqrstuvwxyz",
   "ciphertext": "hitlu tsunq rtlia bftqr nuwlq vnitr sctnq ipklm aheef dcabc uworu bswyr bggfd txcbx dvduc ezgfb kyilx ahnpq rtuvs wm",
   "space": {
-    "plugs": "*",
+    "plugs": "e",
     "slots": [
       {
-        "wheels": ["S-UKW"]
+        "wheels": ["UKW-A"]
       },
       {
         "rotating": true,
-        "wheels": ["S-I", "S-II", "S-III"],
+        "wheels": ["I", "II", "III", "IV", "V"],
         "positions": "*"
       },
       {
         "rotating": true,
-        "wheels": ["S-I", "S-II", "S-III"],
+        "wheels": ["I", "II", "III", "IV", "V"],
         "positions": "*"
       },
       {
         "rotating": true,
-        "wheels": ["S-I", "S-II", "S-III"],
+        "wheels": ["I", "II", "III", "IV", "V"],
         "rings": "*",
         "positions": "*"
       }

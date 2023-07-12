@@ -148,6 +148,9 @@ Test(key, bomm_key_space_count) {
 
     key_space.plug_mask = BOMM_LETTERMASK_NONE;
     cr_assert_eq(bomm_key_space_count(&key_space), 27418560);
+    
+    key_space.plug_mask = 0x10;
+    cr_assert_eq(bomm_key_space_count(&key_space), 712882560);
 
     key_space.plug_mask = 0x862110;
     cr_assert_eq(bomm_key_space_count(&key_space), 3728924160);

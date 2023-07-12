@@ -78,7 +78,27 @@ static const bomm_wheel_spec_t bomm_known_wheels[] = {
     { "UKW-B",      "yruhqsldpxngokmiebfzcwvjat", ""   },
     { "UKW-C",      "fvpjiaoyedrzxwgctkuqsbnmhl", ""   },
     { "UKW-B-thin", "enkqauywjicopblmdxzvfthrgs", ""   },
-    { "UKW-C-thin", "rdobjntkvehmlfcwzaxgyipsuq", ""   }
+    { "UKW-C-thin", "rdobjntkvehmlfcwzaxgyipsuq", ""   },
+    { "B207-I",     "iqynwgavkozscpfbumlextjdhr", "q"  },
+    { "B207-II",    "ngsymwdjcboavzrlxfkuetqiph", "e"  },
+    { "B207-III",   "rheitxmofkduyqbzlwgscpanjv", "v"  },
+    { "B207-UKW",   "nmiedvhgcryubaqzojxwlftskp", ""   },
+    { "S-I",        "veosirzujdqckgwypnxaflthmb", "q"  },
+    { "S-II",       "uemoatqlshpkcyfwjzbgvxidnr", "e"  },
+    { "S-III",      "tzhxmbsipnurjfdkeqvcwglaoy", "v"  },
+    { "S-UKW",      "ciagsndrbytpzfulvhekoqxwjm", ""   },
+    { "ES-I",       "ochqzmjpfiwextylgvbkdnuras", "q"  },
+    { "ES-II",      "hwbeoszfqmtxrkigvjypuclnad", "e"  },
+    { "ES-III",     "xtkfjrmlgyvqwubiehanpdsozc", "v"  },
+    { "ES-IV",      "igtcnqwjmhxfezvsyblprokdau", "j"  },
+    { "ES-V",       "nxekuzmqlvctirjyhsdgafbpwo", "z"  },
+    { "ES-UKW",     "yiogtxdkbshvwrcqpnjezlmfau", ""   },
+    { "ZD-I",       "cvfwjobxanqtdzumeyrpskgilh", "q"  },
+    { "ZD-II",      "xjgurhzmydlatwksepncqfoibv", "e"  },
+    { "ZD-III",     "syigxeldukbvoawtzhqnfcrmjp", "v"  },
+    { "ZD-IV",      "hktzdsrfwpcqjiyxnvmugelaob", "j"  },
+    { "ZD-V",       "wmgrkejuazftoxindybqvhlcps", "z"  },
+    { "ZD-UKW",     "donajuxtqelkscbzivmhfrygwp", ""   }
 };
 
 /**

@@ -3,7 +3,7 @@
   "alphabet": "abcdefghijklmnopqrstuvwxyz",
   "ciphertext": "hitlu tsunq rtlia bftqr nuwlq vnitr sctnq ipklm aheef dcabc uworu bswyr bggfd txcbx dvduc ezgfb kyilx ahnpq rtuvs wm",
   "space": {
-    "plugs": "e",
+    "plugs": "*",
     "slots": [
       {
         "wheels": ["B207-UKW"]
@@ -33,31 +33,6 @@
       "finalMeasure": "sinkov_trigram",
       "finalMeasureMinNumPlugs": 7,
       "backtrackingMinNumPlugs": 5
-    }
-  ],
-  "wheels": [
-    {
-      "name": "B207-I",
-      "wiring": "iqynwgavkozscpfbumlextjdhr",
-      "turnovers": "q"
-    },
-    {
-      "name": "B207-II",
-      "wiring": "ngsymwdjcboavzrlxfkuetqiph",
-      "turnovers": "e"
-    },
-    {
-      "name": "B207-III",
-      "wiring": "rheitxmofkduyqbzlwgscpanjv",
-      "turnovers": "v"
-    },
-    {
-      "name": "ETW-ABC",
-      "wiring": "abcdefghijklmnopqrstuvwxyz"
-    },
-    {
-      "name": "B207-UKW",
-      "wiring": "nmiedvhgcryubaqzojxwlftskp"
     }
   ],
   "frequencies": {

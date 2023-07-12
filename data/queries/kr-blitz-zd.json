@@ -35,37 +35,6 @@
       "backtrackingMinNumPlugs": 5
     }
   ],
-  "wheels": [
-    {
-      "name": "ZD-I",
-      "wiring": "cvfwjobxanqtdzumeyrpskgilh",
-      "turnovers": "q"
-    },
-    {
-      "name": "ZD-II",
-      "wiring": "xjgurhzmydlatwksepncqfoibv",
-      "turnovers": "e"
-    },
-    {
-      "name": "ZD-III",
-      "wiring": "syigxeldukbvoawtzhqnfcrmjp",
-      "turnovers": "v"
-    },
-    {
-      "name": "ZD-IV",
-      "wiring": "hktzdsrfwpcqjiyxnvmugelaob",
-      "turnovers": "j"
-    },
-    {
-      "name": "ZD-V",
-      "wiring": "wmgrkejuazftoxindybqvhlcps",
-      "turnovers": "z"
-    },
-    {
-      "name": "ZD-UKW",
-      "wiring": "donajuxtqelkscbzivmhfrygwp"
-    }
-  ],
   "frequencies": {
     "trigram": "./data/frequencies/enigma1941-trigram.txt"
   }
