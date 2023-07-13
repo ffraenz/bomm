@@ -1,70 +1,104 @@
 
-# Bomm
+# bomm
 
-Bomm is a command line program written in C for breaking Enigma ciphertext in a ciphertext-only attack. It is being developed as part of the Bachelor thesis *Breaking Enigma ciphertext in 2023* by Fränz Friederes.
+bomm, initiated as part of the Bachelor thesis *Breaking Enigma ciphertext in 2023* by Fränz Friederes, is a C-based command-line program designed to break Enigma ciphertext in a ciphertext-only scenario.
+
+The thesis script will be made available, soon.
 
 ## Getting started
 
-JSON formatted query files are used as the input of the program. A query primarily consists of the ciphertext to be tested, a key space (referencing known or custom wheels and wirings), and a set of passes to be executed for each scrambler key attacking the plugboard and scoring the putative plaintext. A schema for query files can be found at `data/schemas/query.json`. Examples for it are stored in `data/queries`.
+First, download the [latest stable release](https://github.com/cryptii/cryptii/releases/latest) or build the program from source (see instructions below).
 
-The following CLI options are available:
+Command line usage:
 
-- `-h`, `--help` - Display the help message
-- `-n`, `--num-hold` - Number of hold elements to collect
-- `-t`, `--num-threads` - Number of concurrent threads to use
-- `-q`, `--quiet` - Enable quiet mode
-- `-v`, `--verbose` - Enable verbose mode
-
-To run a query, simply provide its path as the only argument when executing the binary:
-
-```bash
-./build/bomm ./data/queries/hitlu97.json
+```
+Usage: bomm data/queries/kr-blitz.json
+Options:
+  -h, --help        display this help message
+  -n, --num-hold    number of hold elements to collect
+  -t, --num-threads number of concurrent threads to use
+  -q, --quiet       quiet mode
+  -v, --verbose     verbose mode
 ```
 
-This will result in the following view that is kept up-to-date while processing the query:
+To evaluate a ciphertext messages with bomm, a query needs to be composed and passed as the only argument. It contains the ciphertext itself, the key space to be searched (referencing known or custom wheels and wirings), and a set of passes that describe the strategies (e.g. hill climbing) to be applied. A schema for such query files can be found at `data/schemas/query.json`. Example queries are stored in `data/queries`.
+
+Exemplary, the following command and query can be used to run an attack against the KR Blitz message, targeting the practical key space of Enigma I with UKW-B using the E-Stecker technique.
+
+```bash
+bomm data/queries/kr-blitz.json
+```
+
+This will result in the following view that is kept up-to-date while processing the query, displaying the top scoring keys accompanied by a preview of the putative plaintext:
 
 ```
 ┌──────┬───────────────────────────────────────────────────────────────────────┐
-│ Bomm │ Progress     80.521 % │ Elapsed      11:37:03 │ Remaining    00:57:48 │
+│ Bomm │ Progress      0.228 % │ Elapsed      00:03:44 │ Remaining    26:06:54 │
 ├──────┴───────────────────────────────────────────────────────────┬───────────┤
-│ qtstwernnixderuderilubrgtxsisielnunntxknsurvxgundasrvieskuesetxn   -8.543918 │
-│ UKW-B,II,I,V,ETW-ABC aaaqa ayhva bz cj dy ex fp gr ln ov tu                  │
+│ tgenpjnrjdqubenahrbefohsamtjnenexsiesgalieldninsnptcqssenidfqxan   -8.702661 │
+│ UKW-B,III,IV,V aaaa aber bf ch dt in kv or ps qz wy                          │
 ├──────────────────────────────────────────────────────────────────┬───────────┤
-│ sgrlazmrerinbajxbestqdsunuehauqqvrueesieranfnrpsoninixhauenansvm   -8.551549 │
-│ UKW-B,IV,II,V,ETW-ABC aaana abjta am bu ct dk er gj hq lv nw oy pz           │
+│ rlverarmxplinsxjerpisjdsixfeheiarvifuetentxschxefojaxungthxeutha   -8.737875 │
+│ UKW-B,II,III,V aaaa abjt bz cy dp fv hi jm lt ou qr                          │
 ├──────────────────────────────────────────────────────────────────┬───────────┤
-│ pumaszworunxfuevenzbeivsmtemxtexbenstbasobenfxkxfeervnyytppkbder   -8.557691 │
-│ UKW-B,V,I,III,ETW-ABC aaaea amjia at bk cl dh ei gr jp mn ou qv yz           │
+│ rderdsjxsseliseilunidpbenidxzhlqhtbeqnafkorprexrgvniniweantbenix   -8.739881 │
+│ UKW-B,V,II,IV aaaa aadj ad bj cq es fo iy kt lr mz nx pw uv                  │
 ├──────────────────────────────────────────────────────────────────┬───────────┤
-│ lamriexvxstuesiekomxnendepmpvxlorssielfgerhdyptfinrnestoporierdu   -8.578461 │
-│ UKW-B,II,V,I,ETW-ABC aaaea amtta ac dz em gq hn jr ov pw st ux               │
+│ eciemxkztpyxejhmlerkxdiesierregsieigfaratewfgarkyhydjzbnhoilonss   -8.745330 │
+│ UKW-B,II,III,V aaaa aapy ad bt ek fq gu ir jy lw ns oz pv                    │
 ├──────────────────────────────────────────────────────────────────┬───────────┤
-│ xzdrenersilcyaseznxrossantxborxxrwkhstmtrquexzanesninntehelaglei   -8.578493 │
-│ UKW-B,II,IV,I,ETW-ABC aaaya aehia ab cy ez fx gs ht il jo mq nw uv           │
+│ rlgsigezeodnfstaurmitgensexonfcsienenssgewapxximnrkxsonsaangreit   -8.756366 │
+│ UKW-B,V,III,IV aaaa aaxo am do ip lz nw qt rx vy                             │
 ├──────────────────────────────────────────────────────────────────┬───────────┤
-│ axbeleniaugangmunenwpalmjexifotbeexyerdwietsndfxanzeiedtxerxstel   -8.608253 │
-│ UKW-B,I,IV,V,ETW-ABC aaasa altha aq br dm el fg iw js nv op yz               │
+│ tgenpjnrjdqubenahrbefobsartjnenexsiesialieldninsnptqqssenuqfqxan   -8.762827 │
+│ UKW-B,III,IV,V aaaa aber bf ch dt in or ps qz vy                             │
 ╞══════════════════════════════════════════════════════════════════╤═══════════╡
-│ tsunqrtliabftqrnuwlqvnitrsctnqipklmaheefdcabcuworubswyrbggfdtxcb   -10.07245 │
-│ Unchanged ciphertext (92 letters)                                            │
+│ hitlutsunqrtliabftqrnuwlqvnitrsctnqipklmaheefdcabcuworubswyrbggf   -10.09713 │
+│ Unchanged ciphertext (97 letters)                                            │
 └──────────────────────────────────────────────────────────────────────────────┘
 ```
 
-When the query completes or the program is terminated by the SIGINT  (pressing `Ctrl+C`) or SIGTERM signal, the full hold is printed out before exiting.
+By default, half the number of detected CPU cores is used as the number of parallel threads spawned. This may be overridden by the `-t` flag.
+
+When the query completes or the program is terminated by the SIGINT (pressing `Ctrl+C`) or SIGTERM signal, the full hold is printed out before exiting.
+
+## Wheels
+
+In a query key space, wheels can be referenced by their name. The following options are available:
+
+- Entry wheels (all models)<br>
+  `ETW-ABC`, `ETW-QWE`
+- Enigma I, M1, M2, M3, and Enigma M4<br>
+  `I`, `II`, `III`, `IV`, `V`, `VI`, `VII`, `VIII`, `beta`, `gamma`, `UKW-A`, `UKW-B`, `UKW-C`, `UKW-B-thin` `UKW-C-thin`
+- Enigma B 207<br>
+  `B207-I`, `B207-II`, `B207-III`, `B207-UKW`
+- Enigma S “Sondermaschine”<br>
+  `S-I`, `S-II`, `S-III`, `S-UKW`
+- “Spanish Enigma”<br>
+  `ES-I`, `ES-II`, `ES-III`, `ES-IV`, `ES-V`, `ES-UKW`
+- Enigma “Zagreb Delta”<br>
+  `ZD-I`, `ZD-II`, `ZD-III`, `ZD-IV`, `ZD-V`, `ZD-UKW`
+
+If a wheel is missing in the built-in library, it can be specified in the `wheels` array in the query object:
+
+```json
+{
+  "name": "B207-I",
+  "wiring": "iqynwgavkozscpfbumlextjdhr",
+  "turnovers": "q"
+}
+```
 
 ## Measures
 
-In passes built-in measures can be specified that should be used to score and compare putative plaintext.
+In the query, built-in measures (or scoring functions) are referenced by string tokens like `ic` or `sinkov_trigram`. The following options are available:
 
-Many measures are based on n-grams (substrings of length n). These are specified by the tokens `monogram`, `bigram`, `trigram`, `quadgram`, `pentagram`, and `hexagram` for 1-grams, 2-grams, …, and 6-grams respectively.
-
-Token | Measure
------ | -------
-`sinkov_{n-gram}` | [Sinkov statistic](https://en.wikipedia.org/wiki/Sinkov_statistic) or log-weight statistic for n-grams (1 ≤ n ≤ 6);<br> Requires a frequency map
-`ic` | [Index of coincidence](https://en.wikipedia.org/wiki/Index_of_coincidence) measure
-`ic_{n-gram}` | [Index of coincidence](https://en.wikipedia.org/wiki/Index_of_coincidence) measure for n-grams (2 ≤ n ≤ 6)
-`entropy` | [Shannon entropy](https://en.wikipedia.org/wiki/Entropy_(information_theory)) measure
-`entropy_{n-gram}` | [Shannon entropy](https://en.wikipedia.org/wiki/Entropy_(information_theory)) measure for n-grams (2 ≤ n ≤ 6)
+- [Sinkov statistic](https://en.wikipedia.org/wiki/Sinkov_statistic) or log-weight statistic for n-grams; Requires a frequency map<br>
+  Available options: `sinkov_monogram`, `sinkov_bigram`, `sinkov_trigram`, `sinkov_quadgram`, `sinkov_pentagram`, `sinkov_hexagram`
+- [Index of coincidence](https://en.wikipedia.org/wiki/Index_of_coincidence) measure<br>
+  Available options: `ic`, `ic_bigram`, `ic_trigram`, `ic_quadgram`, `ic_pentagram`, `ic_hexagram`
+- [Shannon entropy](https://en.wikipedia.org/wiki/Entropy_(information_theory)) measure<br>
+  Available options: `entropy`, `entropy_bigram`, `entropy_trigram`, `entropy_quadgram`, `entropy_pentagram`, `entropy_hexagram`
 
 ## Build from source
 
@@ -86,21 +120,10 @@ make clean && make test ALPHABET=0123456789
 
 Note, that as of now, only path-safe ASCII alphabets are allowed here.
 
-## Sources and References
+## Data sources
 
-### Frequency of English text
-
-The following frequency tables were generated by [Practical Cryptography](http://practicalcryptography.com/cryptanalysis/letter-frequencies-various-languages/english-letter-frequencies/) from around 4.5 billion characters of English text, sourced from [Wortschatz](https://wortschatz-leipzig.de/en).
-
-- `en-bigram.txt`
-- `en-trigram.txt`
-
-### Frequency of raw 1941 Enigma message decrypts
-
-The following frequency tables have been published on [Frode Weierud's CryptoCellar](https://cryptocellar.org/bgac/keyofE.html).
-
-- `enigma1941-bigram.txt`
-- `enigma1941-trigram.txt`
+- The frequency tables for English text `en-bigram.txt` and `en-trigram.txt` were generated by [Practical Cryptography](http://practicalcryptography.com/cryptanalysis/letter-frequencies-various-languages/english-letter-frequencies/) from around 4.5 billion characters of English text, sourced from [Wortschatz](https://wortschatz-leipzig.de/en).
+- The frequency tables for raw 1941 Enigma message decrypts `enigma1941-bigram.txt` and `enigma1941-trigram.txt` have been published on [Frode Weierud's CryptoCellar](https://cryptocellar.org/bgac/keyofE.html).
 
 ## License
 
