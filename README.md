@@ -7,7 +7,7 @@ The thesis script will be made available, soon.
 
 ## Getting started
 
-First, download the [latest stable release](https://github.com/cryptii/cryptii/releases/latest) or build the program from source (see instructions below).
+First, download the [latest stable release](https://github.com/ffraenz/bomm/releases/latest) or build the program from source (see instructions below).
 
 Command line usage:
 
